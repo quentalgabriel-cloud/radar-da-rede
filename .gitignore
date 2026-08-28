@@ -1,0 +1,16 @@
+node_modules/
+.pnpm-store/
+.pnpm-data/
+dist/
+coverage/
+.env
+.env.*
+!.env.example
+.DS_Store
+.idea/
+.vscode/
+.vercel/
+.gradle/
+local.properties
+*.jks
+*.keystore

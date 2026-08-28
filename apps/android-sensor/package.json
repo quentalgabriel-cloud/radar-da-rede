@@ -1,0 +1,9 @@
+{
+  "name": "@radar/android-sensor",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "check": "node scripts/check-foundation.mjs",
+    "test": "node --test scripts/check-foundation.test.mjs"
+  }
+}

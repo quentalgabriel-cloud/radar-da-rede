@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://radar-da-rede.local/schemas/ingest-batch.v0.1.0.schema.json",
+  "title": "IngestBatch v0.1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "batch_id", "network_id", "device_id", "sent_at", "events"],
+  "properties": {
+    "schema_version": { "const": "0.1.0" },
+    "batch_id": { "type": "string", "format": "uuid" },
+    "network_id": { "type": "string", "format": "uuid" },
+    "device_id": { "type": "string", "format": "uuid" },
+    "sent_at": { "type": "string", "format": "date-time" },
+    "events": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 500,
+      "items": { "$ref": "normalized-event.v0.1.0.schema.json" }
+    }
+  }
+}

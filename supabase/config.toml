@@ -1,0 +1,13 @@
+project_id = "radar-da-rede"
+
+[functions.ingest-events]
+verify_jwt = false
+
+[functions.ingest-health]
+verify_jwt = false
+
+[functions.process-window]
+verify_jwt = false
+
+[functions.radar-read-model]
+verify_jwt = true

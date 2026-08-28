@@ -1,0 +1,163 @@
+{
+  "schema_version": "0.1.0",
+  "name": "offline-recovery",
+  "description": "Eventos preservam o horário original após dez horas offline.",
+  "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+  "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+  "batch_id": "e277526c-66f9-4f85-8752-827c51231b63",
+  "sent_at": "2026-08-27T18:01:05.000Z",
+  "events": [
+    {
+      "schema_version": "0.1.0",
+      "event_id": "15d022c2-3c53-46dc-8233-8c04b99e9cd1",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "offline-recovery:1",
+      "conversation_id": "offline-1",
+      "conversation_label": "Grupo Offline 1",
+      "occurred_at": "2026-08-27T08:00:00.000Z",
+      "captured_at": "2026-08-27T18:00:00.000Z",
+      "message_type": "text",
+      "text": "Registro offline 1: recebido e combinado.",
+      "sender_ref": "actor-2",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "offline-recovery",
+        "territory": "offline-1"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "09e6779f-804b-4516-88e8-881c87c3d93a",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "offline-recovery:2",
+      "conversation_id": "offline-2",
+      "conversation_label": "Grupo Offline 2",
+      "occurred_at": "2026-08-27T08:01:00.000Z",
+      "captured_at": "2026-08-27T18:00:01.000Z",
+      "message_type": "text",
+      "text": "Registro offline 2: recebido e combinado.",
+      "sender_ref": "actor-3",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "offline-recovery",
+        "territory": "offline-2"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "250094a9-2ccb-4556-8860-3f9905de68f2",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "offline-recovery:3",
+      "conversation_id": "offline-1",
+      "conversation_label": "Grupo Offline 1",
+      "occurred_at": "2026-08-27T08:02:00.000Z",
+      "captured_at": "2026-08-27T18:00:02.000Z",
+      "message_type": "text",
+      "text": "Registro offline 3: recebido e combinado.",
+      "sender_ref": "actor-4",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "offline-recovery",
+        "territory": "offline-1"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "41c40a81-b340-4b73-8f17-94e95a4d09be",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "offline-recovery:4",
+      "conversation_id": "offline-2",
+      "conversation_label": "Grupo Offline 2",
+      "occurred_at": "2026-08-27T08:03:00.000Z",
+      "captured_at": "2026-08-27T18:00:03.000Z",
+      "message_type": "text",
+      "text": "Registro offline 4: recebido e combinado.",
+      "sender_ref": "actor-5",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "offline-recovery",
+        "territory": "offline-2"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "339b949e-884e-4d8a-8b32-1abdae5a3b66",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "offline-recovery:5",
+      "conversation_id": "offline-1",
+      "conversation_label": "Grupo Offline 1",
+      "occurred_at": "2026-08-27T08:04:00.000Z",
+      "captured_at": "2026-08-27T18:00:04.000Z",
+      "message_type": "text",
+      "text": "Registro offline 5: recebido e combinado.",
+      "sender_ref": "actor-6",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "offline-recovery",
+        "territory": "offline-1"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "f6e426de-394d-4445-8fdc-a87bd55a596d",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "offline-recovery:6",
+      "conversation_id": "offline-2",
+      "conversation_label": "Grupo Offline 2",
+      "occurred_at": "2026-08-27T08:05:00.000Z",
+      "captured_at": "2026-08-27T18:00:05.000Z",
+      "message_type": "text",
+      "text": "Registro offline 6: recebido e combinado.",
+      "sender_ref": "actor-7",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "offline-recovery",
+        "territory": "offline-2"
+      }
+    }
+  ],
+  "heartbeat": {
+    "schema_version": "0.1.0",
+    "heartbeat_id": "b2db4434-bcdd-4188-856b-329823b017e4",
+    "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+    "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+    "source": "fake",
+    "observed_at": "2026-08-27T18:01:06.000Z",
+    "adapter_version": "0.1.0",
+    "parser_version": "0.1.0",
+    "status": "offline_recovery",
+    "outbox_pending": 0,
+    "oldest_pending_at": null,
+    "last_event_captured_at": "2026-08-27T18:00:05.000Z",
+    "last_upload_succeeded_at": "2026-08-27T18:01:05.000Z",
+    "counters": {
+      "captured": 6,
+      "uploaded": 6
+    }
+  },
+  "ground_truth": {
+    "metrics": {
+      "event_count": 6,
+      "conversation_count": 2,
+      "minimum_capture_delay_seconds": 35000
+    },
+    "facts": [],
+    "signals": [],
+    "alerts": [],
+    "health": {
+      "status": "offline_recovery"
+    }
+  }
+}

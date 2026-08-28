@@ -1,0 +1,134 @@
+{
+  "schema_version": "0.1.0",
+  "name": "same-topic-multiple-groups",
+  "description": "A mesma dúvida aparece em três grupos.",
+  "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+  "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+  "batch_id": "f5544599-97fc-490e-8df3-1c0d013604cf",
+  "sent_at": "2026-08-27T13:04:01.000Z",
+  "events": [
+    {
+      "schema_version": "0.1.0",
+      "event_id": "254251f1-b508-4f95-89c8-23b817082bc0",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "same-topic-multiple-groups:1",
+      "conversation_id": "rio-doce",
+      "conversation_label": "Mobilização Rio Doce",
+      "occurred_at": "2026-08-27T13:00:00.000Z",
+      "captured_at": "2026-08-27T13:00:01.000Z",
+      "message_type": "text",
+      "text": "Alguém sabe qual a orientação para o credenciamento?",
+      "sender_ref": "actor-2",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "same-topic-multiple-groups",
+        "territory": "rio-doce"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "b149611f-5c84-4116-8f92-d311cfe9d25e",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "same-topic-multiple-groups:2",
+      "conversation_id": "casa-caiada",
+      "conversation_label": "Equipe Casa Caiada",
+      "occurred_at": "2026-08-27T13:01:00.000Z",
+      "captured_at": "2026-08-27T13:01:01.000Z",
+      "message_type": "text",
+      "text": "Dúvida: como fazemos o credenciamento?",
+      "sender_ref": "actor-3",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "same-topic-multiple-groups",
+        "territory": "casa-caiada"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "59b9a45b-ab24-414e-8653-b0715eb5894e",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "same-topic-multiple-groups:3",
+      "conversation_id": "bairro-novo",
+      "conversation_label": "Equipe Bairro Novo",
+      "occurred_at": "2026-08-27T13:02:00.000Z",
+      "captured_at": "2026-08-27T13:02:01.000Z",
+      "message_type": "text",
+      "text": "Qual a orientação para preencher o credenciamento?",
+      "sender_ref": "actor-4",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "same-topic-multiple-groups",
+        "territory": "bairro-novo"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "177a1069-07d7-4462-8dbd-c1b509960817",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "same-topic-multiple-groups:4",
+      "conversation_id": "rio-doce",
+      "conversation_label": "Mobilização Rio Doce",
+      "occurred_at": "2026-08-27T13:03:00.000Z",
+      "captured_at": "2026-08-27T13:03:01.000Z",
+      "message_type": "text",
+      "text": "Ainda temos dúvida sobre o credenciamento.",
+      "sender_ref": "actor-5",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "same-topic-multiple-groups",
+        "territory": "rio-doce"
+      }
+    }
+  ],
+  "heartbeat": {
+    "schema_version": "0.1.0",
+    "heartbeat_id": "8ca04262-0c6f-4da4-8fa0-a95ef208ed09",
+    "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+    "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+    "source": "fake",
+    "observed_at": "2026-08-27T13:04:02.000Z",
+    "adapter_version": "0.1.0",
+    "parser_version": "0.1.0",
+    "status": "healthy",
+    "outbox_pending": 0,
+    "oldest_pending_at": null,
+    "last_event_captured_at": "2026-08-27T13:03:01.000Z",
+    "last_upload_succeeded_at": "2026-08-27T13:04:01.000Z",
+    "counters": {
+      "captured": 4,
+      "uploaded": 4
+    }
+  },
+  "ground_truth": {
+    "metrics": {
+      "event_count": 4,
+      "conversation_count": 3
+    },
+    "facts": [
+      {
+        "category": "duvida_orientacao",
+        "conversation_count": 3,
+        "minimum_mentions": 4
+      }
+    ],
+    "signals": [
+      {
+        "kind": "cross_group_recurrence",
+        "category": "duvida_orientacao",
+        "severity": "high"
+      }
+    ],
+    "alerts": [],
+    "health": {
+      "status": "healthy"
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://radar-da-rede.local/schemas/health-heartbeat.v0.1.0.schema.json",
+  "title": "HealthHeartbeat v0.1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "heartbeat_id",
+    "network_id",
+    "device_id",
+    "source",
+    "observed_at",
+    "adapter_version",
+    "status",
+    "outbox_pending"
+  ],
+  "properties": {
+    "schema_version": { "const": "0.1.0" },
+    "heartbeat_id": { "type": "string", "format": "uuid" },
+    "network_id": { "type": "string", "format": "uuid" },
+    "device_id": { "type": "string", "format": "uuid" },
+    "source": {
+      "type": "string",
+      "enum": ["fake", "android_notification", "waha"]
+    },
+    "observed_at": { "type": "string", "format": "date-time" },
+    "adapter_version": { "type": "string", "minLength": 1, "maxLength": 64 },
+    "parser_version": { "type": "string", "minLength": 1, "maxLength": 64 },
+    "status": { "type": "string", "enum": ["healthy", "degraded", "offline_recovery"] },
+    "outbox_pending": { "type": "integer", "minimum": 0 },
+    "oldest_pending_at": { "type": ["string", "null"], "format": "date-time" },
+    "last_event_captured_at": { "type": ["string", "null"], "format": "date-time" },
+    "last_upload_succeeded_at": { "type": ["string", "null"], "format": "date-time" },
+    "counters": {
+      "type": "object",
+      "additionalProperties": { "type": "integer", "minimum": 0 },
+      "maxProperties": 20
+    }
+  }
+}

@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f6f6f5">
+    <title>Radar da Rede</title>
+    <meta name="description" content="Uma leitura simples do que acontece na rede.">
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/campaign-theme.css">
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Pular para o conteúdo</a>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"><img class="brand-star" src="/assets/star.svg" alt=""></span>
+        <div>
+          <strong>Radar da Rede</strong>
+          <span id="source-label">Carregando…</span>
+        </div>
+      </div>
+      <button class="icon-button" id="refresh-button" type="button" aria-label="Atualizar dados" title="Atualizar dados">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.34 5.66M20 4v7h-7"/></svg>
+      </button>
+    </header>
+
+    <main id="main" tabindex="-1">
+      <div class="source-controls">
+        <label class="source-selector">
+          <span>Ambiente</span>
+          <select id="mode-select" aria-label="Selecionar ambiente">
+            <option value="lab">Demonstração</option>
+            <option value="live">Rede conectada</option>
+          </select>
+        </label>
+        <label class="demo-selector" id="scenario-control">
+          <span>Situação de teste</span>
+          <select id="scenario-select" aria-label="Selecionar situação de demonstração"></select>
+        </label>
+      </div>
+
+      <section class="auth-panel" id="auth-panel" aria-labelledby="auth-title" hidden>
+        <p class="eyebrow">Acesso protegido</p>
+        <h1 id="auth-title">Entrar no Radar</h1>
+        <p>Use o acesso autorizado pela coordenação da rede.</p>
+        <form id="auth-form">
+          <label><span>E-mail ou usuário</span><input id="auth-email" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
+          <label><span>Senha</span><input id="auth-password" name="password" type="password" autocomplete="current-password" minlength="8" required></label>
+          <div class="auth-actions">
+            <button class="primary-button" type="submit">Entrar</button>
+            <button class="secondary-button" id="signup-button" type="button">Criar acesso</button>
+          </div>
+        </form>
+        <p class="auth-message" id="auth-message" role="status"></p>
+      </section>
+
+      <div id="radar-content">
+        <section class="screen active" data-screen="overview" aria-labelledby="overview-title">
+          <div class="hero">
+            <div><p class="eyebrow">Radar hoje</p><h1 id="overview-title">Carregando a situação da rede</h1></div>
+          </div>
+          <section class="network-status" id="network-status" aria-label="Status da rede"></section>
+          <div class="metric-grid" id="metric-grid" aria-label="Indicadores principais"></div>
+
+          <section class="content-section attention-panel" aria-labelledby="attention-heading">
+            <div class="section-heading">
+              <div><p class="eyebrow danger">O que precisa de atenção</p><h2 id="attention-heading">Situações prioritárias</h2></div>
+              <span class="count-badge" id="alert-count">0</span>
+            </div>
+            <div id="attention-list"></div>
+          </section>
+
+          <section class="content-section" aria-labelledby="movements-heading">
+            <div class="section-heading">
+              <div><p class="eyebrow">Principais movimentos</p><h2 id="movements-heading">Assuntos presentes na rede</h2></div>
+            </div>
+            <div id="movement-list" class="movement-list"></div>
+          </section>
+
+          <section class="content-section" aria-labelledby="territories-heading">
+            <div class="section-heading">
+              <div><p class="eyebrow">Onde</p><h2 id="territories-heading">Territórios em destaque</h2></div>
+            </div>
+            <div id="territory-list" class="territory-list"></div>
+          </section>
+
+          <section class="content-section" aria-labelledby="recent-heading">
+            <div class="section-heading">
+              <div><p class="eyebrow">Agora</p><h2 id="recent-heading">Atividade recente relevante</h2></div>
+            </div>
+            <div id="recent-list" class="event-list"></div>
+          </section>
+        </section>
+
+        <section class="screen" data-screen="situations" aria-labelledby="situations-title" hidden>
+          <div class="hero compact">
+            <div><p class="eyebrow">Situações</p><h1 id="situations-title">O que merece acompanhamento</h1></div>
+          </div>
+          <div class="filter-row" role="group" aria-label="Filtrar situações">
+            <button class="filter-chip active" type="button" data-severity="all">Todas</button>
+            <button class="filter-chip" type="button" data-severity="high">Atenção</button>
+            <button class="filter-chip" type="button" data-severity="medium">Acompanhamento</button>
+          </div>
+          <div id="situation-list" class="situation-list"></div>
+        </section>
+
+        <section class="screen" data-screen="groups" aria-labelledby="groups-title" hidden>
+          <div class="hero compact">
+            <div><p class="eyebrow">Grupos</p><h1 id="groups-title">Atividade da rede</h1></div>
+          </div>
+          <label class="search-field">
+            <span class="sr-only">Buscar grupo, território ou assunto</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+            <input id="search-input" type="search" placeholder="Buscar grupo, território ou assunto">
+          </label>
+          <div id="conversation-list" class="group-list"></div>
+        </section>
+
+        <section class="screen" data-screen="health" aria-labelledby="health-title" hidden>
+          <div class="hero compact">
+            <div><p class="eyebrow">Status</p><h1 id="health-title">A rede está sendo acompanhada?</h1></div>
+          </div>
+          <section class="network-status large" id="health-summary"></section>
+          <section class="panel health-card" id="health-card"></section>
+          <aside class="notice" id="provenance-notice"></aside>
+          <details class="technical-details">
+            <summary>Informações técnicas</summary>
+            <div id="technical-health"></div>
+          </details>
+          <button class="secondary-button signout-button" id="signout-button" type="button" hidden>Sair do Radar</button>
+        </section>
+      </div>
+    </main>
+
+    <nav class="tabbar" aria-label="Navegação principal">
+      <button class="tab active" type="button" data-target="overview" aria-current="page">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13h6V4H4zm10 7h6V11h-6zM4 20h6v-3H4zm10-13h6V4h-6z"/></svg><span>Radar</span>
+      </button>
+      <button class="tab" type="button" data-target="situations">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2.5 20h19z"/><path d="M12 9v4m0 3h.01"/></svg><span>Situações</span>
+      </button>
+      <button class="tab" type="button" data-target="groups">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Grupos</span>
+      </button>
+      <button class="tab" type="button" data-target="health">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2-5 4 10 2-5h6"/></svg><span>Status</span>
+      </button>
+    </nav>
+
+    <div class="loading-state" id="loading-state" role="status">Preparando o Radar…</div>
+  </body>
+</html>

@@ -1,0 +1,124 @@
+{
+  "schema_version": "0.1.0",
+  "name": "material-shortage",
+  "description": "Falta de material relatada em três grupos no mesmo intervalo.",
+  "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+  "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+  "batch_id": "6f8f4d85-07d5-4f8f-94ca-32b1369f1e08",
+  "sent_at": "2026-08-26T13:10:00.000Z",
+  "events": [
+    {
+      "schema_version": "0.1.0",
+      "event_id": "b3e7e9d0-0412-41a9-b646-fe73a8385b63",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "material-shortage:1",
+      "conversation_id": "mobilizacao-rio-doce",
+      "conversation_label": "Mobilização Rio Doce",
+      "occurred_at": "2026-08-26T13:00:00.000Z",
+      "captured_at": "2026-08-26T13:00:01.000Z",
+      "message_type": "text",
+      "text": "Ainda não chegaram os panfletos para a equipe.",
+      "sender_ref": "actor-a",
+      "parser_version": "0.1.0",
+      "metadata": { "scenario": "material-shortage", "territory": "rio-doce" }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "18bdf1dd-f93d-4e41-b57f-a7e2559ca8bb",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "material-shortage:2",
+      "conversation_id": "equipe-casa-caiada",
+      "conversation_label": "Equipe Casa Caiada",
+      "occurred_at": "2026-08-26T13:02:00.000Z",
+      "captured_at": "2026-08-26T13:02:01.000Z",
+      "message_type": "text",
+      "text": "Aqui também estamos sem material desde ontem.",
+      "sender_ref": "actor-c",
+      "parser_version": "0.1.0",
+      "metadata": { "scenario": "material-shortage", "territory": "casa-caiada" }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "eb4e1fe6-9ac8-49b6-a492-cfe547452b26",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "material-shortage:3",
+      "conversation_id": "equipe-bairro-novo",
+      "conversation_label": "Equipe Bairro Novo",
+      "occurred_at": "2026-08-26T13:04:00.000Z",
+      "captured_at": "2026-08-26T13:04:01.000Z",
+      "message_type": "text",
+      "text": "Precisamos de mais adesivos e bandeiras em Bairro Novo.",
+      "sender_ref": "actor-e",
+      "parser_version": "0.1.0",
+      "metadata": { "scenario": "material-shortage", "territory": "bairro-novo" }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "35c1b5da-d4ab-4638-bae1-694fb263997d",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "material-shortage:4",
+      "conversation_id": "mobilizacao-rio-doce",
+      "conversation_label": "Mobilização Rio Doce",
+      "occurred_at": "2026-08-26T13:05:00.000Z",
+      "captured_at": "2026-08-26T13:05:01.000Z",
+      "message_type": "text",
+      "text": "A equipe está parada aguardando a entrega.",
+      "sender_ref": "actor-b",
+      "parser_version": "0.1.0",
+      "metadata": { "scenario": "material-shortage", "territory": "rio-doce" }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "ed269be2-48d1-47db-9e92-5949b3fbaf36",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "material-shortage:5",
+      "conversation_id": "equipe-casa-caiada",
+      "conversation_label": "Equipe Casa Caiada",
+      "occurred_at": "2026-08-26T13:06:00.000Z",
+      "captured_at": "2026-08-26T13:06:01.000Z",
+      "message_type": "text",
+      "text": "Tem previsão de reposição dos panfletos?",
+      "sender_ref": "actor-d",
+      "parser_version": "0.1.0",
+      "metadata": { "scenario": "material-shortage", "territory": "casa-caiada" }
+    }
+  ],
+  "heartbeat": {
+    "schema_version": "0.1.0",
+    "heartbeat_id": "d95c2a6e-55ed-4c2e-bcfb-18d619e5b66d",
+    "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+    "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+    "source": "fake",
+    "observed_at": "2026-08-26T13:10:01.000Z",
+    "adapter_version": "0.1.0",
+    "parser_version": "0.1.0",
+    "status": "healthy",
+    "outbox_pending": 0,
+    "oldest_pending_at": null,
+    "last_event_captured_at": "2026-08-26T13:06:01.000Z",
+    "last_upload_succeeded_at": "2026-08-26T13:10:00.000Z",
+    "counters": { "captured": 5, "uploaded": 5 }
+  },
+  "ground_truth": {
+    "metrics": { "event_count": 5, "conversation_count": 3 },
+    "facts": [
+      { "category": "material_logistica", "conversation_count": 3, "minimum_mentions": 4 }
+    ],
+    "signals": [
+      { "kind": "cross_group_recurrence", "category": "material_logistica", "severity": "high" }
+    ],
+    "alerts": [
+      { "kind": "operational_blocker", "category": "material_logistica", "severity": "high" }
+    ]
+  }
+}

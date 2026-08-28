@@ -1,0 +1,8 @@
+:root {
+  --brand-primary: #c8102e;
+  --brand-primary-hover: #a80d27;
+  --brand-primary-soft: #fff0f3;
+  --brand-accent: #f2c230;
+  --brand-accent-soft: #fff8d9;
+  --focus-ring: rgba(200, 16, 46, .25);
+}

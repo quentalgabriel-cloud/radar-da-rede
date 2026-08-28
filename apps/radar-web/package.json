@@ -1,0 +1,16 @@
+{
+  "name": "@radar-rede/radar-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node --check public/app.js && node --check src/server.mjs",
+    "test": "node --test test/*.test.js",
+    "start": "node src/server.mjs"
+  },
+  "dependencies": {
+    "@radar-rede/radar-view-model": "workspace:*",
+    "@radar-rede/testkit": "workspace:*"
+  }
+}

@@ -1,0 +1,2464 @@
+{
+  "schema_version": "0.1.0",
+  "name": "high-volume",
+  "description": "Batch grande com recorrências reais misturadas a muito ruído.",
+  "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+  "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+  "batch_id": "7e3559d6-ae4f-4bad-83a1-9858adbefee3",
+  "sent_at": "2026-08-27T15:10:56.000Z",
+  "events": [
+    {
+      "schema_version": "0.1.0",
+      "event_id": "da8aa86b-ab7e-41cd-8228-2a3e6c3f1e1d",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:1",
+      "conversation_id": "volume-1",
+      "conversation_label": "Grupo Volume 1",
+      "occurred_at": "2026-08-27T15:00:00.000Z",
+      "captured_at": "2026-08-27T15:00:01.000Z",
+      "message_type": "text",
+      "text": "Solicitação de material e panfletos, registro 1.",
+      "sender_ref": "actor-2",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-1"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "9030c2a4-03e3-4791-8462-5def8718ff2f",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:2",
+      "conversation_id": "volume-2",
+      "conversation_label": "Grupo Volume 2",
+      "occurred_at": "2026-08-27T15:00:05.000Z",
+      "captured_at": "2026-08-27T15:00:06.000Z",
+      "message_type": "text",
+      "text": "Solicitação de material e panfletos, registro 2.",
+      "sender_ref": "actor-3",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-2"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "3804f71b-54c8-44bc-811a-0c34bf9f4f7e",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:3",
+      "conversation_id": "volume-3",
+      "conversation_label": "Grupo Volume 3",
+      "occurred_at": "2026-08-27T15:00:10.000Z",
+      "captured_at": "2026-08-27T15:00:11.000Z",
+      "message_type": "text",
+      "text": "Solicitação de material e panfletos, registro 3.",
+      "sender_ref": "actor-4",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-3"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "3b314453-fdb2-4a48-8ec9-a5fb0f167410",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:4",
+      "conversation_id": "volume-4",
+      "conversation_label": "Grupo Volume 4",
+      "occurred_at": "2026-08-27T15:00:15.000Z",
+      "captured_at": "2026-08-27T15:00:16.000Z",
+      "message_type": "text",
+      "text": "Solicitação de material e panfletos, registro 4.",
+      "sender_ref": "actor-5",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-4"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "45afde52-1dd9-4b01-8b76-dc9663003295",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:5",
+      "conversation_id": "volume-5",
+      "conversation_label": "Grupo Volume 5",
+      "occurred_at": "2026-08-27T15:00:20.000Z",
+      "captured_at": "2026-08-27T15:00:21.000Z",
+      "message_type": "text",
+      "text": "Solicitação de material e panfletos, registro 5.",
+      "sender_ref": "actor-6",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-5"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "462c718b-65e3-4628-86e0-e03fdcfa27ac",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:6",
+      "conversation_id": "volume-6",
+      "conversation_label": "Grupo Volume 6",
+      "occurred_at": "2026-08-27T15:00:25.000Z",
+      "captured_at": "2026-08-27T15:00:26.000Z",
+      "message_type": "text",
+      "text": "Solicitação de material e panfletos, registro 6.",
+      "sender_ref": "actor-7",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-6"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "80f37884-fd5e-4bc9-86ab-5548ff1bbeea",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:7",
+      "conversation_id": "volume-7",
+      "conversation_label": "Grupo Volume 7",
+      "occurred_at": "2026-08-27T15:00:30.000Z",
+      "captured_at": "2026-08-27T15:00:31.000Z",
+      "message_type": "text",
+      "text": "Solicitação de material e panfletos, registro 7.",
+      "sender_ref": "actor-8",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-7"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "e0dd0a39-948b-4b71-82b1-f20f1719a031",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:8",
+      "conversation_id": "volume-8",
+      "conversation_label": "Grupo Volume 8",
+      "occurred_at": "2026-08-27T15:00:35.000Z",
+      "captured_at": "2026-08-27T15:00:36.000Z",
+      "message_type": "text",
+      "text": "Solicitação de material e panfletos, registro 8.",
+      "sender_ref": "actor-9",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-8"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "e73903de-aa61-44e0-8041-4c066b83f5a0",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:9",
+      "conversation_id": "volume-1",
+      "conversation_label": "Grupo Volume 1",
+      "occurred_at": "2026-08-27T15:00:40.000Z",
+      "captured_at": "2026-08-27T15:00:41.000Z",
+      "message_type": "text",
+      "text": "Solicitação de material e panfletos, registro 9.",
+      "sender_ref": "actor-1",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-1"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "4c496aba-525b-4308-8b0f-5d5fa5da08d6",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:10",
+      "conversation_id": "volume-2",
+      "conversation_label": "Grupo Volume 2",
+      "occurred_at": "2026-08-27T15:00:45.000Z",
+      "captured_at": "2026-08-27T15:00:46.000Z",
+      "message_type": "text",
+      "text": "Solicitação de material e panfletos, registro 10.",
+      "sender_ref": "actor-2",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-2"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "c208d0a7-d8ca-4c83-83fa-f2640ede4187",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:11",
+      "conversation_id": "volume-3",
+      "conversation_label": "Grupo Volume 3",
+      "occurred_at": "2026-08-27T15:00:50.000Z",
+      "captured_at": "2026-08-27T15:00:51.000Z",
+      "message_type": "text",
+      "text": "Solicitação de material e panfletos, registro 11.",
+      "sender_ref": "actor-3",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-3"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "240ec911-a57d-458f-81c5-5b0ab9997098",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:12",
+      "conversation_id": "volume-4",
+      "conversation_label": "Grupo Volume 4",
+      "occurred_at": "2026-08-27T15:00:55.000Z",
+      "captured_at": "2026-08-27T15:00:56.000Z",
+      "message_type": "text",
+      "text": "Solicitação de material e panfletos, registro 12.",
+      "sender_ref": "actor-4",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-4"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "53fa67b4-4e57-460a-8f46-b06e697916e5",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:13",
+      "conversation_id": "volume-5",
+      "conversation_label": "Grupo Volume 5",
+      "occurred_at": "2026-08-27T15:01:00.000Z",
+      "captured_at": "2026-08-27T15:01:01.000Z",
+      "message_type": "text",
+      "text": "Reunião de mobilização confirmada para 17h.",
+      "sender_ref": "actor-5",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-5"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "0b4015ab-d840-4e4a-869d-4ed6559229a1",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:14",
+      "conversation_id": "volume-6",
+      "conversation_label": "Grupo Volume 6",
+      "occurred_at": "2026-08-27T15:01:05.000Z",
+      "captured_at": "2026-08-27T15:01:06.000Z",
+      "message_type": "text",
+      "text": "Reunião de mobilização confirmada para 18h.",
+      "sender_ref": "actor-6",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-6"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "0aaf892f-bbf0-4544-82e6-a5a44362815d",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:15",
+      "conversation_id": "volume-7",
+      "conversation_label": "Grupo Volume 7",
+      "occurred_at": "2026-08-27T15:01:10.000Z",
+      "captured_at": "2026-08-27T15:01:11.000Z",
+      "message_type": "text",
+      "text": "Reunião de mobilização confirmada para 19h.",
+      "sender_ref": "actor-7",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-7"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "ae02b0c1-6b1f-40c5-86c3-c750929fe556",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:16",
+      "conversation_id": "volume-8",
+      "conversation_label": "Grupo Volume 8",
+      "occurred_at": "2026-08-27T15:01:15.000Z",
+      "captured_at": "2026-08-27T15:01:16.000Z",
+      "message_type": "text",
+      "text": "Reunião de mobilização confirmada para 17h.",
+      "sender_ref": "actor-8",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-8"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "6c8f1372-80e5-48ee-8b71-e0555f3d69e7",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:17",
+      "conversation_id": "volume-1",
+      "conversation_label": "Grupo Volume 1",
+      "occurred_at": "2026-08-27T15:01:20.000Z",
+      "captured_at": "2026-08-27T15:01:21.000Z",
+      "message_type": "text",
+      "text": "Reunião de mobilização confirmada para 18h.",
+      "sender_ref": "actor-9",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-1"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "83cb70e8-60f9-4fb9-8932-0cc25506a50e",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:18",
+      "conversation_id": "volume-2",
+      "conversation_label": "Grupo Volume 2",
+      "occurred_at": "2026-08-27T15:01:25.000Z",
+      "captured_at": "2026-08-27T15:01:26.000Z",
+      "message_type": "text",
+      "text": "Reunião de mobilização confirmada para 19h.",
+      "sender_ref": "actor-1",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-2"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "5a7f9a58-7960-45b6-8ec7-5fa0699b4050",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:19",
+      "conversation_id": "volume-3",
+      "conversation_label": "Grupo Volume 3",
+      "occurred_at": "2026-08-27T15:01:30.000Z",
+      "captured_at": "2026-08-27T15:01:31.000Z",
+      "message_type": "text",
+      "text": "Reunião de mobilização confirmada para 17h.",
+      "sender_ref": "actor-2",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-3"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "94233e6b-0762-4cfb-8354-039e5a897e65",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:20",
+      "conversation_id": "volume-4",
+      "conversation_label": "Grupo Volume 4",
+      "occurred_at": "2026-08-27T15:01:35.000Z",
+      "captured_at": "2026-08-27T15:01:36.000Z",
+      "message_type": "text",
+      "text": "Reunião de mobilização confirmada para 18h.",
+      "sender_ref": "actor-3",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-4"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "b716ebcd-1117-4e9c-82d5-4646f70af76a",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:21",
+      "conversation_id": "volume-5",
+      "conversation_label": "Grupo Volume 5",
+      "occurred_at": "2026-08-27T15:01:40.000Z",
+      "captured_at": "2026-08-27T15:01:41.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 21: combinado.",
+      "sender_ref": "actor-4",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-5"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "48bb5df1-5678-473d-88dd-935a3dfbcc1c",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:22",
+      "conversation_id": "volume-6",
+      "conversation_label": "Grupo Volume 6",
+      "occurred_at": "2026-08-27T15:01:45.000Z",
+      "captured_at": "2026-08-27T15:01:46.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 22: combinado.",
+      "sender_ref": "actor-5",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-6"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "7c3fa1bc-43c2-4b05-8ce4-6b1c7391bc97",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:23",
+      "conversation_id": "volume-7",
+      "conversation_label": "Grupo Volume 7",
+      "occurred_at": "2026-08-27T15:01:50.000Z",
+      "captured_at": "2026-08-27T15:01:51.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 23: combinado.",
+      "sender_ref": "actor-6",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-7"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "938ffdf1-3bfd-4e34-8e07-2af1554bcced",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:24",
+      "conversation_id": "volume-8",
+      "conversation_label": "Grupo Volume 8",
+      "occurred_at": "2026-08-27T15:01:55.000Z",
+      "captured_at": "2026-08-27T15:01:56.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 24: combinado.",
+      "sender_ref": "actor-7",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-8"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "cc81041e-d6e5-4e06-8649-4800641cb8ec",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:25",
+      "conversation_id": "volume-1",
+      "conversation_label": "Grupo Volume 1",
+      "occurred_at": "2026-08-27T15:02:00.000Z",
+      "captured_at": "2026-08-27T15:02:01.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 25: combinado.",
+      "sender_ref": "actor-8",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-1"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "0b9731a7-44d3-4b31-81db-a7249aff3a91",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:26",
+      "conversation_id": "volume-2",
+      "conversation_label": "Grupo Volume 2",
+      "occurred_at": "2026-08-27T15:02:05.000Z",
+      "captured_at": "2026-08-27T15:02:06.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 26: combinado.",
+      "sender_ref": "actor-9",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-2"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "dc47f4d3-fb4f-4652-869b-d3fe85fcb1b1",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:27",
+      "conversation_id": "volume-3",
+      "conversation_label": "Grupo Volume 3",
+      "occurred_at": "2026-08-27T15:02:10.000Z",
+      "captured_at": "2026-08-27T15:02:11.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 27: combinado.",
+      "sender_ref": "actor-1",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-3"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "91516fd1-1c6e-412f-8ba8-41691739077f",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:28",
+      "conversation_id": "volume-4",
+      "conversation_label": "Grupo Volume 4",
+      "occurred_at": "2026-08-27T15:02:15.000Z",
+      "captured_at": "2026-08-27T15:02:16.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 28: combinado.",
+      "sender_ref": "actor-2",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-4"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "64039769-0eb5-44f1-824d-44960c368fcf",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:29",
+      "conversation_id": "volume-5",
+      "conversation_label": "Grupo Volume 5",
+      "occurred_at": "2026-08-27T15:02:20.000Z",
+      "captured_at": "2026-08-27T15:02:21.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 29: combinado.",
+      "sender_ref": "actor-3",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-5"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "a03da7c7-27e8-49d0-8f7a-0b81341dce7e",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:30",
+      "conversation_id": "volume-6",
+      "conversation_label": "Grupo Volume 6",
+      "occurred_at": "2026-08-27T15:02:25.000Z",
+      "captured_at": "2026-08-27T15:02:26.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 30: combinado.",
+      "sender_ref": "actor-4",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-6"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "193233b0-3b49-416f-8a8b-e77e279f8910",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:31",
+      "conversation_id": "volume-7",
+      "conversation_label": "Grupo Volume 7",
+      "occurred_at": "2026-08-27T15:02:30.000Z",
+      "captured_at": "2026-08-27T15:02:31.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 31: combinado.",
+      "sender_ref": "actor-5",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-7"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "304fb248-e352-430a-8954-a393356c8a42",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:32",
+      "conversation_id": "volume-8",
+      "conversation_label": "Grupo Volume 8",
+      "occurred_at": "2026-08-27T15:02:35.000Z",
+      "captured_at": "2026-08-27T15:02:36.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 32: combinado.",
+      "sender_ref": "actor-6",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-8"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "d9f39d61-039c-41d5-8850-230af5dff7f5",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:33",
+      "conversation_id": "volume-1",
+      "conversation_label": "Grupo Volume 1",
+      "occurred_at": "2026-08-27T15:02:40.000Z",
+      "captured_at": "2026-08-27T15:02:41.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 33: combinado.",
+      "sender_ref": "actor-7",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-1"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "98fed889-e770-41f5-8ac8-57225d32b4f2",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:34",
+      "conversation_id": "volume-2",
+      "conversation_label": "Grupo Volume 2",
+      "occurred_at": "2026-08-27T15:02:45.000Z",
+      "captured_at": "2026-08-27T15:02:46.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 34: combinado.",
+      "sender_ref": "actor-8",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-2"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "c5b98c95-d3b2-4599-8224-c0fbad052837",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:35",
+      "conversation_id": "volume-3",
+      "conversation_label": "Grupo Volume 3",
+      "occurred_at": "2026-08-27T15:02:50.000Z",
+      "captured_at": "2026-08-27T15:02:51.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 35: combinado.",
+      "sender_ref": "actor-9",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-3"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "dc0f1fe4-e0fb-4410-8401-7144cd049ec5",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:36",
+      "conversation_id": "volume-4",
+      "conversation_label": "Grupo Volume 4",
+      "occurred_at": "2026-08-27T15:02:55.000Z",
+      "captured_at": "2026-08-27T15:02:56.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 36: combinado.",
+      "sender_ref": "actor-1",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-4"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "676c6092-8d54-4a46-8e5b-5eb91a7c3cff",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:37",
+      "conversation_id": "volume-5",
+      "conversation_label": "Grupo Volume 5",
+      "occurred_at": "2026-08-27T15:03:00.000Z",
+      "captured_at": "2026-08-27T15:03:01.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 37: combinado.",
+      "sender_ref": "actor-2",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-5"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "7624ebe6-5f53-4725-8744-74bb27e98d94",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:38",
+      "conversation_id": "volume-6",
+      "conversation_label": "Grupo Volume 6",
+      "occurred_at": "2026-08-27T15:03:05.000Z",
+      "captured_at": "2026-08-27T15:03:06.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 38: combinado.",
+      "sender_ref": "actor-3",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-6"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "c107cc7e-b470-4f3a-8b15-3b2d1667ed03",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:39",
+      "conversation_id": "volume-7",
+      "conversation_label": "Grupo Volume 7",
+      "occurred_at": "2026-08-27T15:03:10.000Z",
+      "captured_at": "2026-08-27T15:03:11.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 39: combinado.",
+      "sender_ref": "actor-4",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-7"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "bbe25f5f-e013-4dcd-8550-908de7700cb3",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:40",
+      "conversation_id": "volume-8",
+      "conversation_label": "Grupo Volume 8",
+      "occurred_at": "2026-08-27T15:03:15.000Z",
+      "captured_at": "2026-08-27T15:03:16.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 40: combinado.",
+      "sender_ref": "actor-5",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-8"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "b4618af7-3d2c-4792-8638-89014a1e3a27",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:41",
+      "conversation_id": "volume-1",
+      "conversation_label": "Grupo Volume 1",
+      "occurred_at": "2026-08-27T15:03:20.000Z",
+      "captured_at": "2026-08-27T15:03:21.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 41: combinado.",
+      "sender_ref": "actor-6",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-1"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "1dad94b1-6258-4325-8595-bad816d470e9",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:42",
+      "conversation_id": "volume-2",
+      "conversation_label": "Grupo Volume 2",
+      "occurred_at": "2026-08-27T15:03:25.000Z",
+      "captured_at": "2026-08-27T15:03:26.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 42: combinado.",
+      "sender_ref": "actor-7",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-2"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "50db1b5e-8833-44a3-8b7f-90a4a67e86b4",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:43",
+      "conversation_id": "volume-3",
+      "conversation_label": "Grupo Volume 3",
+      "occurred_at": "2026-08-27T15:03:30.000Z",
+      "captured_at": "2026-08-27T15:03:31.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 43: combinado.",
+      "sender_ref": "actor-8",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-3"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "30d69ab5-fa25-4553-887d-eaa93f89cc16",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:44",
+      "conversation_id": "volume-4",
+      "conversation_label": "Grupo Volume 4",
+      "occurred_at": "2026-08-27T15:03:35.000Z",
+      "captured_at": "2026-08-27T15:03:36.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 44: combinado.",
+      "sender_ref": "actor-9",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-4"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "84ed3ec1-6f8d-48e6-8884-395041e71aa6",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:45",
+      "conversation_id": "volume-5",
+      "conversation_label": "Grupo Volume 5",
+      "occurred_at": "2026-08-27T15:03:40.000Z",
+      "captured_at": "2026-08-27T15:03:41.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 45: combinado.",
+      "sender_ref": "actor-1",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-5"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "2cdc1b74-5dc9-4235-8905-0f495b3ff079",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:46",
+      "conversation_id": "volume-6",
+      "conversation_label": "Grupo Volume 6",
+      "occurred_at": "2026-08-27T15:03:45.000Z",
+      "captured_at": "2026-08-27T15:03:46.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 46: combinado.",
+      "sender_ref": "actor-2",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-6"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "34355a79-87a3-464e-89ae-e263db28b9ce",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:47",
+      "conversation_id": "volume-7",
+      "conversation_label": "Grupo Volume 7",
+      "occurred_at": "2026-08-27T15:03:50.000Z",
+      "captured_at": "2026-08-27T15:03:51.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 47: combinado.",
+      "sender_ref": "actor-3",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-7"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "3ee120be-d75b-4af1-8619-e268d68ff6b2",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:48",
+      "conversation_id": "volume-8",
+      "conversation_label": "Grupo Volume 8",
+      "occurred_at": "2026-08-27T15:03:55.000Z",
+      "captured_at": "2026-08-27T15:03:56.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 48: combinado.",
+      "sender_ref": "actor-4",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-8"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "4f5935eb-c9b0-4e57-8876-db4ab1de9d76",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:49",
+      "conversation_id": "volume-1",
+      "conversation_label": "Grupo Volume 1",
+      "occurred_at": "2026-08-27T15:04:00.000Z",
+      "captured_at": "2026-08-27T15:04:01.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 49: combinado.",
+      "sender_ref": "actor-5",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-1"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "b1635e39-cf40-4d78-8762-b21bd47d23ae",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:50",
+      "conversation_id": "volume-2",
+      "conversation_label": "Grupo Volume 2",
+      "occurred_at": "2026-08-27T15:04:05.000Z",
+      "captured_at": "2026-08-27T15:04:06.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 50: combinado.",
+      "sender_ref": "actor-6",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-2"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "b0d718da-ee18-4ace-80bd-1d58f527c304",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:51",
+      "conversation_id": "volume-3",
+      "conversation_label": "Grupo Volume 3",
+      "occurred_at": "2026-08-27T15:04:10.000Z",
+      "captured_at": "2026-08-27T15:04:11.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 51: combinado.",
+      "sender_ref": "actor-7",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-3"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "40a47136-21ac-4923-8189-e1e714811b05",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:52",
+      "conversation_id": "volume-4",
+      "conversation_label": "Grupo Volume 4",
+      "occurred_at": "2026-08-27T15:04:15.000Z",
+      "captured_at": "2026-08-27T15:04:16.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 52: combinado.",
+      "sender_ref": "actor-8",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-4"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "d39516b2-6ce1-4104-86f5-7914ba47e798",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:53",
+      "conversation_id": "volume-5",
+      "conversation_label": "Grupo Volume 5",
+      "occurred_at": "2026-08-27T15:04:20.000Z",
+      "captured_at": "2026-08-27T15:04:21.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 53: combinado.",
+      "sender_ref": "actor-9",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-5"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "b623dd0e-27cb-4fd4-8ef2-a54d7534b558",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:54",
+      "conversation_id": "volume-6",
+      "conversation_label": "Grupo Volume 6",
+      "occurred_at": "2026-08-27T15:04:25.000Z",
+      "captured_at": "2026-08-27T15:04:26.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 54: combinado.",
+      "sender_ref": "actor-1",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-6"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "70c75ab0-f040-4e41-82bf-2b126c5f284e",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:55",
+      "conversation_id": "volume-7",
+      "conversation_label": "Grupo Volume 7",
+      "occurred_at": "2026-08-27T15:04:30.000Z",
+      "captured_at": "2026-08-27T15:04:31.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 55: combinado.",
+      "sender_ref": "actor-2",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-7"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "6f9a31ee-5968-4a53-8d48-feb8d756f500",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:56",
+      "conversation_id": "volume-8",
+      "conversation_label": "Grupo Volume 8",
+      "occurred_at": "2026-08-27T15:04:35.000Z",
+      "captured_at": "2026-08-27T15:04:36.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 56: combinado.",
+      "sender_ref": "actor-3",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-8"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "371fc893-ca96-49d6-8e66-4289969db4d5",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:57",
+      "conversation_id": "volume-1",
+      "conversation_label": "Grupo Volume 1",
+      "occurred_at": "2026-08-27T15:04:40.000Z",
+      "captured_at": "2026-08-27T15:04:41.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 57: combinado.",
+      "sender_ref": "actor-4",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-1"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "85f8d1be-89bc-407b-82a1-b032b058df6a",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:58",
+      "conversation_id": "volume-2",
+      "conversation_label": "Grupo Volume 2",
+      "occurred_at": "2026-08-27T15:04:45.000Z",
+      "captured_at": "2026-08-27T15:04:46.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 58: combinado.",
+      "sender_ref": "actor-5",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-2"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "69c7f941-6dbb-4f58-8da2-76750eeb05db",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:59",
+      "conversation_id": "volume-3",
+      "conversation_label": "Grupo Volume 3",
+      "occurred_at": "2026-08-27T15:04:50.000Z",
+      "captured_at": "2026-08-27T15:04:51.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 59: combinado.",
+      "sender_ref": "actor-6",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-3"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "dda8457d-8f90-4f13-843d-7f750d1cbeef",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:60",
+      "conversation_id": "volume-4",
+      "conversation_label": "Grupo Volume 4",
+      "occurred_at": "2026-08-27T15:04:55.000Z",
+      "captured_at": "2026-08-27T15:04:56.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 60: combinado.",
+      "sender_ref": "actor-7",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-4"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "90bb5e5e-1e36-4997-82b9-2b9d21fdf0f4",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:61",
+      "conversation_id": "volume-5",
+      "conversation_label": "Grupo Volume 5",
+      "occurred_at": "2026-08-27T15:05:00.000Z",
+      "captured_at": "2026-08-27T15:05:01.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 61: combinado.",
+      "sender_ref": "actor-8",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-5"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "3ee7b7be-22ef-4307-8c60-fda42770217d",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:62",
+      "conversation_id": "volume-6",
+      "conversation_label": "Grupo Volume 6",
+      "occurred_at": "2026-08-27T15:05:05.000Z",
+      "captured_at": "2026-08-27T15:05:06.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 62: combinado.",
+      "sender_ref": "actor-9",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-6"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "97a42ddb-03e1-472c-87e9-97557ce2291c",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:63",
+      "conversation_id": "volume-7",
+      "conversation_label": "Grupo Volume 7",
+      "occurred_at": "2026-08-27T15:05:10.000Z",
+      "captured_at": "2026-08-27T15:05:11.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 63: combinado.",
+      "sender_ref": "actor-1",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-7"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "bb485b45-caa7-4515-8404-3293b0f7aa76",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:64",
+      "conversation_id": "volume-8",
+      "conversation_label": "Grupo Volume 8",
+      "occurred_at": "2026-08-27T15:05:15.000Z",
+      "captured_at": "2026-08-27T15:05:16.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 64: combinado.",
+      "sender_ref": "actor-2",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-8"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "294769ad-d26f-4232-8e1c-59021cf8d631",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:65",
+      "conversation_id": "volume-1",
+      "conversation_label": "Grupo Volume 1",
+      "occurred_at": "2026-08-27T15:05:20.000Z",
+      "captured_at": "2026-08-27T15:05:21.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 65: combinado.",
+      "sender_ref": "actor-3",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-1"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "7ffadc2e-e98e-4a6a-8f75-0b0775ea595c",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:66",
+      "conversation_id": "volume-2",
+      "conversation_label": "Grupo Volume 2",
+      "occurred_at": "2026-08-27T15:05:25.000Z",
+      "captured_at": "2026-08-27T15:05:26.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 66: combinado.",
+      "sender_ref": "actor-4",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-2"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "f5edf707-ce29-4f76-868a-a88b89600a8e",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:67",
+      "conversation_id": "volume-3",
+      "conversation_label": "Grupo Volume 3",
+      "occurred_at": "2026-08-27T15:05:30.000Z",
+      "captured_at": "2026-08-27T15:05:31.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 67: combinado.",
+      "sender_ref": "actor-5",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-3"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "9e8bf32b-8083-4c9e-8126-b19e3f91b8fa",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:68",
+      "conversation_id": "volume-4",
+      "conversation_label": "Grupo Volume 4",
+      "occurred_at": "2026-08-27T15:05:35.000Z",
+      "captured_at": "2026-08-27T15:05:36.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 68: combinado.",
+      "sender_ref": "actor-6",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-4"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "2e9ebb9e-ff98-41b5-8597-1864e110d3b4",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:69",
+      "conversation_id": "volume-5",
+      "conversation_label": "Grupo Volume 5",
+      "occurred_at": "2026-08-27T15:05:40.000Z",
+      "captured_at": "2026-08-27T15:05:41.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 69: combinado.",
+      "sender_ref": "actor-7",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-5"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "c6c79c9f-b115-42c6-8e79-8ca652387177",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:70",
+      "conversation_id": "volume-6",
+      "conversation_label": "Grupo Volume 6",
+      "occurred_at": "2026-08-27T15:05:45.000Z",
+      "captured_at": "2026-08-27T15:05:46.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 70: combinado.",
+      "sender_ref": "actor-8",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-6"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "8962d39b-3683-4072-8347-b337e6646d7b",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:71",
+      "conversation_id": "volume-7",
+      "conversation_label": "Grupo Volume 7",
+      "occurred_at": "2026-08-27T15:05:50.000Z",
+      "captured_at": "2026-08-27T15:05:51.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 71: combinado.",
+      "sender_ref": "actor-9",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-7"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "74bfdd21-254a-4eb0-8903-923102162fc7",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:72",
+      "conversation_id": "volume-8",
+      "conversation_label": "Grupo Volume 8",
+      "occurred_at": "2026-08-27T15:05:55.000Z",
+      "captured_at": "2026-08-27T15:05:56.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 72: combinado.",
+      "sender_ref": "actor-1",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-8"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "8de1a074-68b9-443c-8d4e-a115aaf017dd",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:73",
+      "conversation_id": "volume-1",
+      "conversation_label": "Grupo Volume 1",
+      "occurred_at": "2026-08-27T15:06:00.000Z",
+      "captured_at": "2026-08-27T15:06:01.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 73: combinado.",
+      "sender_ref": "actor-2",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-1"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "5dd62150-7db3-4205-8d49-53e5a2dc2d51",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:74",
+      "conversation_id": "volume-2",
+      "conversation_label": "Grupo Volume 2",
+      "occurred_at": "2026-08-27T15:06:05.000Z",
+      "captured_at": "2026-08-27T15:06:06.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 74: combinado.",
+      "sender_ref": "actor-3",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-2"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "66ba9157-6e0b-414a-8a83-b2bd012693dc",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:75",
+      "conversation_id": "volume-3",
+      "conversation_label": "Grupo Volume 3",
+      "occurred_at": "2026-08-27T15:06:10.000Z",
+      "captured_at": "2026-08-27T15:06:11.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 75: combinado.",
+      "sender_ref": "actor-4",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-3"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "da537051-5810-492c-83b9-f83b12113961",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:76",
+      "conversation_id": "volume-4",
+      "conversation_label": "Grupo Volume 4",
+      "occurred_at": "2026-08-27T15:06:15.000Z",
+      "captured_at": "2026-08-27T15:06:16.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 76: combinado.",
+      "sender_ref": "actor-5",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-4"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "59b35bb6-8384-4d55-8067-443eee2346e1",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:77",
+      "conversation_id": "volume-5",
+      "conversation_label": "Grupo Volume 5",
+      "occurred_at": "2026-08-27T15:06:20.000Z",
+      "captured_at": "2026-08-27T15:06:21.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 77: combinado.",
+      "sender_ref": "actor-6",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-5"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "1507c52a-a6bf-46bf-84a8-8bdcb338cdca",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:78",
+      "conversation_id": "volume-6",
+      "conversation_label": "Grupo Volume 6",
+      "occurred_at": "2026-08-27T15:06:25.000Z",
+      "captured_at": "2026-08-27T15:06:26.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 78: combinado.",
+      "sender_ref": "actor-7",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-6"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "e674543f-d3a5-443a-80fb-3e067e37210a",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:79",
+      "conversation_id": "volume-7",
+      "conversation_label": "Grupo Volume 7",
+      "occurred_at": "2026-08-27T15:06:30.000Z",
+      "captured_at": "2026-08-27T15:06:31.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 79: combinado.",
+      "sender_ref": "actor-8",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-7"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "01e43caf-8063-44c8-8725-e84b34a00e6e",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:80",
+      "conversation_id": "volume-8",
+      "conversation_label": "Grupo Volume 8",
+      "occurred_at": "2026-08-27T15:06:35.000Z",
+      "captured_at": "2026-08-27T15:06:36.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 80: combinado.",
+      "sender_ref": "actor-9",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-8"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "fdc43cd2-1bca-4aae-8089-3be7f64813c1",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:81",
+      "conversation_id": "volume-1",
+      "conversation_label": "Grupo Volume 1",
+      "occurred_at": "2026-08-27T15:06:40.000Z",
+      "captured_at": "2026-08-27T15:06:41.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 81: combinado.",
+      "sender_ref": "actor-1",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-1"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "5d6b25da-f923-4b15-8087-81be606fb584",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:82",
+      "conversation_id": "volume-2",
+      "conversation_label": "Grupo Volume 2",
+      "occurred_at": "2026-08-27T15:06:45.000Z",
+      "captured_at": "2026-08-27T15:06:46.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 82: combinado.",
+      "sender_ref": "actor-2",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-2"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "4e9d9b81-27cf-4965-8ef3-a0b4b07c904f",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:83",
+      "conversation_id": "volume-3",
+      "conversation_label": "Grupo Volume 3",
+      "occurred_at": "2026-08-27T15:06:50.000Z",
+      "captured_at": "2026-08-27T15:06:51.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 83: combinado.",
+      "sender_ref": "actor-3",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-3"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "f1bfc214-a1c2-4b1b-8f5f-c9536b508900",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:84",
+      "conversation_id": "volume-4",
+      "conversation_label": "Grupo Volume 4",
+      "occurred_at": "2026-08-27T15:06:55.000Z",
+      "captured_at": "2026-08-27T15:06:56.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 84: combinado.",
+      "sender_ref": "actor-4",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-4"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "a2f2293d-505a-411f-80b2-273b7038038f",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:85",
+      "conversation_id": "volume-5",
+      "conversation_label": "Grupo Volume 5",
+      "occurred_at": "2026-08-27T15:07:00.000Z",
+      "captured_at": "2026-08-27T15:07:01.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 85: combinado.",
+      "sender_ref": "actor-5",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-5"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "19c5e639-e4f8-4781-8dab-7e14bad51810",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:86",
+      "conversation_id": "volume-6",
+      "conversation_label": "Grupo Volume 6",
+      "occurred_at": "2026-08-27T15:07:05.000Z",
+      "captured_at": "2026-08-27T15:07:06.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 86: combinado.",
+      "sender_ref": "actor-6",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-6"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "fd028541-bffb-420f-84f0-ce4a6d001476",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:87",
+      "conversation_id": "volume-7",
+      "conversation_label": "Grupo Volume 7",
+      "occurred_at": "2026-08-27T15:07:10.000Z",
+      "captured_at": "2026-08-27T15:07:11.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 87: combinado.",
+      "sender_ref": "actor-7",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-7"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "37f50599-0f16-4471-89c4-b06ef1f90475",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:88",
+      "conversation_id": "volume-8",
+      "conversation_label": "Grupo Volume 8",
+      "occurred_at": "2026-08-27T15:07:15.000Z",
+      "captured_at": "2026-08-27T15:07:16.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 88: combinado.",
+      "sender_ref": "actor-8",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-8"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "779363a4-6e3b-4079-8d1b-2b23f56d0715",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:89",
+      "conversation_id": "volume-1",
+      "conversation_label": "Grupo Volume 1",
+      "occurred_at": "2026-08-27T15:07:20.000Z",
+      "captured_at": "2026-08-27T15:07:21.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 89: combinado.",
+      "sender_ref": "actor-9",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-1"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "deffa97c-b8c2-4803-8010-62fb1a47f3ae",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:90",
+      "conversation_id": "volume-2",
+      "conversation_label": "Grupo Volume 2",
+      "occurred_at": "2026-08-27T15:07:25.000Z",
+      "captured_at": "2026-08-27T15:07:26.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 90: combinado.",
+      "sender_ref": "actor-1",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-2"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "fb185424-891e-40a9-84d2-c061c2246765",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:91",
+      "conversation_id": "volume-3",
+      "conversation_label": "Grupo Volume 3",
+      "occurred_at": "2026-08-27T15:07:30.000Z",
+      "captured_at": "2026-08-27T15:07:31.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 91: combinado.",
+      "sender_ref": "actor-2",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-3"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "1379d602-389f-4cce-87c0-353b3f2b52e9",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:92",
+      "conversation_id": "volume-4",
+      "conversation_label": "Grupo Volume 4",
+      "occurred_at": "2026-08-27T15:07:35.000Z",
+      "captured_at": "2026-08-27T15:07:36.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 92: combinado.",
+      "sender_ref": "actor-3",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-4"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "cbc229e5-3b3c-4e59-8cf5-e72a84f1c5d8",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:93",
+      "conversation_id": "volume-5",
+      "conversation_label": "Grupo Volume 5",
+      "occurred_at": "2026-08-27T15:07:40.000Z",
+      "captured_at": "2026-08-27T15:07:41.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 93: combinado.",
+      "sender_ref": "actor-4",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-5"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "8d3bd564-f9b2-46b8-89ab-6e15a0e68e1c",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:94",
+      "conversation_id": "volume-6",
+      "conversation_label": "Grupo Volume 6",
+      "occurred_at": "2026-08-27T15:07:45.000Z",
+      "captured_at": "2026-08-27T15:07:46.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 94: combinado.",
+      "sender_ref": "actor-5",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-6"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "d3edace0-b184-4f9e-8b11-9ca6178ad5ac",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:95",
+      "conversation_id": "volume-7",
+      "conversation_label": "Grupo Volume 7",
+      "occurred_at": "2026-08-27T15:07:50.000Z",
+      "captured_at": "2026-08-27T15:07:51.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 95: combinado.",
+      "sender_ref": "actor-6",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-7"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "b4ca953b-9ed6-4ce7-8674-9f64b42751ff",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:96",
+      "conversation_id": "volume-8",
+      "conversation_label": "Grupo Volume 8",
+      "occurred_at": "2026-08-27T15:07:55.000Z",
+      "captured_at": "2026-08-27T15:07:56.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 96: combinado.",
+      "sender_ref": "actor-7",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-8"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "0c132719-dc15-4800-870e-dece5e43f455",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:97",
+      "conversation_id": "volume-1",
+      "conversation_label": "Grupo Volume 1",
+      "occurred_at": "2026-08-27T15:08:00.000Z",
+      "captured_at": "2026-08-27T15:08:01.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 97: combinado.",
+      "sender_ref": "actor-8",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-1"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "526bb287-4362-4b24-8a42-2a201ef78e4e",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:98",
+      "conversation_id": "volume-2",
+      "conversation_label": "Grupo Volume 2",
+      "occurred_at": "2026-08-27T15:08:05.000Z",
+      "captured_at": "2026-08-27T15:08:06.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 98: combinado.",
+      "sender_ref": "actor-9",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-2"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "a0591ee8-c459-4df8-8dad-d23dec09506c",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:99",
+      "conversation_id": "volume-3",
+      "conversation_label": "Grupo Volume 3",
+      "occurred_at": "2026-08-27T15:08:10.000Z",
+      "captured_at": "2026-08-27T15:08:11.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 99: combinado.",
+      "sender_ref": "actor-1",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-3"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "dad957fe-c079-488c-8e13-8592c29053b1",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:100",
+      "conversation_id": "volume-4",
+      "conversation_label": "Grupo Volume 4",
+      "occurred_at": "2026-08-27T15:08:15.000Z",
+      "captured_at": "2026-08-27T15:08:16.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 100: combinado.",
+      "sender_ref": "actor-2",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-4"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "652b9706-7a14-44bd-8b26-8c0264b52cc7",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:101",
+      "conversation_id": "volume-5",
+      "conversation_label": "Grupo Volume 5",
+      "occurred_at": "2026-08-27T15:08:20.000Z",
+      "captured_at": "2026-08-27T15:08:21.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 101: combinado.",
+      "sender_ref": "actor-3",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-5"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "927dd8b2-b6fa-4769-8427-58500c41bccc",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:102",
+      "conversation_id": "volume-6",
+      "conversation_label": "Grupo Volume 6",
+      "occurred_at": "2026-08-27T15:08:25.000Z",
+      "captured_at": "2026-08-27T15:08:26.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 102: combinado.",
+      "sender_ref": "actor-4",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-6"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "11e6339c-43cc-4c65-8cc6-893f1ae6d537",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:103",
+      "conversation_id": "volume-7",
+      "conversation_label": "Grupo Volume 7",
+      "occurred_at": "2026-08-27T15:08:30.000Z",
+      "captured_at": "2026-08-27T15:08:31.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 103: combinado.",
+      "sender_ref": "actor-5",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-7"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "a7d1d62a-be9b-419c-8454-05338647dab5",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:104",
+      "conversation_id": "volume-8",
+      "conversation_label": "Grupo Volume 8",
+      "occurred_at": "2026-08-27T15:08:35.000Z",
+      "captured_at": "2026-08-27T15:08:36.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 104: combinado.",
+      "sender_ref": "actor-6",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-8"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "a3d86ae2-4cbb-408f-884d-722345320fda",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:105",
+      "conversation_id": "volume-1",
+      "conversation_label": "Grupo Volume 1",
+      "occurred_at": "2026-08-27T15:08:40.000Z",
+      "captured_at": "2026-08-27T15:08:41.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 105: combinado.",
+      "sender_ref": "actor-7",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-1"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "73455eaa-0bad-4be9-83e9-0639b367f3a5",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:106",
+      "conversation_id": "volume-2",
+      "conversation_label": "Grupo Volume 2",
+      "occurred_at": "2026-08-27T15:08:45.000Z",
+      "captured_at": "2026-08-27T15:08:46.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 106: combinado.",
+      "sender_ref": "actor-8",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-2"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "cbc05c20-dca3-404d-8020-c252eafb8d9c",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:107",
+      "conversation_id": "volume-3",
+      "conversation_label": "Grupo Volume 3",
+      "occurred_at": "2026-08-27T15:08:50.000Z",
+      "captured_at": "2026-08-27T15:08:51.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 107: combinado.",
+      "sender_ref": "actor-9",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-3"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "7fb38cd1-db65-4882-8df3-2c3f613744f9",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:108",
+      "conversation_id": "volume-4",
+      "conversation_label": "Grupo Volume 4",
+      "occurred_at": "2026-08-27T15:08:55.000Z",
+      "captured_at": "2026-08-27T15:08:56.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 108: combinado.",
+      "sender_ref": "actor-1",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-4"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "cc73786a-36e0-4042-8a22-b81d734d6cda",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:109",
+      "conversation_id": "volume-5",
+      "conversation_label": "Grupo Volume 5",
+      "occurred_at": "2026-08-27T15:09:00.000Z",
+      "captured_at": "2026-08-27T15:09:01.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 109: combinado.",
+      "sender_ref": "actor-2",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-5"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "1da3a4db-2958-4604-804d-469fe245177e",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:110",
+      "conversation_id": "volume-6",
+      "conversation_label": "Grupo Volume 6",
+      "occurred_at": "2026-08-27T15:09:05.000Z",
+      "captured_at": "2026-08-27T15:09:06.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 110: combinado.",
+      "sender_ref": "actor-3",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-6"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "833fe63b-7f96-4868-854c-7d1327a901cf",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:111",
+      "conversation_id": "volume-7",
+      "conversation_label": "Grupo Volume 7",
+      "occurred_at": "2026-08-27T15:09:10.000Z",
+      "captured_at": "2026-08-27T15:09:11.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 111: combinado.",
+      "sender_ref": "actor-4",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-7"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "1cf22158-4908-4a1b-890f-f9f38ec6fe95",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:112",
+      "conversation_id": "volume-8",
+      "conversation_label": "Grupo Volume 8",
+      "occurred_at": "2026-08-27T15:09:15.000Z",
+      "captured_at": "2026-08-27T15:09:16.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 112: combinado.",
+      "sender_ref": "actor-5",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-8"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "0200fe79-4445-4ede-8c73-f585e59ce337",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:113",
+      "conversation_id": "volume-1",
+      "conversation_label": "Grupo Volume 1",
+      "occurred_at": "2026-08-27T15:09:20.000Z",
+      "captured_at": "2026-08-27T15:09:21.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 113: combinado.",
+      "sender_ref": "actor-6",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-1"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "e5071fd7-3191-43ab-88a8-a36486b74ff5",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:114",
+      "conversation_id": "volume-2",
+      "conversation_label": "Grupo Volume 2",
+      "occurred_at": "2026-08-27T15:09:25.000Z",
+      "captured_at": "2026-08-27T15:09:26.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 114: combinado.",
+      "sender_ref": "actor-7",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-2"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "4413f306-f8de-4672-800a-0e5ca23ff9fd",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:115",
+      "conversation_id": "volume-3",
+      "conversation_label": "Grupo Volume 3",
+      "occurred_at": "2026-08-27T15:09:30.000Z",
+      "captured_at": "2026-08-27T15:09:31.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 115: combinado.",
+      "sender_ref": "actor-8",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-3"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "6b136261-63b9-482d-81e0-39336e9906cf",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:116",
+      "conversation_id": "volume-4",
+      "conversation_label": "Grupo Volume 4",
+      "occurred_at": "2026-08-27T15:09:35.000Z",
+      "captured_at": "2026-08-27T15:09:36.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 116: combinado.",
+      "sender_ref": "actor-9",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-4"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "e47ad3db-c728-47d1-81de-e31248cc0c72",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:117",
+      "conversation_id": "volume-5",
+      "conversation_label": "Grupo Volume 5",
+      "occurred_at": "2026-08-27T15:09:40.000Z",
+      "captured_at": "2026-08-27T15:09:41.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 117: combinado.",
+      "sender_ref": "actor-1",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-5"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "52acf051-93d7-4d20-8ae5-84836bc9541e",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:118",
+      "conversation_id": "volume-6",
+      "conversation_label": "Grupo Volume 6",
+      "occurred_at": "2026-08-27T15:09:45.000Z",
+      "captured_at": "2026-08-27T15:09:46.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 118: combinado.",
+      "sender_ref": "actor-2",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-6"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "f52a8a2c-1fd2-4072-84fe-777a6a715014",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:119",
+      "conversation_id": "volume-7",
+      "conversation_label": "Grupo Volume 7",
+      "occurred_at": "2026-08-27T15:09:50.000Z",
+      "captured_at": "2026-08-27T15:09:51.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 119: combinado.",
+      "sender_ref": "actor-3",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-7"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "2cd4bab3-1188-4436-81aa-e6342e6d6b8f",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "high-volume:120",
+      "conversation_id": "volume-8",
+      "conversation_label": "Grupo Volume 8",
+      "occurred_at": "2026-08-27T15:09:55.000Z",
+      "captured_at": "2026-08-27T15:09:56.000Z",
+      "message_type": "text",
+      "text": "Registro cotidiano 120: combinado.",
+      "sender_ref": "actor-4",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "high-volume",
+        "territory": "volume-8"
+      }
+    }
+  ],
+  "heartbeat": {
+    "schema_version": "0.1.0",
+    "heartbeat_id": "3db066b6-8d72-42d0-8e92-8193dd610034",
+    "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+    "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+    "source": "fake",
+    "observed_at": "2026-08-27T15:10:57.000Z",
+    "adapter_version": "0.1.0",
+    "parser_version": "0.1.0",
+    "status": "healthy",
+    "outbox_pending": 0,
+    "oldest_pending_at": null,
+    "last_event_captured_at": "2026-08-27T15:09:56.000Z",
+    "last_upload_succeeded_at": "2026-08-27T15:10:56.000Z",
+    "counters": {
+      "captured": 120,
+      "uploaded": 120
+    }
+  },
+  "ground_truth": {
+    "metrics": {
+      "event_count": 120,
+      "conversation_count": 8
+    },
+    "facts": [
+      {
+        "category": "material_logistica",
+        "conversation_count": 8,
+        "minimum_mentions": 12
+      },
+      {
+        "category": "agenda_mobilizacao",
+        "conversation_count": 8,
+        "minimum_mentions": 8
+      }
+    ],
+    "signals": [
+      {
+        "kind": "cross_group_recurrence",
+        "category": "material_logistica",
+        "severity": "high"
+      },
+      {
+        "kind": "cross_group_recurrence",
+        "category": "agenda_mobilizacao",
+        "severity": "high"
+      }
+    ],
+    "alerts": [],
+    "health": {
+      "status": "healthy"
+    }
+  }
+}

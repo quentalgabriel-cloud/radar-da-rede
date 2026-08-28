@@ -1,0 +1,12 @@
+{
+  "name": "@radar-rede/supabase-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/check-supabase.mjs",
+    "check": "node scripts/check-supabase.mjs",
+    "sync:edge": "node scripts/sync-edge-contracts.mjs && node scripts/sync-edge-intelligence.mjs",
+    "test": "node --test test/*.test.js"
+  }
+}

@@ -1,0 +1,66 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .: {}
+
+  apps/android-sensor: {}
+
+  apps/core-simulator:
+    dependencies:
+      '@radar-rede/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+
+  apps/fake-sensor:
+    dependencies:
+      '@radar-rede/testkit':
+        specifier: workspace:*
+        version: link:../../packages/testkit
+
+  apps/radar-web:
+    dependencies:
+      '@radar-rede/radar-view-model':
+        specifier: workspace:*
+        version: link:../../packages/radar-view-model
+      '@radar-rede/testkit':
+        specifier: workspace:*
+        version: link:../../packages/testkit
+
+  packages/contracts: {}
+
+  packages/core:
+    dependencies:
+      '@radar-rede/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+
+  packages/intelligence:
+    dependencies:
+      '@radar-rede/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@radar-rede/testkit':
+        specifier: workspace:*
+        version: link:../testkit
+
+  packages/radar-view-model:
+    dependencies:
+      '@radar-rede/intelligence':
+        specifier: workspace:*
+        version: link:../intelligence
+      '@radar-rede/testkit':
+        specifier: workspace:*
+        version: link:../testkit
+
+  packages/supabase-core: {}
+
+  packages/testkit:
+    dependencies:
+      '@radar-rede/contracts':
+        specifier: workspace:*
+        version: link:../contracts

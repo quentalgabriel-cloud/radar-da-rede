@@ -1,0 +1,15 @@
+{
+  "name": "@radar-rede/core-simulator",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node --check src/server.js",
+    "check": "node --check src/server.js",
+    "test": "node --test test/*.test.js",
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "@radar-rede/core": "workspace:*"
+  }
+}

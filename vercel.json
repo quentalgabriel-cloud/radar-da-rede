@@ -1,0 +1,7 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "pnpm --filter @radar-rede/radar-web build",
+  "outputDirectory": "apps/radar-web/dist",
+  "cleanUrls": true,
+  "trailingSlash": false
+}

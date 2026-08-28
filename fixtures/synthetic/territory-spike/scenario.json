@@ -1,0 +1,154 @@
+{
+  "schema_version": "0.1.0",
+  "name": "territory-spike",
+  "description": "Pico de demandas concentradas em um território.",
+  "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+  "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+  "batch_id": "5ac0f6b4-36e6-484b-8b27-a4b409150219",
+  "sent_at": "2026-08-27T12:05:01.000Z",
+  "events": [
+    {
+      "schema_version": "0.1.0",
+      "event_id": "bd50845f-d3c1-4c2c-8930-f5e535a39f79",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "territory-spike:1",
+      "conversation_id": "equipe-peixinhos",
+      "conversation_label": "Equipe Peixinhos",
+      "occurred_at": "2026-08-27T12:00:00.000Z",
+      "captured_at": "2026-08-27T12:00:01.000Z",
+      "message_type": "text",
+      "text": "O bairro de Peixinhos pediu nova atividade.",
+      "sender_ref": "actor-2",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "territory-spike",
+        "territory": "peixinhos"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "4c49b0e9-58b1-4168-8946-a61396f90673",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "territory-spike:2",
+      "conversation_id": "equipe-peixinhos",
+      "conversation_label": "Equipe Peixinhos",
+      "occurred_at": "2026-08-27T12:01:00.000Z",
+      "captured_at": "2026-08-27T12:01:01.000Z",
+      "message_type": "text",
+      "text": "Chegou outra demanda do território de Peixinhos.",
+      "sender_ref": "actor-3",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "territory-spike",
+        "territory": "peixinhos"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "7bc41c81-140e-4ada-8dbe-4875ab056ef0",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "territory-spike:3",
+      "conversation_id": "equipe-peixinhos",
+      "conversation_label": "Equipe Peixinhos",
+      "occurred_at": "2026-08-27T12:02:00.000Z",
+      "captured_at": "2026-08-27T12:02:01.000Z",
+      "message_type": "text",
+      "text": "A comunidade solicitou presença na rua principal.",
+      "sender_ref": "actor-4",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "territory-spike",
+        "territory": "peixinhos"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "3e1723a5-99d8-4d44-8d5f-23b006f59d18",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "territory-spike:4",
+      "conversation_id": "equipe-peixinhos",
+      "conversation_label": "Equipe Peixinhos",
+      "occurred_at": "2026-08-27T12:03:00.000Z",
+      "captured_at": "2026-08-27T12:03:01.000Z",
+      "message_type": "text",
+      "text": "Mais uma demanda territorial no bairro de Peixinhos.",
+      "sender_ref": "actor-5",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "territory-spike",
+        "territory": "peixinhos"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "01942c7a-f253-4938-80ba-c999aac4c5bf",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "territory-spike:5",
+      "conversation_id": "equipe-peixinhos",
+      "conversation_label": "Equipe Peixinhos",
+      "occurred_at": "2026-08-27T12:04:00.000Z",
+      "captured_at": "2026-08-27T12:04:01.000Z",
+      "message_type": "text",
+      "text": "A região voltou a pedir apoio hoje.",
+      "sender_ref": "actor-6",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "territory-spike",
+        "territory": "peixinhos"
+      }
+    }
+  ],
+  "heartbeat": {
+    "schema_version": "0.1.0",
+    "heartbeat_id": "0a321c6a-8bbf-4848-8995-44d91ebb7435",
+    "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+    "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+    "source": "fake",
+    "observed_at": "2026-08-27T12:05:02.000Z",
+    "adapter_version": "0.1.0",
+    "parser_version": "0.1.0",
+    "status": "healthy",
+    "outbox_pending": 0,
+    "oldest_pending_at": null,
+    "last_event_captured_at": "2026-08-27T12:04:01.000Z",
+    "last_upload_succeeded_at": "2026-08-27T12:05:01.000Z",
+    "counters": {
+      "captured": 5,
+      "uploaded": 5
+    }
+  },
+  "ground_truth": {
+    "metrics": {
+      "event_count": 5,
+      "conversation_count": 1
+    },
+    "facts": [
+      {
+        "category": "demanda_territorial",
+        "conversation_count": 1,
+        "minimum_mentions": 5
+      }
+    ],
+    "signals": [
+      {
+        "kind": "territory_spike",
+        "category": "demanda_territorial",
+        "severity": "high"
+      }
+    ],
+    "alerts": [],
+    "health": {
+      "status": "healthy"
+    }
+  }
+}

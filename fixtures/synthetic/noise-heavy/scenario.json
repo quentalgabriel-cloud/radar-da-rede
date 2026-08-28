@@ -1,0 +1,548 @@
+{
+  "schema_version": "0.1.0",
+  "name": "noise-heavy",
+  "description": "Muito ruído cotidiano com um movimento de agenda não crítico.",
+  "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+  "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+  "batch_id": "b8015d98-6441-4822-88d2-32178ec0906a",
+  "sent_at": "2026-08-27T14:07:01.000Z",
+  "events": [
+    {
+      "schema_version": "0.1.0",
+      "event_id": "d8f22fc3-b64b-4357-897b-a6d59c56b9b4",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "noise-heavy:1",
+      "conversation_id": "rotina-1",
+      "conversation_label": "Rotina 1",
+      "occurred_at": "2026-08-27T14:00:00.000Z",
+      "captured_at": "2026-08-27T14:00:01.000Z",
+      "message_type": "text",
+      "text": "Mensagem de rotina 1: recebido e combinado.",
+      "sender_ref": "actor-2",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "noise-heavy",
+        "territory": "zona-1"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "538fadea-7008-41a6-87ca-aa0a1b34cbdb",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "noise-heavy:2",
+      "conversation_id": "rotina-2",
+      "conversation_label": "Rotina 2",
+      "occurred_at": "2026-08-27T14:00:15.000Z",
+      "captured_at": "2026-08-27T14:00:16.000Z",
+      "message_type": "text",
+      "text": "Mensagem de rotina 2: recebido e combinado.",
+      "sender_ref": "actor-3",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "noise-heavy",
+        "territory": "zona-2"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "bbfdea56-0b9d-488d-8bd0-cc3816efc12d",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "noise-heavy:3",
+      "conversation_id": "rotina-3",
+      "conversation_label": "Rotina 3",
+      "occurred_at": "2026-08-27T14:00:30.000Z",
+      "captured_at": "2026-08-27T14:00:31.000Z",
+      "message_type": "text",
+      "text": "Mensagem de rotina 3: recebido e combinado.",
+      "sender_ref": "actor-4",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "noise-heavy",
+        "territory": "zona-3"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "9c7b51d9-a16a-4fb5-82f6-a3c07e57b1bc",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "noise-heavy:4",
+      "conversation_id": "rotina-4",
+      "conversation_label": "Rotina 4",
+      "occurred_at": "2026-08-27T14:00:45.000Z",
+      "captured_at": "2026-08-27T14:00:46.000Z",
+      "message_type": "text",
+      "text": "Mensagem de rotina 4: recebido e combinado.",
+      "sender_ref": "actor-5",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "noise-heavy",
+        "territory": "zona-4"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "0c4422a0-66b9-45e0-8fa1-6254da98e7e9",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "noise-heavy:5",
+      "conversation_id": "rotina-5",
+      "conversation_label": "Rotina 5",
+      "occurred_at": "2026-08-27T14:01:00.000Z",
+      "captured_at": "2026-08-27T14:01:01.000Z",
+      "message_type": "text",
+      "text": "Mensagem de rotina 5: recebido e combinado.",
+      "sender_ref": "actor-6",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "noise-heavy",
+        "territory": "zona-5"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "ae328d2e-085e-4383-8b91-e16ec19c22ab",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "noise-heavy:6",
+      "conversation_id": "rotina-1",
+      "conversation_label": "Rotina 1",
+      "occurred_at": "2026-08-27T14:01:15.000Z",
+      "captured_at": "2026-08-27T14:01:16.000Z",
+      "message_type": "text",
+      "text": "Reunião interna confirmada para 17h.",
+      "sender_ref": "actor-7",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "noise-heavy",
+        "territory": "zona-1"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "aa481cd7-fa25-4774-8b72-b73ae6eb612b",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "noise-heavy:7",
+      "conversation_id": "rotina-2",
+      "conversation_label": "Rotina 2",
+      "occurred_at": "2026-08-27T14:01:30.000Z",
+      "captured_at": "2026-08-27T14:01:31.000Z",
+      "message_type": "text",
+      "text": "A agenda desse encontro foi recebida.",
+      "sender_ref": "actor-8",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "noise-heavy",
+        "territory": "zona-2"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "8dd27d98-c577-4267-8473-3312b14a9ac8",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "noise-heavy:8",
+      "conversation_id": "rotina-3",
+      "conversation_label": "Rotina 3",
+      "occurred_at": "2026-08-27T14:01:45.000Z",
+      "captured_at": "2026-08-27T14:01:46.000Z",
+      "message_type": "text",
+      "text": "Mensagem de rotina 8: recebido e combinado.",
+      "sender_ref": "actor-9",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "noise-heavy",
+        "territory": "zona-3"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "0664d9f8-eae8-4059-8a6b-b414efa3d22b",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "noise-heavy:9",
+      "conversation_id": "rotina-4",
+      "conversation_label": "Rotina 4",
+      "occurred_at": "2026-08-27T14:02:00.000Z",
+      "captured_at": "2026-08-27T14:02:01.000Z",
+      "message_type": "text",
+      "text": "Mensagem de rotina 9: recebido e combinado.",
+      "sender_ref": "actor-1",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "noise-heavy",
+        "territory": "zona-4"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "ddc9cf86-a483-4edb-8648-187346dfee50",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "noise-heavy:10",
+      "conversation_id": "rotina-5",
+      "conversation_label": "Rotina 5",
+      "occurred_at": "2026-08-27T14:02:15.000Z",
+      "captured_at": "2026-08-27T14:02:16.000Z",
+      "message_type": "text",
+      "text": "Mensagem de rotina 10: recebido e combinado.",
+      "sender_ref": "actor-2",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "noise-heavy",
+        "territory": "zona-5"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "c620e628-18e9-4f59-8ab4-6350255c1f6f",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "noise-heavy:11",
+      "conversation_id": "rotina-1",
+      "conversation_label": "Rotina 1",
+      "occurred_at": "2026-08-27T14:02:30.000Z",
+      "captured_at": "2026-08-27T14:02:31.000Z",
+      "message_type": "text",
+      "text": "Mensagem de rotina 11: recebido e combinado.",
+      "sender_ref": "actor-3",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "noise-heavy",
+        "territory": "zona-1"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "c05eb57a-b404-4c2f-859b-4e42ccbca994",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "noise-heavy:12",
+      "conversation_id": "rotina-2",
+      "conversation_label": "Rotina 2",
+      "occurred_at": "2026-08-27T14:02:45.000Z",
+      "captured_at": "2026-08-27T14:02:46.000Z",
+      "message_type": "text",
+      "text": "Mensagem de rotina 12: recebido e combinado.",
+      "sender_ref": "actor-4",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "noise-heavy",
+        "territory": "zona-2"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "d9269956-1e1d-42a1-8bbe-067ae324c666",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "noise-heavy:13",
+      "conversation_id": "rotina-3",
+      "conversation_label": "Rotina 3",
+      "occurred_at": "2026-08-27T14:03:00.000Z",
+      "captured_at": "2026-08-27T14:03:01.000Z",
+      "message_type": "text",
+      "text": "Mensagem de rotina 13: recebido e combinado.",
+      "sender_ref": "actor-5",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "noise-heavy",
+        "territory": "zona-3"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "442f3da7-6566-42c7-8d5e-5276d07c0d9e",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "noise-heavy:14",
+      "conversation_id": "rotina-4",
+      "conversation_label": "Rotina 4",
+      "occurred_at": "2026-08-27T14:03:15.000Z",
+      "captured_at": "2026-08-27T14:03:16.000Z",
+      "message_type": "text",
+      "text": "Mensagem de rotina 14: recebido e combinado.",
+      "sender_ref": "actor-6",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "noise-heavy",
+        "territory": "zona-4"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "03998476-27da-4781-8860-f264366627c6",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "noise-heavy:15",
+      "conversation_id": "rotina-5",
+      "conversation_label": "Rotina 5",
+      "occurred_at": "2026-08-27T14:03:30.000Z",
+      "captured_at": "2026-08-27T14:03:31.000Z",
+      "message_type": "text",
+      "text": "Mensagem de rotina 15: recebido e combinado.",
+      "sender_ref": "actor-7",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "noise-heavy",
+        "territory": "zona-5"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "a8f049d5-f615-43f7-817c-3bd29d18a6e3",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "noise-heavy:16",
+      "conversation_id": "rotina-1",
+      "conversation_label": "Rotina 1",
+      "occurred_at": "2026-08-27T14:03:45.000Z",
+      "captured_at": "2026-08-27T14:03:46.000Z",
+      "message_type": "text",
+      "text": "Mensagem de rotina 16: recebido e combinado.",
+      "sender_ref": "actor-8",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "noise-heavy",
+        "territory": "zona-1"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "6232fb19-a9d4-4858-8483-ee081fd8aea4",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "noise-heavy:17",
+      "conversation_id": "rotina-2",
+      "conversation_label": "Rotina 2",
+      "occurred_at": "2026-08-27T14:04:00.000Z",
+      "captured_at": "2026-08-27T14:04:01.000Z",
+      "message_type": "text",
+      "text": "Mensagem de rotina 17: recebido e combinado.",
+      "sender_ref": "actor-9",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "noise-heavy",
+        "territory": "zona-2"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "fdf95d75-b1a1-4b9b-8bc3-9f4f76003457",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "noise-heavy:18",
+      "conversation_id": "rotina-3",
+      "conversation_label": "Rotina 3",
+      "occurred_at": "2026-08-27T14:04:15.000Z",
+      "captured_at": "2026-08-27T14:04:16.000Z",
+      "message_type": "text",
+      "text": "Mensagem de rotina 18: recebido e combinado.",
+      "sender_ref": "actor-1",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "noise-heavy",
+        "territory": "zona-3"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "ffdf9493-d116-4ca3-88f0-df5b78410703",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "noise-heavy:19",
+      "conversation_id": "rotina-4",
+      "conversation_label": "Rotina 4",
+      "occurred_at": "2026-08-27T14:04:30.000Z",
+      "captured_at": "2026-08-27T14:04:31.000Z",
+      "message_type": "text",
+      "text": "Mensagem de rotina 19: recebido e combinado.",
+      "sender_ref": "actor-2",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "noise-heavy",
+        "territory": "zona-4"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "76a08da3-a44b-490b-88a4-fd9754a49a18",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "noise-heavy:20",
+      "conversation_id": "rotina-5",
+      "conversation_label": "Rotina 5",
+      "occurred_at": "2026-08-27T14:04:45.000Z",
+      "captured_at": "2026-08-27T14:04:46.000Z",
+      "message_type": "text",
+      "text": "Mensagem de rotina 20: recebido e combinado.",
+      "sender_ref": "actor-3",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "noise-heavy",
+        "territory": "zona-5"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "cf8dc3db-b3eb-433d-8d07-5affa27719d9",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "noise-heavy:21",
+      "conversation_id": "rotina-1",
+      "conversation_label": "Rotina 1",
+      "occurred_at": "2026-08-27T14:05:00.000Z",
+      "captured_at": "2026-08-27T14:05:01.000Z",
+      "message_type": "text",
+      "text": "Mensagem de rotina 21: recebido e combinado.",
+      "sender_ref": "actor-4",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "noise-heavy",
+        "territory": "zona-1"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "b5ecd1b6-9cd4-4d6e-86fb-a5f3761c809c",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "noise-heavy:22",
+      "conversation_id": "rotina-2",
+      "conversation_label": "Rotina 2",
+      "occurred_at": "2026-08-27T14:05:15.000Z",
+      "captured_at": "2026-08-27T14:05:16.000Z",
+      "message_type": "text",
+      "text": "Mensagem de rotina 22: recebido e combinado.",
+      "sender_ref": "actor-5",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "noise-heavy",
+        "territory": "zona-2"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "60ed05a2-ead2-40db-8050-3e6986410f2a",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "noise-heavy:23",
+      "conversation_id": "rotina-3",
+      "conversation_label": "Rotina 3",
+      "occurred_at": "2026-08-27T14:05:30.000Z",
+      "captured_at": "2026-08-27T14:05:31.000Z",
+      "message_type": "text",
+      "text": "Mensagem de rotina 23: recebido e combinado.",
+      "sender_ref": "actor-6",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "noise-heavy",
+        "territory": "zona-3"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "aa0f88f7-6ec0-4e9e-89e4-2d50649fb491",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "noise-heavy:24",
+      "conversation_id": "rotina-4",
+      "conversation_label": "Rotina 4",
+      "occurred_at": "2026-08-27T14:05:45.000Z",
+      "captured_at": "2026-08-27T14:05:46.000Z",
+      "message_type": "text",
+      "text": "Mensagem de rotina 24: recebido e combinado.",
+      "sender_ref": "actor-7",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "noise-heavy",
+        "territory": "zona-4"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "4330e318-2281-4f4e-8a8a-2f05e72181be",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "noise-heavy:25",
+      "conversation_id": "rotina-5",
+      "conversation_label": "Rotina 5",
+      "occurred_at": "2026-08-27T14:06:00.000Z",
+      "captured_at": "2026-08-27T14:06:01.000Z",
+      "message_type": "text",
+      "text": "Mensagem de rotina 25: recebido e combinado.",
+      "sender_ref": "actor-8",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "noise-heavy",
+        "territory": "zona-5"
+      }
+    }
+  ],
+  "heartbeat": {
+    "schema_version": "0.1.0",
+    "heartbeat_id": "d5b8d73d-c41f-4e8d-84b1-1d65a0cb35ac",
+    "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+    "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+    "source": "fake",
+    "observed_at": "2026-08-27T14:07:02.000Z",
+    "adapter_version": "0.1.0",
+    "parser_version": "0.1.0",
+    "status": "healthy",
+    "outbox_pending": 0,
+    "oldest_pending_at": null,
+    "last_event_captured_at": "2026-08-27T14:06:01.000Z",
+    "last_upload_succeeded_at": "2026-08-27T14:07:01.000Z",
+    "counters": {
+      "captured": 25,
+      "uploaded": 25
+    }
+  },
+  "ground_truth": {
+    "metrics": {
+      "event_count": 25,
+      "conversation_count": 5
+    },
+    "facts": [
+      {
+        "category": "agenda_mobilizacao",
+        "conversation_count": 2,
+        "minimum_mentions": 2
+      }
+    ],
+    "signals": [],
+    "alerts": [],
+    "health": {
+      "status": "healthy"
+    }
+  }
+}

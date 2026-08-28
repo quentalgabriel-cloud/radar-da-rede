@@ -1,0 +1,140 @@
+{
+  "schema_version": "0.1.0",
+  "name": "event-time-change",
+  "description": "Mudança operacional de horário dentro de um grupo.",
+  "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+  "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+  "batch_id": "019ea112-37e7-4eed-8f6a-ade76db72ea5",
+  "sent_at": "2026-08-27T11:04:01.000Z",
+  "events": [
+    {
+      "schema_version": "0.1.0",
+      "event_id": "41330a38-94c7-4322-83b5-b9654a0f717a",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "event-time-change:1",
+      "conversation_id": "coordenacao-agenda",
+      "conversation_label": "Coordenação Agenda",
+      "occurred_at": "2026-08-27T11:00:00.000Z",
+      "captured_at": "2026-08-27T11:00:01.000Z",
+      "message_type": "text",
+      "text": "A reunião de amanhã será às 18h.",
+      "sender_ref": "actor-2",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "event-time-change",
+        "territory": "rede"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "0dcfebd1-81df-43cd-8544-34be8f8f7399",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "event-time-change:2",
+      "conversation_id": "coordenacao-agenda",
+      "conversation_label": "Coordenação Agenda",
+      "occurred_at": "2026-08-27T11:01:00.000Z",
+      "captured_at": "2026-08-27T11:01:01.000Z",
+      "message_type": "text",
+      "text": "Mudança de horário: a reunião passou para 20h.",
+      "sender_ref": "actor-3",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "event-time-change",
+        "territory": "rede"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "a215fd5e-f28b-4bab-8af5-9f1d8c0274e2",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "event-time-change:3",
+      "conversation_id": "coordenacao-agenda",
+      "conversation_label": "Coordenação Agenda",
+      "occurred_at": "2026-08-27T11:02:00.000Z",
+      "captured_at": "2026-08-27T11:02:01.000Z",
+      "message_type": "text",
+      "text": "Novo horário confirmado para a atividade: 20h.",
+      "sender_ref": "actor-4",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "event-time-change",
+        "territory": "rede"
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "event_id": "6cc2cc73-5388-4c76-8a21-42521bbb7248",
+      "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+      "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+      "source": "fake",
+      "source_event_id": "event-time-change:4",
+      "conversation_id": "coordenacao-agenda",
+      "conversation_label": "Coordenação Agenda",
+      "occurred_at": "2026-08-27T11:03:00.000Z",
+      "captured_at": "2026-08-27T11:03:01.000Z",
+      "message_type": "text",
+      "text": "Todos receberam a atualização.",
+      "sender_ref": "actor-5",
+      "parser_version": "0.1.0",
+      "metadata": {
+        "scenario": "event-time-change",
+        "territory": "rede"
+      }
+    }
+  ],
+  "heartbeat": {
+    "schema_version": "0.1.0",
+    "heartbeat_id": "257c4cc3-7e3e-43e3-81b6-053264af8abf",
+    "network_id": "d1224e68-c51f-4b31-a7e6-7b91f1a65357",
+    "device_id": "b9717b98-05c9-4bdf-bb3e-95ef50303b34",
+    "source": "fake",
+    "observed_at": "2026-08-27T11:04:02.000Z",
+    "adapter_version": "0.1.0",
+    "parser_version": "0.1.0",
+    "status": "healthy",
+    "outbox_pending": 0,
+    "oldest_pending_at": null,
+    "last_event_captured_at": "2026-08-27T11:03:01.000Z",
+    "last_upload_succeeded_at": "2026-08-27T11:04:01.000Z",
+    "counters": {
+      "captured": 4,
+      "uploaded": 4
+    }
+  },
+  "ground_truth": {
+    "metrics": {
+      "event_count": 4,
+      "conversation_count": 1
+    },
+    "facts": [
+      {
+        "category": "agenda_mobilizacao",
+        "conversation_count": 1,
+        "minimum_mentions": 3
+      }
+    ],
+    "signals": [
+      {
+        "kind": "schedule_change",
+        "category": "agenda_mobilizacao",
+        "severity": "medium"
+      }
+    ],
+    "alerts": [
+      {
+        "kind": "schedule_change",
+        "category": "agenda_mobilizacao",
+        "severity": "medium"
+      }
+    ],
+    "health": {
+      "status": "healthy"
+    }
+  }
+}

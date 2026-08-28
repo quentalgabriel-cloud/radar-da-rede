@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://radar-da-rede.local/schemas/normalized-event.v0.1.0.schema.json",
+  "title": "NormalizedEvent v0.1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "event_id",
+    "network_id",
+    "device_id",
+    "source",
+    "conversation_id",
+    "occurred_at",
+    "captured_at",
+    "message_type",
+    "parser_version",
+    "metadata"
+  ],
+  "properties": {
+    "schema_version": { "const": "0.1.0" },
+    "event_id": { "type": "string", "format": "uuid" },
+    "network_id": { "type": "string", "format": "uuid" },
+    "device_id": { "type": "string", "format": "uuid" },
+    "source": {
+      "type": "string",
+      "enum": ["fake", "android_notification", "waha"]
+    },
+    "source_event_id": { "type": "string", "minLength": 1, "maxLength": 512 },
+    "conversation_id": { "type": "string", "minLength": 1, "maxLength": 255 },
+    "conversation_label": { "type": "string", "minLength": 1, "maxLength": 255 },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "captured_at": { "type": "string", "format": "date-time" },
+    "message_type": {
+      "type": "string",
+      "enum": ["text", "image", "video", "audio", "document", "location", "contact", "system", "unknown"]
+    },
+    "text": { "type": ["string", "null"], "maxLength": 10000 },
+    "sender_ref": { "type": "string", "minLength": 1, "maxLength": 255 },
+    "reply_to_event_id": { "type": "string", "format": "uuid" },
+    "parser_version": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-[0-9A-Za-z.-]+)?$"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "maxProperties": 50
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "message_type": { "const": "text" } } },
+      "then": { "required": ["text"], "properties": { "text": { "type": "string", "minLength": 1 } } }
+    }
+  ]
+}
