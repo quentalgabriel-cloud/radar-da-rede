@@ -13,7 +13,8 @@
 - [x] Criar fixtures `normal-day` e `material-shortage` com ground truth.
 - [x] Configurar CI básico.
 - [x] Publicar o histórico local no repositório GitHub.
-- [ ] Confirmar o CI remoto na `main` e decidir se o repositório público deve permanecer público.
+- [x] Confirmar o CI remoto na `main`.
+- [ ] Decidir se o repositório público deve permanecer público.
 
 ## Core sem aparelho
 
