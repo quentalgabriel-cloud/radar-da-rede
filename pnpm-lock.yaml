@@ -31,6 +31,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/testkit
 
+  packages/capture-health: {}
+
   packages/contracts: {}
 
   packages/core:

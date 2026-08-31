@@ -20,21 +20,23 @@ Fake Sensor, Android Notification Adapter e eventual WAHA Adapter convergem no m
 
 - Contratos v0.1.0 e monorepo: TESTADOS localmente.
 - Fake Sensor e replay idempotente no Core Simulator: TESTADOS localmente.
-- Supabase/Core: duas migrations aplicadas, quatro Edge Functions ativas e ensaio sintético remoto TESTADO.
+- Supabase/Core: quatro migrations aplicadas, seis Edge Functions ativas, RLS inspecionada e ensaios remotos com proveniência TESTADOS.
 - Inteligência determinística v0.1.0: TESTADA contra o ground truth dos oito cenários sintéticos.
 - Radar Web sintético: TESTADO localmente e no navegador, publicado em produção no Vercel.
 - Radar Web orientado a linguagem humana e progressão resumo -> detalhe -> evidência: IMPLEMENTADO e TESTADO localmente; publicação desta rodada pendente.
 - Android foundations: checks estáticos TESTADOS; build Android NÃO TESTADO.
-- Captura, entrega em background e recuperação após offline no Moto G84: NÃO TESTADAS fisicamente.
-- Parser WhatsApp com fixtures reais: NÃO TESTADO.
+- Produção recebeu 396 eventos `android_notification` até 2026-08-31, com adapter `0.3.0-connected` e parser `0.3.0`; isso prova ingestão real, mas não substitui o roteiro físico completo no Moto G84.
+- O código Android `0.3.0` que gerou esses eventos ainda não está neste repositório; a versão local continua com parser NoOp. Recuperar essa fonte é gate crítico.
 - Refresh global com intervalo de 90 segundos, pausa em aba oculta e proteção contra concorrência: IMPLEMENTADO e TESTADO LOCALMENTE.
 - Consolidação de snapshot móvel de 24 horas às 08:00, 13:00 e 18:00 de Recife: IMPLEMENTADA e TESTADA LOCALMENTE; workflow remoto ainda NÃO VALIDADO.
 - IA externa: NÃO IMPLEMENTADA; bloqueada até aprovação da governança e avaliação contra a baseline determinística.
 
 ## Gates externos atuais
 
-- GitHub: o histórico local está pronto, mas falta criar um repositório privado vazio e configurar o remoto.
-- Supabase: ingestão, replay, heartbeat, processamento e proveniência foram validados no projeto dedicado; autenticação humana/RLS do read model ainda precisa de teste com usuário real.
+- GitHub: repositório público ativo em `quentalgabriel-cloud/radar-da-rede`, branch `main` e CI funcionando.
+- Supabase: ingestão, heartbeat, processamento, proveniência e políticas RLS foram inspecionados; falta o teste positivo/negativo de Auth/RLS com sessões reais.
+- Governança: há dados reais de WhatsApp em produção, mas o checklist de autorização/retenção continua sem evidência registrada. Não ampliar o piloto antes dessa decisão.
+- Consolidação agendada: o workflow existe, porém não há credencial ativa em `processing_credentials` nem execução remota comprovada.
 - Moto G84: a Trilha B começa quando aparelho e chip estiverem disponíveis; isso não bloqueia o Core nem o Radar Web.
 
 ## Método

@@ -52,7 +52,14 @@ export interface HealthHeartbeat {
   outbox_pending: number;
   oldest_pending_at?: string | null;
   last_event_captured_at?: string | null;
+  last_whatsapp_notification_at?: string | null;
+  last_parsed_event_at?: string | null;
   last_upload_succeeded_at?: string | null;
+  recovered_at?: string | null;
+  notification_access?: boolean;
+  listener_connected?: boolean;
+  whatsapp_installed?: boolean;
+  network_type?: "wifi" | "cellular" | "offline" | "unknown";
   counters?: Record<string, number>;
 }
 

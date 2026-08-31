@@ -11,3 +11,9 @@ verify_jwt = false
 
 [functions.radar-read-model]
 verify_jwt = true
+
+[functions.capture-diagnostic]
+verify_jwt = true
+
+[functions.process-latest-window]
+verify_jwt = true

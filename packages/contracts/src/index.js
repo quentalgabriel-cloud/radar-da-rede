@@ -123,7 +123,9 @@ export const validateHealthHeartbeat = (value) => {
   rejectUnknown(value, new Set([
     "schema_version", "heartbeat_id", "network_id", "device_id", "source", "observed_at",
     "adapter_version", "parser_version", "status", "outbox_pending", "oldest_pending_at",
-    "last_event_captured_at", "last_upload_succeeded_at", "counters"
+    "last_event_captured_at", "last_whatsapp_notification_at", "last_parsed_event_at",
+    "last_upload_succeeded_at", "recovered_at", "notification_access", "listener_connected",
+    "whatsapp_installed", "network_type", "counters"
   ]), errors);
   if (value.schema_version !== "0.1.0") errors.push({ path: "/schema_version", message: "must equal 0.1.0" });
   uuid(value, "heartbeat_id", errors);
@@ -141,7 +143,18 @@ export const validateHealthHeartbeat = (value) => {
   }
   dateTime(value, "oldest_pending_at", errors, true);
   dateTime(value, "last_event_captured_at", errors, true);
+  dateTime(value, "last_whatsapp_notification_at", errors, true);
+  dateTime(value, "last_parsed_event_at", errors, true);
   dateTime(value, "last_upload_succeeded_at", errors, true);
+  dateTime(value, "recovered_at", errors, true);
+  for (const key of ["notification_access", "listener_connected", "whatsapp_installed"]) {
+    if (value[key] !== undefined && typeof value[key] !== "boolean") {
+      errors.push({ path: `/${key}`, message: "must be a boolean" });
+    }
+  }
+  if (value.network_type !== undefined && !new Set(["wifi", "cellular", "offline", "unknown"]).has(value.network_type)) {
+    errors.push({ path: "/network_type", message: "must be a supported network type" });
+  }
   if (value.counters !== undefined) {
     if (!isRecord(value.counters) || Object.keys(value.counters).length > 20 || Object.values(value.counters).some((item) => !Number.isInteger(item) || item < 0)) {
       errors.push({ path: "/counters", message: "must contain at most 20 non-negative integer counters" });
@@ -149,3 +162,4 @@ export const validateHealthHeartbeat = (value) => {
   }
   return finish(value, errors);
 };
+

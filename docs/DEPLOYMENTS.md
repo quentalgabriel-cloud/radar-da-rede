@@ -6,8 +6,8 @@
 - **Project ref:** `pluruijhqnueayrlkthx`
 - **Região:** `sa-east-1`
 - **Estado:** `ACTIVE_HEALTHY`
-- **Migrations:** `20260826141837_initial_core`, `20260826142021_harden_membership_and_indexes`
-- **Edge Functions:** `ingest-events`, `ingest-health`, `process-window`, `radar-read-model` (`ACTIVE`, versão 1)
+- **Migrations:** quatro, incluindo `20260827185240_capture_health_diagnostics` e `20260827185523_harden_capture_diagnostics`.
+- **Edge Functions:** seis ativas: `ingest-events` v2, `ingest-health` v2, `process-window` v1, `radar-read-model` v6, `capture-diagnostic` v1 e `process-latest-window` v2.
 - **Ensaio remoto:** aprovado em 2026-08-26 com replay idempotente e proveniência completa.
 
 ## Radar Web
@@ -16,9 +16,10 @@
 - **Project ID:** `prj_7wbF23T6QbEK4oC4qpk6SG6fN26J`
 - **Team:** `gquental-projects`
 - **URL:** `https://radar-da-rede.vercel.app`
-- **Fonte atual:** laboratório com oito cenários sintéticos; default `material-shortage`
-- **Backend atual:** nenhum; artefato estático gerado pelo view model.
-- **Deployment:** `dpl_4Fic8GXudrGAhxMYk3x536ZCj1TF` (`READY`)
+- **Fonte atual:** laboratório com oito cenários e modo live autenticado pelo Supabase.
+- **Backend atual:** Supabase read model com escopo por associação de rede.
+- **Deployment funcional verificado:** `dpl_7YeqkzjdVnbqgWbfKwRr5rryJfBb` (`READY`), commit `6d31e49`.
+- **Atenção:** o deploy automático do commit documental `a4136f5` falhou ao clonar o repositório; a integração Git/Vercel precisa ser revalidada no próximo push.
 
 ## Consolidação agendada
 
@@ -26,7 +27,7 @@
 - **Horários pretendidos:** 08:00, 13:00 e 18:00 em `America/Recife` (11:00, 16:00 e 21:00 UTC).
 - **Janela:** snapshot móvel de 24 horas ancorado no último horário canônico.
 - **Estado:** IMPLEMENTADO e TESTADO LOCALMENTE; NÃO VALIDADO REMOTAMENTE.
-- **Gate:** configurar `RADAR_SUPABASE_URL`, `RADAR_NETWORK_ID` e `RADAR_PROCESSING_SECRET` em GitHub Actions Secrets e observar ao menos uma execução e um retry idempotente.
+- **Gate:** criar uma credencial de processamento, configurar os três GitHub Actions Secrets e observar ao menos uma execução e um retry idempotente. Em 2026-08-31, `processing_credentials` não possuía credencial ativa.
 
 ### Configuração obrigatória de Auth
 

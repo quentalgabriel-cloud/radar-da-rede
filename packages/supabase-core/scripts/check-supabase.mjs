@@ -33,6 +33,22 @@ const radarReadModel = await readFile(
   resolve(repositoryRoot, "supabase/functions/radar-read-model/index.ts"),
   "utf8",
 );
+const captureDiagnostic = await readFile(
+  resolve(repositoryRoot, "supabase/functions/capture-diagnostic/index.ts"),
+  "utf8",
+);
+const processLatestWindow = await readFile(
+  resolve(repositoryRoot, "supabase/functions/process-latest-window/index.ts"),
+  "utf8",
+);
+const canonicalConversations = await readFile(
+  resolve(repositoryRoot, "supabase/functions/_shared/canonical-conversations.js"),
+  "utf8",
+);
+const captureHealth = await readFile(
+  resolve(repositoryRoot, "supabase/functions/_shared/capture-health.js"),
+  "utf8",
+);
 const processingAuth = await readFile(
   resolve(repositoryRoot, "supabase/functions/_shared/processing-auth.ts"),
   "utf8",
@@ -60,6 +76,8 @@ assert.match(config, /\[functions\.ingest-events\][\s\S]*?verify_jwt = false/);
 assert.match(config, /\[functions\.ingest-health\][\s\S]*?verify_jwt = false/);
 assert.match(config, /\[functions\.process-window\][\s\S]*?verify_jwt = false/);
 assert.match(config, /\[functions\.radar-read-model\][\s\S]*?verify_jwt = true/);
+assert.match(config, /\[functions\.capture-diagnostic\][\s\S]*?verify_jwt = true/);
+assert.match(config, /\[functions\.process-latest-window\][\s\S]*?verify_jwt = true/);
 assert.match(handler, /SUPABASE_SERVICE_ROLE_KEY/);
 assert.match(handler, /device_scope_mismatch/);
 assert.match(handler, /device_source_mismatch/);
@@ -86,6 +104,13 @@ assert.match(processingAuth, /crypto\.subtle\.digest\("SHA-256"/);
 assert.match(radarReadModel, /@supabase\/server@1\.4\.1/);
 assert.match(radarReadModel, /withSupabase\(\{ auth: "user" \}/);
 assert.match(radarReadModel, /processing_runs/);
+assert.match(radarReadModel, /capture_health_transitions/);
+assert.match(captureDiagnostic, /withSupabase\(\{ auth: "user" \}/);
+assert.match(captureDiagnostic, /diagnostic_tests/);
+assert.match(processLatestWindow, /canonicalizeConversationEvent/);
+assert.match(processLatestWindow, /persist_analysis/);
+assert.match(canonicalConversations, /cumulativeCountSuffix/);
+assert.match(captureHealth, /evaluateCaptureHealth/);
 assert.match(consolidationSchedule, /America\/Recife/);
 assert.match(consolidationSchedule, /\[8, 13, 18\]/);
 assert.match(consolidationSchedule, /CONSOLIDATION_WINDOW_HOURS = 24/);

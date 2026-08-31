@@ -31,7 +31,17 @@
     "outbox_pending": { "type": "integer", "minimum": 0 },
     "oldest_pending_at": { "type": ["string", "null"], "format": "date-time" },
     "last_event_captured_at": { "type": ["string", "null"], "format": "date-time" },
+    "last_whatsapp_notification_at": { "type": ["string", "null"], "format": "date-time" },
+    "last_parsed_event_at": { "type": ["string", "null"], "format": "date-time" },
     "last_upload_succeeded_at": { "type": ["string", "null"], "format": "date-time" },
+    "recovered_at": { "type": ["string", "null"], "format": "date-time" },
+    "notification_access": { "type": "boolean" },
+    "listener_connected": { "type": "boolean" },
+    "whatsapp_installed": { "type": "boolean" },
+    "network_type": {
+      "type": "string",
+      "enum": ["wifi", "cellular", "offline", "unknown"]
+    },
     "counters": {
       "type": "object",
       "additionalProperties": { "type": "integer", "minimum": 0 },

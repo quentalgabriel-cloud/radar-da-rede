@@ -1,3 +1,5 @@
+import { evaluateCaptureHealth } from "./capture-health.js";
+
 const categoryLabels = {
   agenda_mobilizacao: "Agenda e mobilização",
   material_logistica: "Material e logística",
@@ -27,7 +29,7 @@ const sourceSummary = (sourceEventIds, eventById) => {
   };
 };
 
-export function buildPersistedRadarViewModel({ network, run, events, facts, signals, alerts, health }) {
+export function buildPersistedRadarViewModel({ network, run, events, facts, signals, alerts, health, healthTransitions = [], diagnosticTest = null }) {
   const eventById = new Map(events.map((event) => [event.event_id, event]));
   const conversations = new Map();
   for (const event of events) {
@@ -138,6 +140,22 @@ export function buildPersistedRadarViewModel({ network, run, events, facts, sign
     };
   });
 
+  const healthSnapshot = health ? {
+    ...health,
+    last_parsed_event_at: health.last_parsed_event_at ?? health.last_event_captured_at
+  } : {
+    status: "unknown",
+    source: "unknown",
+    observed_at: null,
+    outbox_pending: 0,
+    last_event_captured_at: null,
+    last_parsed_event_at: null,
+    last_upload_succeeded_at: null,
+    adapter_version: "unknown",
+    parser_version: "unknown"
+  };
+  const healthEvaluation = evaluateCaptureHealth(healthSnapshot);
+
   return {
     schema_version: "0.1.0",
     generated_at: run.completed_at,
@@ -193,24 +211,11 @@ export function buildPersistedRadarViewModel({ network, run, events, facts, sign
         occurred_at: event.occurred_at,
         text: excerpt(event.text, 180)
       })),
-    health: health ? {
-      status: health.status,
-      source: health.source,
-      observed_at: health.observed_at,
-      outbox_pending: health.outbox_pending,
-      last_event_captured_at: health.last_event_captured_at,
-      last_upload_succeeded_at: health.last_upload_succeeded_at,
-      adapter_version: health.adapter_version,
-      parser_version: health.parser_version
-    } : {
-      status: "unknown",
-      source: "unknown",
-      observed_at: null,
-      outbox_pending: 0,
-      last_event_captured_at: null,
-      last_upload_succeeded_at: null,
-      adapter_version: "unknown",
-      parser_version: "unknown"
+    health: {
+      ...healthSnapshot,
+      evaluation: healthEvaluation,
+      transitions: healthTransitions,
+      diagnostic_test: diagnosticTest
     },
     provenance: {
       pipeline_version: run.pipeline_version,
@@ -220,3 +225,4 @@ export function buildPersistedRadarViewModel({ network, run, events, facts, sign
     }
   };
 }
+

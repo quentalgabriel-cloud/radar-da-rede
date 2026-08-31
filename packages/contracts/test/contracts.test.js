@@ -33,4 +33,16 @@ describe("HealthHeartbeat v0.1.0", () => {
   it("accepts a valid heartbeat", () => assert.equal(validateHealthHeartbeat(validHeartbeat).valid, true));
   it("rejects a negative outbox count", () =>
     assert.equal(validateHealthHeartbeat({ ...validHeartbeat, outbox_pending: -1 }).valid, false));
+  it("accepts capture diagnostics", () =>
+    assert.equal(validateHealthHeartbeat({
+      ...validHeartbeat,
+      notification_access: true,
+      listener_connected: true,
+      whatsapp_installed: true,
+      network_type: "wifi",
+      last_whatsapp_notification_at: "2026-08-31T17:30:00.000Z",
+      last_parsed_event_at: "2026-08-31T17:30:01.000Z"
+    }).valid, true));
+  it("rejects an unsupported network type", () =>
+    assert.equal(validateHealthHeartbeat({ ...validHeartbeat, network_type: "satellite" }).valid, false));
 });
