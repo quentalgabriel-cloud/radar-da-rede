@@ -46,10 +46,6 @@ class RadarNotificationListenerService : NotificationListenerService() {
         super.onDestroy()
     }
 
-    companion object {
-        private val WHATSAPP_PACKAGES = setOf("com.whatsapp", "com.whatsapp.w4b")
-    }
-}
     override fun onListenerConnected() {
         super.onListenerConnected()
         SensorGraph.health.recordListenerConnected(true)
@@ -63,3 +59,8 @@ class RadarNotificationListenerService : NotificationListenerService() {
         }
         super.onListenerDisconnected()
     }
+
+    companion object {
+        private val WHATSAPP_PACKAGES = setOf("com.whatsapp", "com.whatsapp.w4b")
+    }
+}
