@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build.mjs",
-    "check": "node --check public/app.js && node --check src/server.mjs",
+    "check": "node --check public/app.js && node --check public/refresh-controller.js && node --check src/server.mjs",
     "test": "node --test test/*.test.js",
     "start": "node src/server.mjs"
   },

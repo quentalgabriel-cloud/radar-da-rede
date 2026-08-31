@@ -24,4 +24,6 @@ não existem. Com URL, chave publicável e network ID, ele também habilita o mo
 “Dados reais”, com Supabase Auth e leitura protegida por RLS. Nenhuma chave
 privilegiada pertence ao frontend.
 
+O refresh global e a consolidação backend em três horários estão implementados e testados localmente. O agendamento remoto só será considerado ativo depois da configuração dos GitHub Secrets e da observação de uma execução real. A inteligência oficial continua determinística; nenhuma integração externa de IA está habilitada enquanto o gate de governança de dados permanecer aberto.
+
 Consulte [`docs/PROJECT.md`](docs/PROJECT.md), [`docs/TASKS.md`](docs/TASKS.md), [`docs/TEST_MATRIX.md`](docs/TEST_MATRIX.md) e [`docs/DEPLOYMENTS.md`](docs/DEPLOYMENTS.md).

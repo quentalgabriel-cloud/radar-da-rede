@@ -27,3 +27,13 @@ Oito cenários têm ground truth explícito: `normal-day`, `material-shortage`,
 - Não há inferência sobre pessoas.
 - Resultados sintéticos testados não equivalem a validação em dados reais.
 - Um adapter de LLM só deve entrar depois de demonstrar ganho contra esta baseline.
+
+## Janela operacional
+
+As consolidações agendadas recompõem um snapshot completo das 24 horas anteriores ao último horário canônico de Recife: 08:00, 13:00 ou 18:00. O read model continua selecionando a execução concluída mais recente. Essa escolha evita que um processamento apenas incremental remova da interface situações ainda presentes no horizonte operacional.
+
+Reexecuções no mesmo slot usam os mesmos limites. Eventos atrasados entram na próxima consolidação enquanto ainda pertencerem à janela móvel. A duração de 24 horas é provisória e deve ser revista com evidência do piloto.
+
+## Gate para IA
+
+A taxonomia atual e as regras determinísticas permanecem a baseline oficial. Não existe provider de IA aprovado nesta versão. Qualquer avaliação futura deve usar os mesmos cenários, preservar proveniência e cumprir `DATA_GOVERNANCE.md` antes de receber texto observado real.

@@ -1,5 +1,6 @@
 import { createSupabaseProvider } from "./supabase-provider.js";
 import { isEmailIdentifier, resolveLoginIdentifier } from "./auth-identity.js";
+import { createRadarRefreshController } from "./refresh-controller.js";
 
 const state = {
   config: null,
@@ -7,6 +8,7 @@ const state = {
   manifest: null,
   mode: "lab",
   provider: null,
+  refreshController: null,
   query: "",
   scenario: null,
   severity: "all"
@@ -15,6 +17,10 @@ const state = {
 const formatTime = (value) => value
   ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Recife" }).format(new Date(value))
   : "Ainda não informado";
+
+const formatClock = (value) => value
+  ? new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Recife" }).format(new Date(value))
+  : null;
 
 const escapeHtml = (value) => String(value ?? "").replace(/[&<>'"]/g, (character) => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", "\"": "&quot;"
@@ -287,22 +293,53 @@ const showAuth = (message = "") => {
   document.querySelector("#loading-state").hidden = true;
 };
 
-const loadSynthetic = async (name = state.scenario) => {
+const readSynthetic = async (name = state.scenario) => {
   const path = name ? `/data/${encodeURIComponent(name)}.json` : "/data/radar.json";
   const response = await fetch(`${path}?ts=${Date.now()}`);
   if (!response.ok) throw new Error(`Falha ao carregar o Radar: ${response.status}`);
-  state.data = await response.json();
-  state.scenario = state.data.scenario.name;
-  document.querySelector("#scenario-select").value = state.scenario;
+  return response.json();
+};
+
+const readRadar = () => state.mode === "live"
+  ? state.provider.readModel(state.config.live.network_id)
+  : readSynthetic();
+
+const applyRadar = (data) => {
+  state.data = data;
+  if (data.scenario?.synthetic) {
+    state.scenario = data.scenario.name;
+    document.querySelector("#scenario-select").value = state.scenario;
+  }
   renderAll();
   showData();
 };
 
-const loadLive = async () => {
-  state.data = await state.provider.readModel(state.config.live.network_id);
-  renderAll();
-  showData();
+const updateRefreshStatus = ({ state: refreshState, reason, lastReadAt, consolidatedAt, error }) => {
+  const button = document.querySelector("#refresh-button");
+  const status = document.querySelector("#refresh-status");
+  button.disabled = refreshState === "loading";
+  if (refreshState === "loading") {
+    status.textContent = reason === "automatic" ? "Verificando dados…" : "Atualizando…";
+    return;
+  }
+  if (refreshState === "error") {
+    status.textContent = lastReadAt ? `Falha ao atualizar · leitura das ${formatClock(lastReadAt)}` : "Não foi possível atualizar";
+    if (!state.data) showError(error);
+    return;
+  }
+  const readLabel = `Consultado às ${formatClock(lastReadAt)}`;
+  const consolidationLabel = consolidatedAt ? ` · consolidado até ${formatClock(consolidatedAt)}` : "";
+  status.textContent = `${readLabel}${consolidationLabel}`;
 };
+
+state.refreshController = createRadarRefreshController({
+  read: readRadar,
+  apply: applyRadar,
+  onStatus: updateRefreshStatus,
+  isVisible: () => document.visibilityState === "visible" && state.mode === "live"
+});
+
+const refreshRadar = (reason) => state.refreshController.refresh(reason);
 
 const liveRedirectUrl = () => {
   const url = new URL(location.href);
@@ -336,7 +373,10 @@ const setMode = async (mode) => {
   history.replaceState(null, "", url);
   setLoading(state.mode === "live" ? "Conectando à rede…" : "Carregando demonstração…");
 
-  if (state.mode === "lab") return loadSynthetic(state.scenario);
+  if (state.mode === "lab") {
+    state.refreshController.stop();
+    return refreshRadar("initial");
+  }
   if (!state.provider) {
     state.provider = createSupabaseProvider({
       url: state.config.live.url,
@@ -351,8 +391,13 @@ const setMode = async (mode) => {
     history.replaceState(null, "", cleanUrl);
   }
   const session = redirectSession ?? await state.provider.restoreSession();
-  if (!session) return showAuth();
-  return loadLive();
+  if (!session) {
+    state.refreshController.stop();
+    return showAuth();
+  }
+  const data = await refreshRadar("initial");
+  state.refreshController.start();
+  return data;
 };
 
 const showError = (error) => {
@@ -382,15 +427,15 @@ document.querySelector("#attention-list").addEventListener("click", (event) => {
   document.querySelectorAll("#situation-list .situation-card")[Number(button.dataset.openSituation)]?.scrollIntoView({ behavior: "smooth", block: "start" });
 });
 document.querySelector("#refresh-button").addEventListener("click", () => {
-  setLoading("Atualizando…");
-  (state.mode === "live" ? loadLive() : loadSynthetic()).catch(showError);
+  refreshRadar("manual").catch(() => {});
 });
 document.querySelector("#scenario-select").addEventListener("change", (event) => {
   const url = new URL(location.href);
   url.searchParams.set("scenario", event.target.value);
   history.replaceState(null, "", url);
   setLoading("Trocando situação…");
-  loadSynthetic(event.target.value).catch(showError);
+  state.scenario = event.target.value;
+  refreshRadar("manual").catch(showError);
 });
 document.querySelector("#mode-select").addEventListener("change", (event) => setMode(event.target.value).catch(showError));
 document.querySelector("#auth-form").addEventListener("submit", async (event) => {
@@ -401,7 +446,8 @@ document.querySelector("#auth-form").addEventListener("submit", async (event) =>
   try {
     await state.provider.signIn(email, password);
     setLoading("Carregando a rede…");
-    await loadLive();
+    await refreshRadar("initial");
+    state.refreshController.start();
   } catch {
     showAuth("Não foi possível entrar. Confira usuário ou e-mail, senha e autorização da rede.");
   }
@@ -417,7 +463,8 @@ document.querySelector("#signup-button").addEventListener("click", async () => {
     if (result.access_token) {
       setLoading("Carregando a rede…");
       try {
-        await loadLive();
+        await refreshRadar("initial");
+        state.refreshController.start();
       } catch {
         showAuth("Acesso criado, mas este usuário ainda precisa ser incluído na rede.");
       }
@@ -429,8 +476,15 @@ document.querySelector("#signup-button").addEventListener("click", async () => {
   }
 });
 document.querySelector("#signout-button").addEventListener("click", async () => {
+  state.refreshController.stop();
   await state.provider.signOut();
   showAuth("Sessão encerrada.");
+});
+
+document.addEventListener("visibilitychange", () => {
+  if (state.mode === "live" && document.visibilityState === "visible") {
+    state.refreshController.refreshIfStale().catch(() => {});
+  }
 });
 
 Promise.all([

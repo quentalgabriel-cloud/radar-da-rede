@@ -33,6 +33,7 @@ it("serves the Radar shell and generated view model", async () => {
   assert.match(html, /data-screen="groups"/);
   assert.match(html, />E-mail ou usuário</);
   assert.match(html, /autocomplete="username"/);
+  assert.match(html, /id="refresh-status"/);
   assert.doesNotMatch(html, /Sinais prioritários|Fact confidence|Analysis Window/);
   const data = await (await fetch(`${endpoint}/data/radar.json`)).json();
   assert.equal(data.overview.event_count, 5);
@@ -66,6 +67,18 @@ it("keeps scripts free of innerHTML values that bypass escapeHtml for external t
   assert.match(source, /const escapeHtml/);
   assert.doesNotMatch(source, /<p>\$\{event\.text\}/);
   assert.doesNotMatch(source, /service_role|sb_secret_/i);
+  assert.doesNotMatch(source, /process-window|processing_secret/i);
+});
+
+it("ships one shared refresh controller without privileged processing", async () => {
+  const source = await readFile(resolve(appRoot, "public/app.js"), "utf8");
+  const controller = await readFile(resolve(appRoot, "public/refresh-controller.js"), "utf8");
+  assert.match(source, /createRadarRefreshController/);
+  assert.match(source, /document\.visibilityState === "visible"/);
+  assert.match(source, /refreshIfStale/);
+  assert.match(controller, /DEFAULT_REFRESH_INTERVAL_MS = 90_000/);
+  assert.match(controller, /if \(inFlight\) return inFlight/);
+  assert.doesNotMatch(controller, /process-window|processing_secret|service_role/i);
 });
 
 it("keeps campaign identity tokenized and separate from operational status", async () => {

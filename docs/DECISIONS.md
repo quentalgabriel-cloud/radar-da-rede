@@ -127,3 +127,30 @@ Os status usados são `ACEITA`, `PROVISÓRIA`, `HIPÓTESE` e `ESTACIONADA`.
 - **Evidência:** a primeira versão expunha eventos, facts, signals, versões de parser e mensagens antes de explicar o que acontecia.
 - **Consequência:** o read model prepara informações de produto, a home prioriza resumo e detalhes técnicos ficam em diagnóstico.
 - **Reabrir se:** testes de compreensão com a coordenação mostrarem que outro vocabulário comunica melhor.
+
+## D-015 — Snapshot canônico de 24 horas
+
+- **Status:** PROVISÓRIA
+- **Data:** 2026-08-31
+- **Decisão:** cada consolidação recompõe integralmente uma janela móvel de 24 horas, ancorada no último horário operacional de Recife (08:00, 13:00 ou 18:00).
+- **Evidência:** o read model persistido seleciona a execução concluída mais recente; processar somente o delta faria situações ainda relevantes desaparecerem da leitura.
+- **Consequência:** atrasos e replays dentro da janela entram no snapshot seguinte; uma repetição no mesmo horário calcula a mesma janela e permanece idempotente.
+- **Reabrir se:** dados reais mostrarem que 24 horas ocultam continuidade importante ou aumentam custo sem ganho operacional.
+
+## D-016 — Agendamento único no backend do repositório
+
+- **Status:** PROVISÓRIA
+- **Data:** 2026-08-31
+- **Decisão:** um único GitHub Actions workflow agenda 08:00, 13:00 e 18:00 em `America/Recife` e chama `process-window` com credencial de processamento guardada em GitHub Secrets.
+- **Evidência:** o repositório já usa GitHub Actions; não há cron Supabase versionado ou comprovado. O workflow evita criar uma segunda função de processamento e mantém a credencial fora do navegador.
+- **Consequência:** `RADAR_SUPABASE_URL`, `RADAR_NETWORK_ID` e `RADAR_PROCESSING_SECRET` precisam ser configurados no repositório antes da validação remota. O cron não pode ser chamado de ativo até uma execução observada.
+- **Reabrir se:** a operação preferir e validar Supabase Cron com gestão equivalente de secrets, ou se a confiabilidade do GitHub Actions for insuficiente.
+
+## D-017 — IA externa bloqueada por avaliação e governança
+
+- **Status:** ACEITA
+- **Data:** 2026-08-31
+- **Decisão:** a inteligência determinística permanece oficial; nenhum texto observado será enviado a LLM externo enquanto o gate de governança estiver aberto e não houver ganho medido contra a baseline.
+- **Evidência:** oito cenários já fornecem regressão reproduzível, enquanto finalidade, minimização, retenção e provider de LLM ainda não foram aprovados em `DATA_GOVERNANCE.md`.
+- **Consequência:** esta rodada não adiciona provider, chave, chamada ou interface decorativa de IA.
+- **Reabrir se:** governança for aprovada e uma avaliação controlada demonstrar benefício sem piorar falsos positivos, proveniência, custo ou privacidade.

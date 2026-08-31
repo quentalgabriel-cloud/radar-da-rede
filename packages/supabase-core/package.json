@@ -6,6 +6,7 @@
   "scripts": {
     "build": "node scripts/check-supabase.mjs",
     "check": "node scripts/check-supabase.mjs",
+    "consolidate": "node scripts/run-consolidation.mjs",
     "sync:edge": "node scripts/sync-edge-contracts.mjs && node scripts/sync-edge-intelligence.mjs",
     "test": "node --test test/*.test.js"
   }

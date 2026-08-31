@@ -20,6 +20,14 @@
 - **Backend atual:** nenhum; artefato estático gerado pelo view model.
 - **Deployment:** `dpl_4Fic8GXudrGAhxMYk3x536ZCj1TF` (`READY`)
 
+## Consolidação agendada
+
+- **Mecanismo versionado:** `.github/workflows/consolidate.yml`.
+- **Horários pretendidos:** 08:00, 13:00 e 18:00 em `America/Recife` (11:00, 16:00 e 21:00 UTC).
+- **Janela:** snapshot móvel de 24 horas ancorado no último horário canônico.
+- **Estado:** IMPLEMENTADO e TESTADO LOCALMENTE; NÃO VALIDADO REMOTAMENTE.
+- **Gate:** configurar `RADAR_SUPABASE_URL`, `RADAR_NETWORK_ID` e `RADAR_PROCESSING_SECRET` em GitHub Actions Secrets e observar ao menos uma execução e um retry idempotente.
+
 ### Configuração obrigatória de Auth
 
 No Supabase Auth, a `Site URL` de produção deve ser `https://radar-da-rede.vercel.app`.

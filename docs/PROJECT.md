@@ -27,6 +27,9 @@ Fake Sensor, Android Notification Adapter e eventual WAHA Adapter convergem no m
 - Android foundations: checks estáticos TESTADOS; build Android NÃO TESTADO.
 - Captura, entrega em background e recuperação após offline no Moto G84: NÃO TESTADAS fisicamente.
 - Parser WhatsApp com fixtures reais: NÃO TESTADO.
+- Refresh global com intervalo de 90 segundos, pausa em aba oculta e proteção contra concorrência: IMPLEMENTADO e TESTADO LOCALMENTE.
+- Consolidação de snapshot móvel de 24 horas às 08:00, 13:00 e 18:00 de Recife: IMPLEMENTADA e TESTADA LOCALMENTE; workflow remoto ainda NÃO VALIDADO.
+- IA externa: NÃO IMPLEMENTADA; bloqueada até aprovação da governança e avaliação contra a baseline determinística.
 
 ## Gates externos atuais
 

@@ -37,6 +37,18 @@ const processingAuth = await readFile(
   resolve(repositoryRoot, "supabase/functions/_shared/processing-auth.ts"),
   "utf8",
 );
+const consolidationSchedule = await readFile(
+  resolve(repositoryRoot, "packages/supabase-core/src/consolidation-schedule.js"),
+  "utf8",
+);
+const consolidationRunner = await readFile(
+  resolve(repositoryRoot, "packages/supabase-core/scripts/run-consolidation.mjs"),
+  "utf8",
+);
+const consolidationWorkflow = await readFile(
+  resolve(repositoryRoot, ".github/workflows/consolidate.yml"),
+  "utf8",
+);
 
 const tables = [...sql.matchAll(/create table public\.([a-z_]+)/g)].map((match) => match[1]);
 assert.ok(tables.length >= 10, "expected the MVP core tables");
@@ -74,5 +86,14 @@ assert.match(processingAuth, /crypto\.subtle\.digest\("SHA-256"/);
 assert.match(radarReadModel, /@supabase\/server@1\.4\.1/);
 assert.match(radarReadModel, /withSupabase\(\{ auth: "user" \}/);
 assert.match(radarReadModel, /processing_runs/);
+assert.match(consolidationSchedule, /America\/Recife/);
+assert.match(consolidationSchedule, /\[8, 13, 18\]/);
+assert.match(consolidationSchedule, /CONSOLIDATION_WINDOW_HOURS = 24/);
+assert.match(consolidationRunner, /RADAR_PROCESSING_SECRET/);
+assert.match(consolidationRunner, /functions\/v1\/process-window/);
+assert.match(consolidationWorkflow, /cron: "0 11,16,21 \* \* \*"/);
+assert.match(consolidationWorkflow, /configured=true/);
+assert.match(consolidationWorkflow, /if: steps\.configuration\.outputs\.configured == 'true'/);
+assert.doesNotMatch(consolidationWorkflow, /SUPABASE_SERVICE_ROLE_KEY/);
 
 console.log(`Supabase foundation OK: ${tables.length} RLS tables and synced contracts.`);

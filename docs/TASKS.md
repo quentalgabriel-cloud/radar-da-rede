@@ -12,7 +12,8 @@
 - [x] Implementar e testar contratos v0.1.0.
 - [x] Criar fixtures `normal-day` e `material-shortage` com ground truth.
 - [x] Configurar CI básico.
-- [ ] Publicar o histórico local em repositório GitHub privado e validar o CI remoto.
+- [x] Publicar o histórico local no repositório GitHub.
+- [ ] Confirmar o CI remoto na `main` e decidir se o repositório público deve permanecer público.
 
 ## Core sem aparelho
 
@@ -43,10 +44,14 @@
 - [ ] Publicar a rodada de Auth e UI no Vercel e verificar em smartphone.
 - [x] Android foundations (estrutura e checks estáticos; build físico pendente).
 - [ ] Sensor Probe no Moto G84.
+- [x] Implementar refresh global com leitura automática leve e proteção contra concorrência.
+- [x] Versionar consolidação de janela canônica às 08:00, 13:00 e 18:00 de Recife.
+- [ ] Configurar os três secrets do workflow de consolidação e validar uma execução remota.
+- [ ] Validar com a operação se o horizonte móvel de 24 horas representa corretamente situações ainda relevantes.
 
 ## Ordem de execução
 
-1. Criar o repositório GitHub privado e publicar o histórico local.
-2. Criar um usuário operador e validar Auth + membership + RLS + `radar-read-model`.
-3. Trocar no Radar Web apenas o provider sintético pelo provider Supabase, preservando o modo laboratório.
+1. Configurar os secrets do workflow e observar uma consolidação remota idempotente.
+2. Publicar e verificar o refresh global no modo live em smartphone.
+3. Validar com a coordenação a janela de 24 horas e a compreensão da UI.
 4. Executar o Sensor Probe e a matriz física quando o Moto G84 estiver disponível.

@@ -38,3 +38,10 @@
 | Android | Burst de vários grupos | NÃO TESTADO | Aguarda Moto G84 |
 | Android | Reboot, bateria e background | NÃO TESTADO | Aguarda Moto G84 |
 | Produto | Coordenação percebe sinais com menos esforço | NÃO TESTADO | Aguarda piloto |
+| Radar Web | Refresh manual e automático compartilham estado central | TESTADO LOCALMENTE | `apps/radar-web/test/refresh-controller.test.js` |
+| Radar Web | Auto refresh pausa oculto e evita chamadas paralelas | TESTADO LOCALMENTE | `apps/radar-web/test/refresh-controller.test.js` |
+| Consolidação | Horários 08:00, 13:00 e 18:00 usam `America/Recife` | TESTADO LOCALMENTE | `packages/supabase-core/test/consolidation-schedule.test.js` |
+| Consolidação | Retry no mesmo slot produz janela canônica idêntica | TESTADO LOCALMENTE | `packages/supabase-core/test/consolidation-schedule.test.js` |
+| Consolidação | Workflow chama `process-window` sem segredo no frontend | TESTADO ESTATICAMENTE | `packages/supabase-core/scripts/check-supabase.mjs` |
+| Consolidação | Três execuções diárias ocorrem no ambiente remoto | NÃO TESTADO | Aguarda configuração de GitHub Secrets e observação do workflow |
+| Inteligência | IA externa respeita governança e supera baseline | NÃO IMPLEMENTADO | Gate de governança aberto; baseline determinística preservada |
