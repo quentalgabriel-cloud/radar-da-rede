@@ -43,17 +43,19 @@ class MainActivity : Activity() {
             setTypeface(typeface, Typeface.BOLD)
         })
         content.addView(TextView(this).apply {
-            text = "Foundation Android — captura real ainda não validada"
+            text = "Sensor conectado — parser MessagingStyle v0.3.0"
             textSize = 16f
         })
 
         val endpoint = field("Endpoint HTTPS de ingestão", SensorGraph.settings.endpoint().orEmpty())
         val network = field("Network ID (UUID)", SensorGraph.settings.networkId())
+        val device = field("Device ID (UUID)", SensorGraph.settings.deviceId())
         val token = field("Token do dispositivo (deixe vazio para preservar)", "").apply {
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
         }
         content.addView(endpoint)
         content.addView(network)
+        content.addView(device)
         content.addView(token)
 
         content.addView(Button(this).apply {
@@ -63,6 +65,7 @@ class MainActivity : Activity() {
                     SensorGraph.settings.configure(
                         endpoint.text.toString().trim(),
                         network.text.toString().trim(),
+                        device.text.toString().trim(),
                         token.text.toString(),
                     )
                     SensorGraph.uploads.enqueueNow()
@@ -113,7 +116,7 @@ class MainActivity : Activity() {
                     "Notificações observadas: $observed\n" +
                     "Eventos emitidos: $emitted\n" +
                     "Outbox pendente: $pending\n" +
-                    "Parser: 0.0.0-unvalidated"
+                    "Parser: 0.3.0"
             }
         }
     }

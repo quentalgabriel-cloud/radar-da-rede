@@ -15,12 +15,14 @@ class SensorSettings(context: Context) {
 
     fun token(): String? = secrets.token()
 
-    fun configure(endpoint: String, networkId: String, token: String?) {
+    fun configure(endpoint: String, networkId: String, deviceId: String, token: String?) {
         require(endpoint.startsWith("https://")) { "O endpoint deve usar HTTPS" }
         UUID.fromString(networkId)
+        UUID.fromString(deviceId)
         prefs.edit()
             .putString("ingest_endpoint", endpoint.trimEnd('/'))
             .putString("network_id", networkId)
+            .putString("device_id", deviceId)
             .apply()
         if (!token.isNullOrBlank()) secrets.saveToken(token)
     }

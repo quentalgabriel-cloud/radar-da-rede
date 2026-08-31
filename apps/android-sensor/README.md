@@ -1,16 +1,17 @@
-# Android Sensor foundation
+# Android Sensor v0.3.0-connected
 
-Adapter Android candidato para o Moto G84. A fundação já separa captura,
-parser, outbox Room e upload WorkManager, mas **não afirma que notificações do
-WhatsApp possam ser convertidas corretamente**.
+Adapter Android para o Moto G84, reconciliado a partir do bundle Git da
+`v0.2.1`, do patch histórico da versão conectada e do APK observado em campo.
 
 ## Estado verificável
 
 - `NormalizedEvent` está alinhado ao contrato `0.1.0`.
 - `event_id` é persistido como chave primária antes do envio.
-- o transporte é at-least-once e o Core continua responsável por idempotência.
+- eventos e batches possuem identidade determinística; o Core continua responsável por idempotência.
 - token de ingestão é cifrado com Android Keystore; endpoint aceita somente HTTPS.
-- o parser ativo é `NoOpWhatsAppParser` (`0.0.0-unvalidated`).
+- o parser ativo é `MessagingStyleWhatsAppParser` (`0.3.0`).
+- somente conversas explicitamente marcadas como grupo e mensagens temporizadas de
+  `Notification.MessagingStyle` viram eventos.
 - nenhum texto bruto de notificação é persistido pelo scaffold.
 
 ## Ainda não testado
@@ -18,9 +19,9 @@ WhatsApp possam ser convertidas corretamente**.
 - sync/build Gradle e geração do schema Room, pois este ambiente não contém
   Android SDK nem Gradle;
 - instalação, autorização e ciclo de vida do listener no Moto G84;
-- formato, agrupamento, truncamento e identidade das notificações reais;
+- regressão física completa de agrupamento, truncamento e grupos silenciados;
 - consumo de bateria, comportamento offline e recuperação após reinício.
 
-Quando o aparelho estiver disponível, a primeira mudança será um Sensor Probe
-consentido para produzir fixtures sanitizadas. Só depois o `NoOpWhatsAppParser`
-será substituído por um parser versionado.
+O APK `0.3.0-connected` já enviou eventos ao ambiente remoto. A próxima prova
+de campo deve comparar o build deste código com o comportamento desse APK sem
+copiar conteúdo real para o repositório.

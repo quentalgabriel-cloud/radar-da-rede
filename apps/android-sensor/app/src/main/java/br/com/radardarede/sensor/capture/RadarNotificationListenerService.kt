@@ -24,6 +24,17 @@ class RadarNotificationListenerService : NotificationListenerService() {
             subText = extras.getCharSequence(Notification.EXTRA_SUB_TEXT)?.toString(),
             category = payload.category,
             isGroupConversation = extras.getBoolean(Notification.EXTRA_IS_GROUP_CONVERSATION, false),
+            messages = Notification.MessagingStyle.Message
+                .getMessagesFromBundleArray(extras.getParcelableArray(Notification.EXTRA_MESSAGES))
+                .mapNotNull { message ->
+                    val body = message.text?.toString()?.trim().orEmpty()
+                    if (body.isEmpty()) null else NotificationMessage(
+                        text = body,
+                        occurredAtEpochMillis = message.timestamp,
+                        sender = message.senderPerson?.name?.toString()
+                            ?: message.sender?.toString(),
+                    )
+                },
         )
         executor.execute { SensorGraph.captureCoordinator.capture(snapshot) }
     }

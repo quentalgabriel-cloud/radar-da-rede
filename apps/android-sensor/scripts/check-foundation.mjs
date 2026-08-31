@@ -35,9 +35,10 @@ export async function checkFoundation() {
   assert.equal(schema.properties.schema_version.const, "0.1.0");
   assert.match(model, /SCHEMA_VERSION = "0\.1\.0"/);
   assert.match(model, /source: String = "android_notification"/);
-  assert.match(parser, /class NoOpWhatsAppParser/);
-  assert.match(parser, /0\.0\.0-unvalidated/);
-  assert.match(parser, /emptyList\(\)/);
+  assert.match(parser, /class MessagingStyleWhatsAppParser/);
+  assert.match(parser, /override val version = "0\.3\.0"/);
+  assert.match(parser, /notification_messaging_style/);
+  assert.match(parser, /UUID\.nameUUIDFromBytes/);
   assert.match(manifest, /BIND_NOTIFICATION_LISTENER_SERVICE/);
   assert.match(manifest, /com\.whatsapp/);
   assert.match(manifest, /usesCleartextTraffic="false"/);
@@ -51,7 +52,7 @@ export async function checkFoundation() {
   return {
     kotlinFiles: kotlinFiles.length,
     schemaVersion: schema.properties.schema_version.const,
-    parserStatus: "unvalidated",
+    parserStatus: "messaging-style-v0.3.0",
   };
 }
 

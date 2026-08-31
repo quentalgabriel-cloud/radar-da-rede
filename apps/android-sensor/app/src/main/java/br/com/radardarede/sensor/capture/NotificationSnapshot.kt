@@ -10,4 +10,11 @@ data class NotificationSnapshot(
     val subText: String?,
     val category: String?,
     val isGroupConversation: Boolean?,
+    val messages: List<NotificationMessage> = emptyList(),
+)
+
+data class NotificationMessage(
+    val text: String,
+    val occurredAtEpochMillis: Long,
+    val sender: String? = null,
 )

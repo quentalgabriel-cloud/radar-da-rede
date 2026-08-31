@@ -3,6 +3,7 @@ package br.com.radardarede.sensor.contract
 import org.json.JSONArray
 import org.json.JSONObject
 import java.time.Instant
+import java.nio.charset.StandardCharsets
 import java.util.UUID
 
 object PayloadCodec {
@@ -28,10 +29,20 @@ object PayloadCodec {
     fun batch(networkId: String, deviceId: String, payloads: List<String>): String =
         JSONObject().apply {
             put("schema_version", NormalizedEvent.SCHEMA_VERSION)
-            put("batch_id", UUID.randomUUID().toString())
+            put("batch_id", batchId(payloads))
             put("network_id", networkId)
             put("device_id", deviceId)
             put("sent_at", Instant.now().toString())
             put("events", JSONArray(payloads.map(::JSONObject)))
         }.toString()
+
+    private fun batchId(payloads: List<String>): String {
+        val eventIds = payloads
+            .map { JSONObject(it).getString("event_id") }
+            .sorted()
+        return UUID.nameUUIDFromBytes(
+            ("radar-batch-v1:" + eventIds.joinToString("|"))
+                .toByteArray(StandardCharsets.UTF_8),
+        ).toString()
+    }
 }

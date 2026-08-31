@@ -12,7 +12,7 @@ class IngestClient {
             doOutput = true
             setRequestProperty("Authorization", "Bearer $bearerToken")
             setRequestProperty("Content-Type", "application/json")
-            setRequestProperty("User-Agent", "radar-android-sensor/0.1.0")
+            setRequestProperty("User-Agent", "RadarSensor/0.3.0-connected")
         }
         return try {
             connection.outputStream.use { it.write(payload.toByteArray(Charsets.UTF_8)) }

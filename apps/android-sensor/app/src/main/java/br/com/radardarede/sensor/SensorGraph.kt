@@ -2,7 +2,7 @@ package br.com.radardarede.sensor
 
 import android.content.Context
 import androidx.room.Room
-import br.com.radardarede.sensor.capture.NoOpWhatsAppParser
+import br.com.radardarede.sensor.capture.MessagingStyleWhatsAppParser
 import br.com.radardarede.sensor.capture.NotificationCaptureCoordinator
 import br.com.radardarede.sensor.capture.ProbeHealthStore
 import br.com.radardarede.sensor.outbox.OutboxRepository
@@ -39,7 +39,7 @@ object SensorGraph {
         health = ProbeHealthStore(appContext)
         uploads = UploadScheduler(appContext)
         captureCoordinator = NotificationCaptureCoordinator(
-            parser = NoOpWhatsAppParser(),
+            parser = MessagingStyleWhatsAppParser(),
             outbox = outbox,
             settings = settings,
             health = health,
