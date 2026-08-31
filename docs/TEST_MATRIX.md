@@ -28,11 +28,11 @@
 | Radar Web | Alto volume renderiza 120 eventos, 8 grupos e zero alertas | TESTADO | Verificação no Vercel em 2026-08-26 |
 | Radar Web | Mudança de agenda exibe alerta médio e evidência | TESTADO | Verificação no Vercel em 2026-08-26 |
 | Android foundation | Contrato, separação parser/outbox/transporte e ausência de service role | TESTADO | `apps/android-sensor/scripts/check-foundation.test.mjs` |
-| Android build | Testes unitários, compilação e APK debug | VALIDADO REMOTAMENTE | GitHub Actions `Android Sensor #1`, commit `ebdc56b` |
+| Android build | Testes unitários, compilação e APK debug com heartbeat | VALIDADO REMOTAMENTE | GitHub Actions run `33448035276`, commit `824a8c1` |
 | Supabase foundation | Todas as tabelas expostas têm RLS e contratos Edge estão sincronizados | TESTADO ESTATICAMENTE | `packages/supabase-core/scripts/check-supabase.mjs` |
 | Supabase ingestão | Reenvio do mesmo batch não duplica eventos | TESTADO REMOTAMENTE | Ensaio idempotente e 73 batches registrados |
 | Supabase health | Heartbeat atualiza último contato | TESTADO REMOTAMENTE | Heartbeats `fake` e `android_notification` registrados |
-| Android | Parser aceita somente grupo explícito com MessagingStyle temporizado | TESTADO REMOTAMENTE | Teste Kotlin e build Android em `ebdc56b` |
+| Android | Parser aceita somente grupo explícito com MessagingStyle temporizado | TESTADO REMOTAMENTE | Teste Kotlin e build Android em `824a8c1` |
 | Android | Captura, persistência, upload e heartbeat no Moto G84 | VALIDADO EM CAMPO PARCIALMENTE | Diagnóstico de 2026-08-31: 232 snapshots, 396 eventos, outbox zero e heartbeat recente |
 | Android | NotificationListener recebe grupos normais no aparelho | NÃO TESTADO | Aguarda comparação física no Moto G84 |
 | Android | Grupos silenciados | NÃO TESTADO | Aguarda Moto G84 |

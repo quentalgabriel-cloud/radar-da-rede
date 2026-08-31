@@ -10,7 +10,7 @@ O produto não é CRM, ferramenta de disparo ou perfilamento individual. Sua arq
 
 O laboratório sintético já funciona de ponta a ponta: contratos, oito cenários reproduzíveis, Fake Sensor, ingestão idempotente, inteligência determinística e Radar Web. A versão pública está em [radar-da-rede.vercel.app](https://radar-da-rede.vercel.app).
 
-O Supabase dedicado já recebeu quatro migrations e seis Edge Functions, com ingestão, replay, heartbeat, processamento e proveniência em uso. Há eventos reais do adapter Android `0.3.0`, mas essa versão do código Android ainda precisa ser recuperada para o repositório e o roteiro físico completo no Moto G84 continua pendente. Os próximos gates são validar Auth/RLS com sessões reais, registrar a base de governança do piloto e ativar a credencial da consolidação agendada.
+O Supabase dedicado já recebeu quatro migrations e seis Edge Functions, com ingestão, replay, heartbeat, processamento e proveniência em uso. O adapter Android `0.3.0-connected` foi recuperado, reconciliado e compilado na `main`, incluindo captura, outbox, upload e heartbeat remoto. O diagnóstico do Moto G84 confirma operação parcial da versão anterior; a instalação desta compilação e o roteiro físico completo continuam pendentes. Os próximos gates são validar Auth/RLS com sessões reais, registrar a base de governança do piloto e ativar a credencial da consolidação agendada.
 
 ## Comandos
 

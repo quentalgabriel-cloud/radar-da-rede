@@ -31,12 +31,12 @@
 
 ## Android Sensor
 
-- **Fonte reconciliada:** commit `ebdc56b`.
+- **Fonte reconciliada:** parser e transporte no commit `ebdc56b`; heartbeat remoto no commit `8bf0cd0`; correção final de compilação no commit `824a8c1`.
 - **Versão:** `0.3.0-connected`, versionCode 4.
-- **Build remoto:** GitHub Actions `Android Sensor #1`, aprovado.
+- **Build remoto final:** GitHub Actions run `33448035276`, aprovado.
 - **Artefato:** `radar-sensor-v0.3.0-connected-debug`.
-- **SHA-256 do APK debug:** `9861B1104B818F4F6658C0B423A494FDD411D884C1292763730565185B2CEF24`.
-- **Estado:** parser, identidade, outbox e compilação TESTADOS; equivalência e ciclo completo no Moto G84 PENDENTES.
+- **SHA-256 do APK debug:** `882F4143BCF4B7ADE3806A6ED0C8ECCDD9FC8B1FB9A1260D62D476EAB392037A`.
+- **Estado:** parser, identidade, outbox, upload, heartbeat e compilação TESTADOS; instalação desta build, equivalência e ciclo completo no Moto G84 PENDENTES.
 
 ### Configuração obrigatória de Auth
 
