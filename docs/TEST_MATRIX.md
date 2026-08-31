@@ -33,6 +33,7 @@
 | Supabase ingestão | Reenvio do mesmo batch não duplica eventos | TESTADO REMOTAMENTE | Ensaio idempotente e 73 batches registrados |
 | Supabase health | Heartbeat atualiza último contato | TESTADO REMOTAMENTE | Heartbeats `fake` e `android_notification` registrados |
 | Android | Parser aceita somente grupo explícito com MessagingStyle temporizado | TESTADO REMOTAMENTE | Teste Kotlin e build Android em `ebdc56b` |
+| Android | Captura, persistência, upload e heartbeat no Moto G84 | VALIDADO EM CAMPO PARCIALMENTE | Diagnóstico de 2026-08-31: 232 snapshots, 396 eventos, outbox zero e heartbeat recente |
 | Android | NotificationListener recebe grupos normais no aparelho | NÃO TESTADO | Aguarda comparação física no Moto G84 |
 | Android | Grupos silenciados | NÃO TESTADO | Aguarda Moto G84 |
 | Android | Foreground e multi-device | NÃO TESTADO | Aguarda Moto G84 |

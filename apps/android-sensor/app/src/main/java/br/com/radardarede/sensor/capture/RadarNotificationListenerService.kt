@@ -1,6 +1,7 @@
 package br.com.radardarede.sensor.capture
 
 import android.app.Notification
+import android.content.ComponentName
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import br.com.radardarede.sensor.SensorGraph
@@ -40,6 +41,7 @@ class RadarNotificationListenerService : NotificationListenerService() {
     }
 
     override fun onDestroy() {
+        SensorGraph.health.recordListenerConnected(false)
         executor.shutdown()
         super.onDestroy()
     }
@@ -48,3 +50,16 @@ class RadarNotificationListenerService : NotificationListenerService() {
         private val WHATSAPP_PACKAGES = setOf("com.whatsapp", "com.whatsapp.w4b")
     }
 }
+    override fun onListenerConnected() {
+        super.onListenerConnected()
+        SensorGraph.health.recordListenerConnected(true)
+        SensorGraph.uploads.enqueueNow()
+    }
+
+    override fun onListenerDisconnected() {
+        SensorGraph.health.recordListenerConnected(false)
+        runCatching {
+            requestRebind(ComponentName(this, RadarNotificationListenerService::class.java))
+        }
+        super.onListenerDisconnected()
+    }

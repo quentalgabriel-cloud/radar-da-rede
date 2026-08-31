@@ -9,35 +9,55 @@ import br.com.radardarede.sensor.contract.PayloadCodec
 class UploadWorker(context: Context, params: WorkerParameters) : Worker(context, params) {
     override fun doWork(): Result {
         val settings = SensorGraph.settings
-        val endpoint = settings.endpoint() ?: return Result.success()
+        val eventsEndpoint = settings.eventsEndpoint() ?: return Result.success()
+        val healthEndpoint = settings.healthEndpoint() ?: return Result.success()
         val token = settings.token() ?: return Result.failure()
         val events = SensorGraph.outbox.pending()
-        if (events.isEmpty()) return Result.success()
+        if (events.isNotEmpty()) {
+            val payload = PayloadCodec.batch(
+                networkId = settings.networkId(),
+                deviceId = settings.deviceId(),
+                payloads = events.map { it.payload },
+            )
+            val response = runCatching {
+                SensorGraph.ingestClient.post(eventsEndpoint, token, payload)
+            }.getOrElse {
+                SensorGraph.outbox.retryLater(events)
+                return Result.retry()
+            }
+            when {
+                response.accepted -> {
+                    SensorGraph.outbox.acknowledge(events)
+                    SensorGraph.health.recordUploadSucceeded()
+                }
+                response.retryable -> {
+                    SensorGraph.outbox.retryLater(events)
+                    return Result.retry()
+                }
+                else -> return Result.failure()
+            }
+        }
 
-        val payload = PayloadCodec.batch(
+        val heartbeat = PayloadCodec.heartbeat(
             networkId = settings.networkId(),
             deviceId = settings.deviceId(),
-            payloads = events.map { it.payload },
+            observedAt = System.currentTimeMillis(),
+            outboxPending = SensorGraph.outbox.pendingCount(),
+            oldestPendingAt = SensorGraph.outbox.oldestCreatedAt(),
+            lastNotificationAt = SensorGraph.health.lastNotificationAt(),
+            lastParsedEventAt = SensorGraph.health.lastParsedEventAt(),
+            lastUploadSucceededAt = SensorGraph.health.lastUploadSucceededAt(),
+            observedCount = SensorGraph.health.observedCount(),
+            emittedCount = SensorGraph.health.emittedCount(),
+            listenerConnected = SensorGraph.health.listenerConnected(),
         )
-        return runCatching { SensorGraph.ingestClient.post(endpoint, token, payload) }
-            .fold(
-                onSuccess = { response ->
-                    when {
-                        response.accepted -> {
-                            SensorGraph.outbox.acknowledge(events)
-                            Result.success()
-                        }
-                        response.retryable -> {
-                            SensorGraph.outbox.retryLater(events)
-                            Result.retry()
-                        }
-                        else -> Result.failure()
-                    }
-                },
-                onFailure = {
-                    SensorGraph.outbox.retryLater(events)
-                    Result.retry()
-                },
-            )
+        val healthResponse = runCatching {
+            SensorGraph.ingestClient.post(healthEndpoint, token, heartbeat)
+        }.getOrElse { return Result.retry() }
+        return when {
+            healthResponse.accepted -> Result.success()
+            healthResponse.retryable -> Result.retry()
+            else -> Result.failure()
+        }
     }
 }

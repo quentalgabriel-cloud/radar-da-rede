@@ -9,6 +9,10 @@ class SensorSettings(context: Context) {
 
     fun endpoint(): String? = prefs.getString("ingest_endpoint", null)
 
+    fun eventsEndpoint(): String? = functionEndpoint("ingest-events")
+
+    fun healthEndpoint(): String? = functionEndpoint("ingest-health")
+
     fun networkId(): String = id("network_id")
 
     fun deviceId(): String = id("device_id")
@@ -32,5 +36,14 @@ class SensorSettings(context: Context) {
         val value = UUID.randomUUID().toString()
         prefs.edit().putString(key, value).apply()
         return value
+    }
+
+    private fun functionEndpoint(slug: String): String? {
+        val configured = endpoint()?.trimEnd('/') ?: return null
+        return when {
+            configured.endsWith("/ingest-events") || configured.endsWith("/ingest-health") ->
+                configured.substringBeforeLast('/') + "/$slug"
+            else -> "$configured/$slug"
+        }
     }
 }

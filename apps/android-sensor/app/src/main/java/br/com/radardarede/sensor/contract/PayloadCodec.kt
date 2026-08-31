@@ -36,6 +36,45 @@ object PayloadCodec {
             put("events", JSONArray(payloads.map(::JSONObject)))
         }.toString()
 
+    fun heartbeat(
+        networkId: String,
+        deviceId: String,
+        observedAt: Long,
+        outboxPending: Int,
+        oldestPendingAt: Long?,
+        lastNotificationAt: Long?,
+        lastParsedEventAt: Long?,
+        lastUploadSucceededAt: Long?,
+        observedCount: Long,
+        emittedCount: Long,
+        listenerConnected: Boolean,
+    ): String = JSONObject().apply {
+        put("schema_version", NormalizedEvent.SCHEMA_VERSION)
+        put("heartbeat_id", UUID.randomUUID().toString())
+        put("network_id", networkId)
+        put("device_id", deviceId)
+        put("source", "android_notification")
+        put("observed_at", Instant.ofEpochMilli(observedAt).toString())
+        put("adapter_version", "0.3.0-connected")
+        put("parser_version", "0.3.0")
+        put("status", if (outboxPending > 0) "degraded" else "healthy")
+        put("outbox_pending", outboxPending)
+        put("listener_connected", listenerConnected)
+        oldestPendingAt?.let { put("oldest_pending_at", Instant.ofEpochMilli(it).toString()) }
+        lastNotificationAt?.let {
+            put("last_event_captured_at", Instant.ofEpochMilli(it).toString())
+            put("last_whatsapp_notification_at", Instant.ofEpochMilli(it).toString())
+        }
+        lastParsedEventAt?.let { put("last_parsed_event_at", Instant.ofEpochMilli(it).toString()) }
+        lastUploadSucceededAt?.let {
+            put("last_upload_succeeded_at", Instant.ofEpochMilli(it).toString())
+        }
+        put("counters", JSONObject(mapOf(
+            "notifications_observed" to observedCount,
+            "events_emitted" to emittedCount,
+        )))
+    }.toString()
+
     private fun batchId(payloads: List<String>): String {
         val eventIds = payloads
             .map { JSONObject(it).getString("event_id") }
