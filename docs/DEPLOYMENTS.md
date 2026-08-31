@@ -29,6 +29,15 @@
 - **Estado:** IMPLEMENTADO e TESTADO LOCALMENTE; NÃO VALIDADO REMOTAMENTE.
 - **Gate:** criar uma credencial de processamento, configurar os três GitHub Actions Secrets e observar ao menos uma execução e um retry idempotente. Em 2026-08-31, `processing_credentials` não possuía credencial ativa.
 
+## Android Sensor
+
+- **Fonte reconciliada:** commit `ebdc56b`.
+- **Versão:** `0.3.0-connected`, versionCode 4.
+- **Build remoto:** GitHub Actions `Android Sensor #1`, aprovado.
+- **Artefato:** `radar-sensor-v0.3.0-connected-debug`.
+- **SHA-256 do APK debug:** `9861B1104B818F4F6658C0B423A494FDD411D884C1292763730565185B2CEF24`.
+- **Estado:** parser, identidade, outbox e compilação TESTADOS; equivalência e ciclo completo no Moto G84 PENDENTES.
+
 ### Configuração obrigatória de Auth
 
 No Supabase Auth, a `Site URL` de produção deve ser `https://radar-da-rede.vercel.app`.

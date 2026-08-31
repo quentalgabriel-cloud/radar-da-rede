@@ -24,9 +24,9 @@ Fake Sensor, Android Notification Adapter e eventual WAHA Adapter convergem no m
 - Inteligência determinística v0.1.0: TESTADA contra o ground truth dos oito cenários sintéticos.
 - Radar Web sintético: TESTADO localmente e no navegador, publicado em produção no Vercel.
 - Radar Web orientado a linguagem humana e progressão resumo -> detalhe -> evidência: IMPLEMENTADO e TESTADO localmente; publicação desta rodada pendente.
-- Android foundations: checks estáticos TESTADOS; build Android NÃO TESTADO.
+- Android `0.3.0-connected`: fonte histórica recuperada do bundle/patch, parser MessagingStyle portado para Kotlin, checks locais e build Android remoto TESTADOS.
 - Produção recebeu 396 eventos `android_notification` até 2026-08-31, com adapter `0.3.0-connected` e parser `0.3.0`; isso prova ingestão real, mas não substitui o roteiro físico completo no Moto G84.
-- O código Android `0.3.0` que gerou esses eventos ainda não está neste repositório; a versão local continua com parser NoOp. Recuperar essa fonte é gate crítico.
+- A lógica Android `0.3.0` foi reconciliada na `main`; a equivalência física com o APK já instalado ainda precisa ser validada no Moto G84.
 - Refresh global com intervalo de 90 segundos, pausa em aba oculta e proteção contra concorrência: IMPLEMENTADO e TESTADO LOCALMENTE.
 - Consolidação de snapshot móvel de 24 horas às 08:00, 13:00 e 18:00 de Recife: IMPLEMENTADA e TESTADA LOCALMENTE; workflow remoto ainda NÃO VALIDADO.
 - IA externa: NÃO IMPLEMENTADA; bloqueada até aprovação da governança e avaliação contra a baseline determinística.
