@@ -52,4 +52,4 @@
 | Group Registry | Migration e RPCs funcionam no Supabase dedicado | NÃO TESTADO | Requer aplicação remota da nova migration |
 | Classificação | Alterações registram histórico e exigem operator/owner | TESTADO ESTATICAMENTE | `classify_group`, RLS e testes de foundation; ensaio remoto pendente |
 | Captura | Confidence high/moderate/low/unavailable invalida tendência fraca | TESTADO LOCALMENTE | `packages/capture-health/test/capture-health.test.js` |
-| Android | MessagingStyle cumulativo preserva ID e adiciona apenas mensagem nova | IMPLEMENTADO | Teste Kotlin; build remoto desta rodada pendente |
+| Android | MessagingStyle cumulativo preserva ID e adiciona apenas mensagem nova | VALIDADO REMOTAMENTE | GitHub Actions run `33459336566`, commit `fa87236` |
