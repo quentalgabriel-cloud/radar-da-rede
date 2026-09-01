@@ -1,6 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2.112.4";
 import { buildAnalysisPayload, validateProcessWindow } from "../_shared/analysis-payload.js";
 import { analyzeEvents } from "../_shared/intelligence.js";
+import { resolveGroupObservationsShadow } from "../_shared/group-resolution.js";
 import { authenticateProcessor } from "../_shared/processing-auth.ts";
 
 const MAX_EVENTS = 5_000;
@@ -41,6 +42,7 @@ Deno.serve(async (request) => {
   }
   if ((events?.length ?? 0) > MAX_EVENTS) return json(422, { error: "window_too_large" });
 
+  const groupResolution = await resolveGroupObservationsShadow(admin, window.network_id, events ?? []);
   const analysis = analyzeEvents(events ?? []);
   const payload = await buildAnalysisPayload({
     networkId: window.network_id,
@@ -55,7 +57,10 @@ Deno.serve(async (request) => {
     return json(500, { error: "processing_failed" });
   }
 
-  return json(200, Array.isArray(data) ? data[0] : data ?? {});
+  return json(200, {
+    ...(Array.isArray(data) ? data[0] : data ?? {}),
+    group_resolution: groupResolution
+  });
 });
 
 function json(status: number, body: unknown): Response {
@@ -64,4 +69,3 @@ function json(status: number, body: unknown): Response {
     headers: { "content-type": "application/json; charset=utf-8" }
   });
 }
-

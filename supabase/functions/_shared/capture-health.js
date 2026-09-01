@@ -113,6 +113,45 @@ const synchronizationLayer = (health, now, uploadLagAge) => {
   return layer("ok", "Normal", "Nenhum envio está pendente.");
 };
 
+
+export const evaluateCaptureConfidence = (health, options = {}) => {
+  const startsAt = Date.parse(options.startsAt ?? "");
+  const endsAt = Date.parse(options.endsAt ?? new Date().toISOString());
+  const transitions = options.transitions ?? [];
+  if (!health?.observed_at || !Number.isFinite(startsAt) || !Number.isFinite(endsAt)) {
+    return confidence("unavailable", "health_or_window_unavailable");
+  }
+  if (Date.parse(health.observed_at) < startsAt) {
+    return confidence("unavailable", "heartbeat_does_not_cover_window");
+  }
+  if (health.notification_access === false || health.whatsapp_installed === false) {
+    return confidence("unavailable", "capture_not_configured");
+  }
+  if (health.listener_connected === false) return confidence("low", "listener_disconnected");
+  if (health.network_type === "offline") return confidence("low", "network_offline");
+  if (Number(health.outbox_pending ?? 0) > 0) return confidence("low", "queue_not_drained");
+
+  const relevant = transitions.filter((transition) => {
+    const occurredAt = Date.parse(transition?.occurred_at);
+    return Number.isFinite(occurredAt) && occurredAt >= startsAt && occurredAt <= endsAt;
+  });
+  if (relevant.some((transition) => [
+    "listener_disconnected", "setup_required", "network_offline", "queue_backlog"
+  ].includes(transition.kind))) return confidence("low", "capture_incident_in_window");
+  if (health.status === "offline_recovery" || relevant.some((transition) => transition.kind === "recovered")) {
+    return confidence("moderate", "recovered_in_window");
+  }
+  if (health.status === "degraded") return confidence("moderate", "adapter_degraded");
+  return confidence("high", "capture_covered_window");
+};
+
+const confidence = (level, reason) => ({
+  level,
+  reason,
+  trend_valid: level === "high" || level === "moderate"
+});
+
+
 const result = (state, label, summary, detail) => ({
   state,
   level: state === "NORMAL" ? "ok" : state === "NO_RECENT_ACTIVITY" ? "neutral" : state === "ATTENTION" ? "warning" : "critical",
@@ -123,4 +162,3 @@ const result = (state, label, summary, detail) => ({
   next_action: detail.action,
   layers: { device: detail.device, capture: detail.capture, sync: detail.sync }
 });
-

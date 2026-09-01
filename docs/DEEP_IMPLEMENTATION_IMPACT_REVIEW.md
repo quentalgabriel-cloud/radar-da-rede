@@ -499,7 +499,7 @@ Uso do rótulo como identidade canônica, `territory_spike` como conceito geral,
 
 ## 25. Próxima ação recomendada
 
-Executar P0 sobre a operação ativa, sem aguardar piloto e sem interromper a inclusão de grupos. Começar por D-017/D-018/D-019 e uma migration **somente aditiva** para `groups`, `group_aliases` e `group_classification_changes`. Implementar o resolvedor em shadow, o controle de duplicação e a classificação auditável progressiva. O primeiro relatório deve mostrar identidades resolvidas, ambíguas, colisões, duplicações evitadas e grupos ainda não classificados. Depois persistir métricas e ativar gradualmente o Control Center. Governança é aplicada por permissões, rastreabilidade e controles internos do sistema; não constitui gate externo de implementação. Menções políticas, reação/sentimento agregado e segmentação podem avançar como módulos controlados após a identidade mínima estar operacional.
+Executar P0 sobre a operação ativa, sem aguardar piloto e sem interromper a inclusão de grupos. Começar por D-018/D-019/D-020 e uma migration **somente aditiva** para `groups`, `group_aliases` e `group_classification_changes`. Implementar o resolvedor em shadow, o controle de duplicação e a classificação auditável progressiva. O primeiro relatório deve mostrar identidades resolvidas, ambíguas, colisões, duplicações evitadas e grupos ainda não classificados. Depois persistir métricas e ativar gradualmente o Control Center. Governança é aplicada por permissões, rastreabilidade e controles internos do sistema; não constitui gate externo de implementação. Menções políticas, reação/sentimento agregado e segmentação podem avançar como módulos controlados após a identidade mínima estar operacional.
 
 ## Change surface verificada
 

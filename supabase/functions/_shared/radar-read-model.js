@@ -1,4 +1,4 @@
-import { evaluateCaptureHealth } from "./capture-health.js";
+import { evaluateCaptureConfidence, evaluateCaptureHealth } from "./capture-health.js";
 
 const categoryLabels = {
   agenda_mobilizacao: "Agenda e mobilização",
@@ -155,6 +155,11 @@ export function buildPersistedRadarViewModel({ network, run, events, facts, sign
     parser_version: "unknown"
   };
   const healthEvaluation = evaluateCaptureHealth(healthSnapshot);
+  const captureConfidence = evaluateCaptureConfidence(healthSnapshot, {
+    startsAt: run.starts_at,
+    endsAt: run.ends_at,
+    transitions: healthTransitions
+  });
 
   return {
     schema_version: "0.1.0",
@@ -214,6 +219,7 @@ export function buildPersistedRadarViewModel({ network, run, events, facts, sign
     health: {
       ...healthSnapshot,
       evaluation: healthEvaluation,
+      capture_confidence: captureConfidence,
       transitions: healthTransitions,
       diagnostic_test: diagnosticTest
     },
@@ -225,4 +231,3 @@ export function buildPersistedRadarViewModel({ network, run, events, facts, sign
     }
   };
 }
-

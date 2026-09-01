@@ -5,6 +5,10 @@
 - [x] M1 — Synthetic Ingest Spine.
 - [x] Laboratório sintético navegável com oito cenários em produção.
 - [x] M2 — Supabase Ingest Spine em projeto dedicado.
+- [x] P0 — Schema aditivo do Group Registry, aliases e histórico versionado.
+- [x] P0 — Resolvedor shadow e capture confidence implementados/testados localmente.
+- [ ] P0 — Aplicar migration no Supabase dedicado e validar RLS/RPCs remotamente.
+- [ ] P0 — Observar relatório shadow e habilitar classificação administrativa na operação.
 
 ## Fundação
 
@@ -52,7 +56,8 @@
 
 ## Ordem de execução
 
-1. Configurar os secrets do workflow e observar uma consolidação remota idempotente.
-2. Publicar e verificar o refresh global no modo live em smartphone.
-3. Validar com a coordenação a janela de 24 horas e a compreensão da UI.
-4. Executar o Sensor Probe e a matriz física quando o Moto G84 estiver disponível.
+1. Aplicar e validar remotamente a migration do Group Registry.
+2. Publicar as Edge Functions com resolvedor shadow e observar métricas sem trocar o read model.
+3. Habilitar classificação progressiva para gerente de comunidade/operator.
+4. Configurar os secrets do workflow e observar uma consolidação remota idempotente.
+5. Validar a janela de 24 horas e avançar ao gate P1.

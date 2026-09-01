@@ -146,11 +146,38 @@ Os status usados são `ACEITA`, `PROVISÓRIA`, `HIPÓTESE` e `ESTACIONADA`.
 - **Consequência:** `RADAR_SUPABASE_URL`, `RADAR_NETWORK_ID` e `RADAR_PROCESSING_SECRET` precisam ser configurados no repositório antes da validação remota. O cron não pode ser chamado de ativo até uma execução observada.
 - **Reabrir se:** a operação preferir e validar Supabase Cron com gestão equivalente de secrets, ou se a confiabilidade do GitHub Actions for insuficiente.
 
-## D-017 — IA externa bloqueada por avaliação e governança
+## D-017 — IA externa autorizada sob controle e avaliação
 
 - **Status:** ACEITA
 - **Data:** 2026-08-31
-- **Decisão:** a inteligência determinística permanece oficial; nenhum texto observado será enviado a LLM externo enquanto o gate de governança estiver aberto e não houver ganho medido contra a baseline.
-- **Evidência:** oito cenários já fornecem regressão reproduzível, enquanto finalidade, minimização, retenção e provider de LLM ainda não foram aprovados em `DATA_GOVERNANCE.md`.
-- **Consequência:** esta rodada não adiciona provider, chave, chamada ou interface decorativa de IA.
-- **Reabrir se:** governança for aprovada e uma avaliação controlada demonstrar benefício sem piorar falsos positivos, proveniência, custo ou privacidade.
+- **Decisão:** menções políticas, reação/sentimento agregado e segmentação por grupo/contexto estão autorizados. Antes da primeira chamada externa, o sistema deve registrar tarefa, modelo, tokens/custo, confiança e escopo; baseline determinística e fallback permanecem disponíveis.
+- **Evidência:** a operação autorizou essas trilhas; isso não autoriza perfil individual, CRM ou inferência automática de intenção de voto.
+- **Consequência:** P2 pode implementar módulos controlados e reversíveis sem gate jurídico externo, preservando permissões, rastreabilidade e avaliação de qualidade dentro do sistema.
+- **Reabrir se:** custo, qualidade, operação ou controles internos forem insuficientes.
+
+## D-018 — Identidade híbrida de grupos
+
+- **Status:** ACEITA
+- **Data:** 2026-08-31
+- **Decisão:** `conversation_id` permanece evidência observada e `group_id` é resolvido no processamento por registry e aliases; eventos históricos não são reescritos.
+- **Evidência:** Android deriva a conversa do rótulo e o read model recanoniza por nome, o que não sustenta rename ou nomes duplicados.
+- **Consequência:** registry é aditivo, começa em shadow e ambiguidades não fundem grupos automaticamente.
+- **Reabrir se:** todas as fontes passarem a fornecer identidade estável universal comprovada.
+
+## D-019 — Contexto primário e classificação progressiva
+
+- **Status:** ACEITA
+- **Data:** 2026-08-31
+- **Decisão:** grupos recebem um contexto primário opcional; `origin` começa como `legacy`, `current_operation` ou `unknown`. Ausência de classificação nunca bloqueia captura ou entrada.
+- **Evidência:** a rede ativa combina território, liderança, projeto, tema, comunidade, evento e relações orgânicas.
+- **Consequência:** território deixa de ser universal e contexto M:N permanece fora até necessidade observada.
+- **Reabrir se:** a operação exigir múltiplos contextos simultâneos para decisões reais.
+
+## D-020 — Classificação administrativa auditável sem aprovação dupla
+
+- **Status:** ACEITA
+- **Data:** 2026-08-31
+- **Decisão:** alterações de metadata de grupo registram autor, instante, campo, valores anterior/novo e origem; operadores autorizados classificam sem fluxo obrigatório de dupla aprovação.
+- **Evidência:** conhecimento de contexto está distribuído entre agentes e gerente de comunidade e precisa ser corrigível sem apagar histórico.
+- **Consequência:** `group_classification_changes` registra somente metadata administrativa; mensagens e participantes não são duplicados.
+- **Reabrir se:** erros operacionais demonstrarem necessidade de revisão adicional.

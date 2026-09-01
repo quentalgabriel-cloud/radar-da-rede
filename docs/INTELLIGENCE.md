@@ -32,7 +32,7 @@ Oito cenários têm ground truth explícito: `normal-day`, `material-shortage`,
 
 As consolidações agendadas recompõem um snapshot completo das 24 horas anteriores ao último horário canônico de Recife: 08:00, 13:00 ou 18:00. O read model continua selecionando a execução concluída mais recente. Essa escolha evita que um processamento apenas incremental remova da interface situações ainda presentes no horizonte operacional.
 
-Reexecuções no mesmo slot usam os mesmos limites. Eventos atrasados entram na próxima consolidação enquanto ainda pertencerem à janela móvel. A duração de 24 horas é provisória e deve ser revista com evidência do piloto.
+Reexecuções no mesmo slot usam os mesmos limites. Eventos atrasados entram na próxima consolidação enquanto ainda pertencerem à janela móvel. A duração de 24 horas é provisória e deve ser revista com evidência da operação ativa.
 
 ## Gate para IA
 

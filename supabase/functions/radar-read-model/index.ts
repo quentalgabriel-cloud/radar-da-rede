@@ -3,6 +3,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.112.4";
 import { corsHeaders } from "npm:@supabase/supabase-js@2.112.4/cors";
 import { buildAnalysisPayload } from "../_shared/analysis-payload.js";
 import { canonicalizeConversationEvent } from "../_shared/canonical-conversations.js";
+import { resolveGroupObservationsShadow } from "../_shared/group-resolution.js";
 import { analyzeEvents } from "../_shared/intelligence.js";
 import { buildPersistedRadarViewModel } from "../_shared/radar-read-model.js";
 
@@ -152,10 +153,10 @@ async function ensureLatestAnalysis(admin: ReturnType<typeof createClient>, netw
     .order("occurred_at", { ascending: true }).limit(MAX_EVENTS + 1);
   if (eventError || (events?.length ?? 0) > MAX_EVENTS) return "analysis_window_unavailable";
 
+  await resolveGroupObservationsShadow(admin, networkId, events ?? []);
   const analysisEvents = (events ?? []).map(canonicalizeConversationEvent);
   const analysis = analyzeEvents(analysisEvents);
   const payload = await buildAnalysisPayload({ networkId, startsAt, endsAt: latestEvent.occurred_at, events: analysisEvents, analysis });
   const { error: persistError } = await admin.rpc("persist_analysis", { p_analysis: payload });
   return persistError ? "analysis_persist_failed" : null;
 }
-

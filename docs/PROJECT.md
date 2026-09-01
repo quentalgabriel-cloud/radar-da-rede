@@ -29,13 +29,13 @@ Fake Sensor, Android Notification Adapter e eventual WAHA Adapter convergem no m
 - A lógica Android `0.3.0` foi reconciliada na `main`; a equivalência física com o APK já instalado ainda precisa ser validada no Moto G84.
 - Refresh global com intervalo de 90 segundos, pausa em aba oculta e proteção contra concorrência: IMPLEMENTADO e TESTADO LOCALMENTE.
 - Consolidação de snapshot móvel de 24 horas às 08:00, 13:00 e 18:00 de Recife: IMPLEMENTADA e TESTADA LOCALMENTE; workflow remoto ainda NÃO VALIDADO.
-- IA externa: NÃO IMPLEMENTADA; bloqueada até aprovação da governança e avaliação contra a baseline determinística.
+- IA externa: NÃO IMPLEMENTADA; autorizada para trilhas agregadas futuras, condicionada tecnicamente a telemetria, avaliação contra baseline e fallback.
 
 ## Gates externos atuais
 
 - GitHub: repositório público ativo em `quentalgabriel-cloud/radar-da-rede`, branch `main` e CI funcionando.
 - Supabase: ingestão, heartbeat, processamento, proveniência e políticas RLS foram inspecionados; falta o teste positivo/negativo de Auth/RLS com sessões reais.
-- Governança: há dados reais de WhatsApp em produção, mas o checklist de autorização/retenção continua sem evidência registrada. Não ampliar o piloto antes dessa decisão.
+- Operação e controles: grupos reais já estão sendo incorporados. Permissões, rastreabilidade e escopo serão controlados no sistema sem funcionar como gate externo de implementação.
 - Consolidação agendada: o workflow existe, porém não há credencial ativa em `processing_credentials` nem execução remota comprovada.
 - Moto G84: a Trilha B começa quando aparelho e chip estiverem disponíveis; isso não bloqueia o Core nem o Radar Web.
 

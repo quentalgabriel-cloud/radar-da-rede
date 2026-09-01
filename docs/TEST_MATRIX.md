@@ -39,11 +39,17 @@
 | Android | Foreground e multi-device | NÃO TESTADO | Aguarda Moto G84 |
 | Android | Burst de vários grupos | NÃO TESTADO | Aguarda Moto G84 |
 | Android | Reboot, bateria e background | NÃO TESTADO | Aguarda Moto G84 |
-| Produto | Coordenação percebe sinais com menos esforço | NÃO TESTADO | Aguarda piloto |
+| Produto | Coordenação percebe sinais com menos esforço | NÃO TESTADO | Aguarda avaliação na operação ativa |
 | Radar Web | Refresh manual e automático compartilham estado central | TESTADO LOCALMENTE | `apps/radar-web/test/refresh-controller.test.js` |
 | Radar Web | Auto refresh pausa oculto e evita chamadas paralelas | TESTADO LOCALMENTE | `apps/radar-web/test/refresh-controller.test.js` |
 | Consolidação | Horários 08:00, 13:00 e 18:00 usam `America/Recife` | TESTADO LOCALMENTE | `packages/supabase-core/test/consolidation-schedule.test.js` |
 | Consolidação | Retry no mesmo slot produz janela canônica idêntica | TESTADO LOCALMENTE | `packages/supabase-core/test/consolidation-schedule.test.js` |
 | Consolidação | Workflow chama `process-window` sem segredo no frontend | TESTADO ESTATICAMENTE | `packages/supabase-core/scripts/check-supabase.mjs` |
 | Consolidação | Três execuções diárias ocorrem no ambiente remoto | NÃO TESTADO | Aguarda configuração de GitHub Secrets e observação do workflow |
-| Inteligência | IA externa respeita governança e supera baseline | NÃO IMPLEMENTADO | Gate de governança aberto; baseline determinística preservada |
+| Inteligência | IA externa tem telemetria e supera baseline | NÃO IMPLEMENTADO | Autorizada para P2; baseline determinística preservada |
+| Group Registry | Tabelas, RLS e RPCs administrativas são aditivas | TESTADO ESTATICAMENTE | Migration `20260831190000_group_registry_foundation.sql` e foundation checks |
+| Group Registry | Observações cosméticas são idempotentes e nomes iguais mantêm identidade da fonte | TESTADO LOCALMENTE | `packages/supabase-core/test/group-resolution.test.js` |
+| Group Registry | Migration e RPCs funcionam no Supabase dedicado | NÃO TESTADO | Requer aplicação remota da nova migration |
+| Classificação | Alterações registram histórico e exigem operator/owner | TESTADO ESTATICAMENTE | `classify_group`, RLS e testes de foundation; ensaio remoto pendente |
+| Captura | Confidence high/moderate/low/unavailable invalida tendência fraca | TESTADO LOCALMENTE | `packages/capture-health/test/capture-health.test.js` |
+| Android | MessagingStyle cumulativo preserva ID e adiciona apenas mensagem nova | IMPLEMENTADO | Teste Kotlin; build remoto desta rodada pendente |

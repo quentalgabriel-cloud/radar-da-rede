@@ -10,7 +10,7 @@ O produto não é CRM, ferramenta de disparo ou perfilamento individual. Sua arq
 
 O laboratório sintético já funciona de ponta a ponta: contratos, oito cenários reproduzíveis, Fake Sensor, ingestão idempotente, inteligência determinística e Radar Web. A versão pública está em [radar-da-rede.vercel.app](https://radar-da-rede.vercel.app).
 
-O Supabase dedicado já recebeu quatro migrations e seis Edge Functions, com ingestão, replay, heartbeat, processamento e proveniência em uso. O adapter Android `0.3.0-connected` foi recuperado, reconciliado e compilado na `main`, incluindo captura, outbox, upload e heartbeat remoto. O diagnóstico do Moto G84 confirma operação parcial da versão anterior; a instalação desta compilação e o roteiro físico completo continuam pendentes. Os próximos gates são validar Auth/RLS com sessões reais, registrar a base de governança do piloto e ativar a credencial da consolidação agendada.
+O Supabase dedicado já recebeu quatro migrations e seis Edge Functions, com ingestão, replay, heartbeat, processamento e proveniência em uso. O adapter Android `0.3.0-connected` foi recuperado, reconciliado e compilado na `main`, incluindo captura, outbox, upload e heartbeat remoto. A operação já incorpora grupos reais. A fundação aditiva do Group Registry está versionada para rollout shadow; aplicação e validação remota da migration ainda são gates explícitos.
 
 ## Comandos
 
@@ -24,6 +24,6 @@ não existem. Com URL, chave publicável e network ID, ele também habilita o mo
 “Dados reais”, com Supabase Auth e leitura protegida por RLS. Nenhuma chave
 privilegiada pertence ao frontend.
 
-O refresh global e a consolidação backend em três horários estão implementados e testados localmente. O agendamento remoto só será considerado ativo depois da configuração dos GitHub Secrets e da observação de uma execução real. A inteligência oficial continua determinística; nenhuma integração externa de IA está habilitada enquanto o gate de governança de dados permanecer aberto.
+O refresh global e a consolidação backend em três horários estão implementados e testados localmente. O agendamento remoto só será considerado ativo depois da configuração dos GitHub Secrets e da observação de uma execução real. A inteligência oficial continua determinística; módulos externos de IA estão autorizados para fases posteriores sob telemetria, confiança, controle de acesso e fallback.
 
 Consulte [`docs/PROJECT.md`](docs/PROJECT.md), [`docs/TASKS.md`](docs/TASKS.md), [`docs/TEST_MATRIX.md`](docs/TEST_MATRIX.md) e [`docs/DEPLOYMENTS.md`](docs/DEPLOYMENTS.md).

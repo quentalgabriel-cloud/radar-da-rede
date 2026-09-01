@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { evaluateCaptureHealth } from "../src/index.js";
+import { evaluateCaptureConfidence, evaluateCaptureHealth } from "../src/index.js";
 
 const now = "2026-08-31T18:30:00.000Z";
 const healthy = {
@@ -29,4 +29,24 @@ describe("capture health", () => {
       last_whatsapp_notification_at: "2026-08-31T16:00:00.000Z",
       last_parsed_event_at: "2026-08-31T16:00:01.000Z"
     }, { now }).state, "NO_RECENT_ACTIVITY"));
+});
+
+describe("capture confidence", () => {
+  const window = {
+    startsAt: "2026-08-31T17:00:00.000Z",
+    endsAt: "2026-08-31T18:30:00.000Z"
+  };
+
+  it("recognizes a window covered by a healthy chain", () =>
+    assert.deepEqual(evaluateCaptureConfidence(healthy, window), {
+      level: "high", reason: "capture_covered_window", trend_valid: true
+    }));
+  it("invalidates trends when listener or queue is unhealthy", () => {
+    assert.equal(evaluateCaptureConfidence({ ...healthy, listener_connected: false }, window).trend_valid, false);
+    assert.equal(evaluateCaptureConfidence({ ...healthy, outbox_pending: 3 }, window).level, "low");
+  });
+  it("marks recovery as moderate and missing coverage as unavailable", () => {
+    assert.equal(evaluateCaptureConfidence({ ...healthy, status: "offline_recovery" }, window).level, "moderate");
+    assert.equal(evaluateCaptureConfidence({ ...healthy, observed_at: "2026-08-31T16:00:00.000Z" }, window).level, "unavailable");
+  });
 });

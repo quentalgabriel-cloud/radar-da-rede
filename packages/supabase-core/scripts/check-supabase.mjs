@@ -4,6 +4,10 @@ import { resolve } from "node:path";
 
 const repositoryRoot = resolve(import.meta.dirname, "../../..");
 const sql = await readFile(resolve(repositoryRoot, "supabase/schemas/core.sql"), "utf8");
+const groupRegistryMigration = await readFile(
+  resolve(repositoryRoot, "supabase/migrations/20260831190000_group_registry_foundation.sql"),
+  "utf8",
+);
 const config = await readFile(resolve(repositoryRoot, "supabase/config.toml"), "utf8");
 const handler = await readFile(
   resolve(repositoryRoot, "supabase/functions/_shared/handler.ts"),
@@ -49,6 +53,10 @@ const captureHealth = await readFile(
   resolve(repositoryRoot, "supabase/functions/_shared/capture-health.js"),
   "utf8",
 );
+const groupResolution = await readFile(
+  resolve(repositoryRoot, "supabase/functions/_shared/group-resolution.js"),
+  "utf8",
+);
 const processingAuth = await readFile(
   resolve(repositoryRoot, "supabase/functions/_shared/processing-auth.ts"),
   "utf8",
@@ -91,6 +99,22 @@ assert.match(sql, /create or replace function private\.is_network_member\(target
 assert.doesNotMatch(sql, /function public\.is_network_member/);
 assert.match(sql, /revoke all on all tables in schema public from anon, authenticated/);
 assert.doesNotMatch(sql, /grant[^;]+device_credentials[^;]+authenticated/i);
+const groupRegistryMarker = "-- P0 group registry foundation for the active operation.";
+assert.equal(
+  sql.slice(sql.indexOf(groupRegistryMarker)).trim(),
+  groupRegistryMigration.trim(),
+  "group registry migration and declarative schema diverged",
+);
+for (const table of ["groups", "group_aliases", "group_classification_changes"]) {
+  assert.ok(tables.includes(table), `missing ${table} registry table`);
+  assert.match(sql, new RegExp(`create policy ${table.replace("group_classification_changes", "group_classification_changes")}`));
+}
+assert.match(sql, /create or replace function public\.resolve_group_observations/);
+assert.match(sql, /grant execute on function public\.resolve_group_observations\(uuid, jsonb\) to service_role/);
+assert.match(sql, /create or replace function public\.classify_group/);
+assert.match(sql, /private\.can_manage_network/);
+assert.match(sql, /group_classification_changes/);
+assert.doesNotMatch(sql, /grant (?:insert|update|delete)[^;]+groups[^;]+authenticated/i);
 
 const banner = "// GENERATED from packages/contracts/src/index.js — do not edit manually.\n";
 assert.equal(generatedContracts, banner + canonicalContracts, "Edge contract copy is stale");
@@ -111,6 +135,10 @@ assert.match(processLatestWindow, /canonicalizeConversationEvent/);
 assert.match(processLatestWindow, /persist_analysis/);
 assert.match(canonicalConversations, /cumulativeCountSuffix/);
 assert.match(captureHealth, /evaluateCaptureHealth/);
+assert.match(captureHealth, /evaluateCaptureConfidence/);
+assert.match(groupResolution, /resolve_group_observations/);
+assert.match(processWindow, /resolveGroupObservationsShadow/);
+assert.match(processLatestWindow, /resolveGroupObservationsShadow/);
 assert.match(consolidationSchedule, /America\/Recife/);
 assert.match(consolidationSchedule, /\[8, 13, 18\]/);
 assert.match(consolidationSchedule, /CONSOLIDATION_WINDOW_HOURS = 24/);

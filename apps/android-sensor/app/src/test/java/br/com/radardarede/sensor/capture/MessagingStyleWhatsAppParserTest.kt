@@ -55,6 +55,70 @@ class MessagingStyleWhatsAppParserTest {
         assertTrue(first.single().senderRef?.startsWith("sender_") == true)
     }
 
+    @Test
+    fun `cumulative MessagingStyle replay keeps old identity and adds only the new message`() {
+        val parser = MessagingStyleWhatsAppParser()
+        val capturedAt = 2_000_000L
+        val firstSnapshot = groupSnapshot(
+            capturedAt,
+            listOf(NotificationMessage("Primeira", capturedAt - 2_000L, "Pessoa A")),
+        )
+        val cumulativeSnapshot = groupSnapshot(
+            capturedAt + 5_000L,
+            listOf(
+                NotificationMessage("Primeira", capturedAt - 2_000L, "Pessoa A"),
+                NotificationMessage("Segunda", capturedAt + 4_000L, "Pessoa B"),
+            ),
+        )
+
+        val first = parser.parse(firstSnapshot, NETWORK_ID, DEVICE_ID)
+        val cumulative = parser.parse(cumulativeSnapshot, NETWORK_ID, DEVICE_ID)
+
+        assertEquals(first.single().eventId, cumulative.first().eventId)
+        assertEquals(2, cumulative.map { it.eventId }.distinct().size)
+    }
+
+    @Test
+    fun `same text in different groups or times remains distinct`() {
+        val parser = MessagingStyleWhatsAppParser()
+        val capturedAt = 3_000_000L
+        val first = parser.parse(
+            groupSnapshot(capturedAt, listOf(NotificationMessage("Confirmado", capturedAt - 1_000L, "Pessoa A"))),
+            NETWORK_ID,
+            DEVICE_ID,
+        ).single()
+        val later = parser.parse(
+            groupSnapshot(capturedAt + 2_000L, listOf(NotificationMessage("Confirmado", capturedAt + 1_000L, "Pessoa A"))),
+            NETWORK_ID,
+            DEVICE_ID,
+        ).single()
+        val otherGroup = parser.parse(
+            groupSnapshot(capturedAt, listOf(NotificationMessage("Confirmado", capturedAt - 1_000L, "Pessoa A")), "Outro Grupo"),
+            NETWORK_ID,
+            DEVICE_ID,
+        ).single()
+
+        assertTrue(first.eventId != later.eventId)
+        assertTrue(first.eventId != otherGroup.eventId)
+    }
+
+    private fun groupSnapshot(
+        capturedAt: Long,
+        messages: List<NotificationMessage>,
+        title: String = "Grupo Teste",
+    ) = NotificationSnapshot(
+        sourceEventId = "notification-key",
+        packageName = "com.whatsapp",
+        postedAtEpochMillis = capturedAt,
+        capturedAtEpochMillis = capturedAt,
+        title = title,
+        text = messages.lastOrNull()?.text,
+        subText = null,
+        category = "msg",
+        isGroupConversation = true,
+        messages = messages,
+    )
+
     private companion object {
         const val NETWORK_ID = "11111111-1111-4111-8111-111111111111"
         const val DEVICE_ID = "22222222-2222-4222-8222-222222222222"

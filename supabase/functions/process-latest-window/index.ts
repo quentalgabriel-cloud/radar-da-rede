@@ -3,6 +3,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.112.4";
 import { corsHeaders } from "npm:@supabase/supabase-js@2.112.4/cors";
 import { buildAnalysisPayload } from "../_shared/analysis-payload.js";
 import { canonicalizeConversationEvent } from "../_shared/canonical-conversations.js";
+import { resolveGroupObservationsShadow } from "../_shared/group-resolution.js";
 import { analyzeEvents } from "../_shared/intelligence.js";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -66,6 +67,7 @@ const authenticatedHandler = withSupabase({ auth: "user" }, async (request, cont
   if ((events?.length ?? 0) > MAX_EVENTS) return json(422, { error: "window_too_large" });
 
   const endsAt = latestEvent.occurred_at;
+  const groupResolution = await resolveGroupObservationsShadow(admin, networkId, events ?? []);
   const analysisEvents = (events ?? []).map(canonicalizeConversationEvent);
   const analysis = analyzeEvents(analysisEvents);
   const payload = await buildAnalysisPayload({
@@ -83,6 +85,7 @@ const authenticatedHandler = withSupabase({ auth: "user" }, async (request, cont
     status: "processed",
     processed: true,
     window: { starts_at: startsAt, ends_at: endsAt, event_count: events?.length ?? 0 },
+    group_resolution: groupResolution,
     ...result
   });
 });
@@ -100,4 +103,3 @@ function json(status: number, body: unknown): Response {
     headers: { ...corsHeaders, "content-type": "application/json; charset=utf-8" }
   });
 }
-
