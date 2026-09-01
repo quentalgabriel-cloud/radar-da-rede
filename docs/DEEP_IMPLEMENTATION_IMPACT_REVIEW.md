@@ -19,7 +19,7 @@ A menor evolução segura é uma arquitetura híbrida:
 7. lançar o Control Center de Grupos atrás de feature flag;
 8. calcular tendência por período atual versus anterior e invalidá-la quando a captura não for confiável.
 
-Não se recomenda alterar o contrato `NormalizedEvent` v0.1.0, nem migrar eventos antigos para substituir `conversation_id`. Também não se recomenda agora: contexto muitos-para-muitos, ontologia territorial, RAG, embeddings, sentimento contínuo, score único de grupo, CRM ou perfilamento.
+Não se recomenda alterar o contrato `NormalizedEvent` v0.1.0, nem migrar eventos antigos para substituir `conversation_id`. Também não se recomenda agora: contexto muitos-para-muitos, ontologia territorial, RAG, embeddings, score único de grupo, CRM ou perfilamento. Menções políticas, reação/sentimento agregado e segmentação por grupo/contexto estão desbloqueados, mas devem ser módulos identificáveis, mensuráveis e reversíveis, sem inferir intenção de voto ou perfil individual.
 
 ## 2. Estado atual do sistema
 
@@ -142,9 +142,9 @@ Atividade é volume observável; vitalidade combina atividade recente, recorrên
 4. read model v0.2 com `groups`.
 5. Trend Engine determinístico.
 6. Control Center com detalhe responsivo.
-7. fixtures e testes de identidade, tempo e confiança.
+7. fixtures e testes de identidade, tempo, confiança, duplicação e Communities em operação real.
 
-`communities` e `tracked_entities` só entram depois que a fundação acima estiver validada.
+`communities` como entidade só entra depois que a captura real justificar a relação. `tracked_entities` e análise agregada de menções/reação podem evoluir em paralelo depois da fundação mínima de identidade, sem funcionar como gate para ela.
 
 ## 8. Impacto no banco
 
@@ -167,7 +167,7 @@ Atividade é volume observável; vitalidade combina atividade recente, recorrên
 | `community_id` | LATER | depende de evidência de Communities |
 | `canonical_label` separado | LATER | `current_label` aprovado basta no MVP |
 
-Validações: managed exige `context_type`, `context_label` e `naming_status='approved'`; responsável é esperado pela interface, mas não deve bloquear o primeiro cadastro. Legacy pode permanecer sem contexto.
+Na operação inicial, `origin` aceita `legacy`, `current_operation` e `unknown`. Nenhuma regra rígida deve bloquear a entrada de grupos que já estão sendo incorporados. Depois que a política operacional for confirmada, `managed` pode substituir ou especializar `current_operation` e exigir `context_type`, `context_label` e nome aprovado. Responsável continua opcional; legacy e unknown podem permanecer sem contexto.
 
 ### `group_aliases`
 
@@ -325,6 +325,8 @@ Na híbrida, D é aplicado preservando A como evidência. Eventos existentes sã
 
 Interface administrativa mínima: editar origem, contexto, município, território e referência do responsável; confirmar/rejeitar alias; arquivar grupo. Sugestões automáticas podem propor tipo/rótulo a partir do nome, sempre com rótulo “sugestão” e confirmação humana. A baseline determinística deve ser regex/dicionário antes de IA.
 
+A classificação precisa ser auditável sem criar burocracia. `groups` mantém `classification_status` (`unclassified|partially_classified|confirmed`), `classification_source` (`observed|manual|suggested|imported`), `classified_by` e `classified_at`. Uma tabela `group_classification_changes` registra `group_id`, autor, instante, campo, valor anterior, valor novo e origem da mudança. O histórico cobre apenas metadata administrativa; não duplica mensagens nem cria perfis. Viewer apenas lê; operator autorizado e community manager classificam; owner administra regras e aliases. Não há aprovação dupla obrigatória e grupo sem classificação continua sendo observado.
+
 Communities não vira entidade em P0/P1. Primeiro capturar fixtures. Se houver ID/nome estáveis e necessidade de filtro, criar `communities(id, network_id, name)` e FK nullable em `groups`; sem hierarquia ou gerenciamento próprio.
 
 ## 19. Testes
@@ -348,9 +350,9 @@ Adicionar testes de RLS owner/operator/viewer, backfill idempotente, alias ambí
 
 ## 20. Migração
 
-### Phase 0 — observabilidade e schema aditivo
+### Phase 0 — estabilização da operação ativa
 
-Criar tabelas/RLS, resolvedor em modo shadow e fixtures. Popular registry sem mudar read model. Medir resolvidos, novos, ambíguos e colisões. Rollback: desligar shadow.
+A entrada de grupos já está em curso e não depende de piloto futuro. Criar tabelas/RLS, resolvedor em modo shadow e fixtures sem interromper captura, ingestão ou inclusão de novos grupos. Popular o registry progressivamente, detectar duplicações, renomeações, Communities, resolvidos, novos, ambíguos, não classificados e colisões. O gerente de comunidade classifica enquanto a operação segue. Rollback: desligar shadow e manter o read model atual.
 
 ### Phase 1 — registry read-only
 
@@ -390,13 +392,14 @@ Ativar `context_spike`, tendência operacional e, após dados, entidades monitor
 
 ## 22. Roadmap executável
 
-### P0 — Foundation changes
+### P0 — Estabilização da operação ativa
 
-1. **Schema do registry e aliases.** Componentes: schema declarativo, migration, RLS, checks. Dependência: decisão D-017. Teste: constraints/RLS/backfill. Risco: colisão. Pronto quando shadow resolve fixtures sem alterar ingestão.
-2. **Resolvedor shadow.** Componentes: shared canonicalization, processing e payload. Teste: rename/duplicate/ambiguous. Pronto quando registra decisão e motivo por evento/grupo.
-3. **Confidence por janela.** Componentes: capture-health, processing. Teste: outage invalida trend. Pronto quando nenhuma queda é emitida com low confidence.
-4. **Cenários temporais.** Componentes: testkit, fixtures, ground truth. Pronto com seis cenários P0 reproduzíveis.
-5. **Documentação e vocabulário.** Atualizar decisões, inteligência, UX, manual e matriz.
+1. **Schema do registry, aliases e auditoria de classificação.** Componentes: schema declarativo, migration, RLS, checks. Dependência: decisão D-017. Teste: constraints/RLS/backfill/histórico. Risco: colisão. Pronto quando a operação continua recebendo grupos e o shadow não altera ingestão.
+2. **Resolvedor shadow e controle de duplicação.** Componentes: shared canonicalization, processing e payload. Teste: rename/duplicate/ambiguous/notificação cumulativa. Pronto quando registra decisão e motivo por evento/grupo e duplicações não inflam métricas.
+3. **Classificação progressiva em produção.** Componentes: registry, mutations administrativas e UI mínima. Pronto quando o gerente classifica sem bloquear grupos ainda desconhecidos e toda alteração fica rastreável.
+4. **Confidence por janela.** Componentes: capture-health, processing. Teste: outage invalida trend. Pronto quando nenhuma queda é emitida com low confidence.
+5. **Cenários temporais e Communities.** Componentes: testkit, fixtures, ground truth e evidência real. Pronto com cenários reproduzíveis e comportamento documentado.
+6. **Documentação e vocabulário.** Atualizar decisões, inteligência, UX, manual e matriz.
 
 ### P1 — Groups Intelligence
 
@@ -408,17 +411,19 @@ Ativar `context_spike`, tendência operacional e, após dados, entidades monitor
 
 Definição conjunta de pronto: migração reversível; lab/live iguais; RLS validada; UI não afirma queda sem confiança; produção antiga continua legível.
 
-### P2 — Advanced intelligence
+### P2 — Inteligência política e consultas avançadas
 
 - `tracked_entities` mínimo (`id`, `network_id`, `name`, `aliases`, `type`, `enabled`) e menções agregadas;
+- reação/sentimento agregado por entidade, assunto, contexto e janela, com método, confiança, evidências amostrais e revisão humana disponível;
+- segmentação analítica por grupos/contextos classificados, sem perfil de participante, acompanhada de permissões e registro de consulta;
 - Communities somente após fixtures;
 - média móvel e baseline por grupo após histórico suficiente;
 - consulta em linguagem natural traduzida para operações estruturadas e autorizadas;
-- observabilidade de IA: task type, modelo, chamadas, caracteres/tokens e custo estimado antes de qualquer piloto.
+- observabilidade de IA: task type, modelo, chamadas, caracteres/tokens e custo estimado antes da primeira execução com IA.
 
 ### Parking lot / não implementar ainda
 
-RAG completo, embeddings, LLM em todas as mensagens, sentimento contínuo, score de liderança, CRM de participantes, read receipts, intenção de voto, outbound, mapas complexos e ontologia territorial. Eles não resolvem a lacuna atual de identidade/tendência, elevam custo/risco ou alegam dados que o Radar não observa.
+RAG completo, embeddings, LLM indiscriminado em todas as mensagens, score de liderança, CRM de participantes, read receipts, inferência automática de intenção de voto, outbound, mapas complexos e ontologia territorial. Reação/sentimento e segmentação estão autorizados, mas entram como análises agregadas e controladas; não podem ser convertidos silenciosamente em perfil individual ou apoio eleitoral.
 
 Perguntas como “quais grupos cresceram?” e “onde faltou material?” devem virar filtros/SQL sobre métricas e facts. LLM pode futuramente resumir uma resposta estruturada, mas não escolher escopo ou recuperar dados fora da autorização. RAG só se houver corpus documental real que SQL não represente.
 
@@ -484,7 +489,7 @@ Uso do rótulo como identidade canônica, `territory_spike` como conceito geral,
 
 ## 25. Próxima ação recomendada
 
-Executar P0 como uma onda isolada, começando por D-017/D-018/D-019 e uma migration **somente aditiva** para `groups` e `group_aliases`. Implementar o resolvedor em shadow antes de alterar qualquer tela ou métrica. O primeiro relatório deve mostrar quantas identidades históricas foram resolvidas automaticamente, quantas ficaram ambíguas e quais seriam as colisões. Só então persistir métricas e ativar o Control Center.
+Executar P0 sobre a operação ativa, sem aguardar piloto e sem interromper a inclusão de grupos. Começar por D-017/D-018/D-019 e uma migration **somente aditiva** para `groups`, `group_aliases` e `group_classification_changes`. Implementar o resolvedor em shadow, o controle de duplicação e a classificação auditável progressiva. O primeiro relatório deve mostrar identidades resolvidas, ambíguas, colisões, duplicações evitadas e grupos ainda não classificados. Depois persistir métricas e ativar gradualmente o Control Center. Governança é aplicada por permissões, rastreabilidade e controles internos do sistema; não constitui gate externo de implementação. Menções políticas, reação/sentimento agregado e segmentação podem avançar como módulos controlados após a identidade mínima estar operacional.
 
 ## Change surface verificada
 
@@ -526,4 +531,3 @@ Executar P0 como uma onda isolada, começando por D-017/D-018/D-019 e uma migrat
 - `packages/testkit/src/index.js`
 - `packages/testkit/test/scenarios.test.js`
 - `docs/PROJECT.md`, `docs/DECISIONS.md`, `docs/INTELLIGENCE.md`, `docs/UX.md`, `docs/TEST_MATRIX.md`, `docs/TASKS.md`
-
