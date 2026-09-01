@@ -10,7 +10,7 @@ O produto não é CRM, ferramenta de disparo ou perfilamento individual. Sua arq
 
 O laboratório sintético já funciona de ponta a ponta: contratos, oito cenários reproduzíveis, Fake Sensor, ingestão idempotente, inteligência determinística e Radar Web. A versão pública está em [radar-da-rede.vercel.app](https://radar-da-rede.vercel.app).
 
-O Supabase dedicado já recebeu quatro migrations e seis Edge Functions, com ingestão, replay, heartbeat, processamento e proveniência em uso. O adapter Android `0.3.0-connected` foi recuperado, reconciliado e compilado na `main`, incluindo captura, outbox, upload e heartbeat remoto. A operação já incorpora grupos reais. A fundação aditiva do Group Registry está versionada para rollout shadow; aplicação e validação remota da migration ainda são gates explícitos.
+O Supabase dedicado já recebeu seis migrations e seis Edge Functions, com ingestão, replay, heartbeat, processamento e proveniência em uso. O adapter Android `0.3.0-connected` foi recuperado, reconciliado e compilado na `main`, incluindo captura, outbox, upload e heartbeat remoto. A operação já incorpora grupos reais. O Group Registry está ativo em modo shadow: 101 grupos foram reconhecidos no backfill, o replay criou zero duplicações e a classificação administrativa auditável foi validada sem bloquear grupos ainda não classificados.
 
 ## Comandos
 

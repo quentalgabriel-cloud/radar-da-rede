@@ -7,8 +7,9 @@
 - [x] M2 — Supabase Ingest Spine em projeto dedicado.
 - [x] P0 — Schema aditivo do Group Registry, aliases e histórico versionado.
 - [x] P0 — Resolvedor shadow e capture confidence implementados/testados localmente.
-- [ ] P0 — Aplicar migration no Supabase dedicado e validar RLS/RPCs remotamente.
-- [ ] P0 — Observar relatório shadow e habilitar classificação administrativa na operação.
+- [x] P0 — Aplicar migrations no Supabase dedicado e validar RLS/RPCs remotamente.
+- [x] P0 — Executar backfill shadow idempotente e habilitar a base de classificação administrativa.
+- [ ] P0 — Expor a classificação administrativa na interface e iniciar classificação progressiva pela operação.
 
 ## Fundação
 
@@ -56,8 +57,7 @@
 
 ## Ordem de execução
 
-1. Aplicar e validar remotamente a migration do Group Registry.
-2. Publicar as Edge Functions com resolvedor shadow e observar métricas sem trocar o read model.
-3. Habilitar classificação progressiva para gerente de comunidade/operator.
-4. Configurar os secrets do workflow e observar uma consolidação remota idempotente.
-5. Validar a janela de 24 horas e avançar ao gate P1.
+1. Expor a classificação progressiva para gerente de comunidade/operator sem interromper grupos não classificados.
+2. Observar o resolvedor shadow na operação e revisar apenas aliases ambíguos, quando surgirem.
+3. Configurar os secrets do workflow e observar uma consolidação remota idempotente.
+4. Validar a janela de 24 horas e avançar ao gate P1.

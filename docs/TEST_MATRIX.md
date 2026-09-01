@@ -49,7 +49,7 @@
 | Inteligência | IA externa tem telemetria e supera baseline | NÃO IMPLEMENTADO | Autorizada para P2; baseline determinística preservada |
 | Group Registry | Tabelas, RLS e RPCs administrativas são aditivas | TESTADO ESTATICAMENTE | Migration `20260831190000_group_registry_foundation.sql` e foundation checks |
 | Group Registry | Observações cosméticas são idempotentes e nomes iguais mantêm identidade da fonte | TESTADO LOCALMENTE | `packages/supabase-core/test/group-resolution.test.js` |
-| Group Registry | Migration e RPCs funcionam no Supabase dedicado | NÃO TESTADO | Requer aplicação remota da nova migration |
-| Classificação | Alterações registram histórico e exigem operator/owner | TESTADO ESTATICAMENTE | `classify_group`, RLS e testes de foundation; ensaio remoto pendente |
+| Group Registry | Migration e RPCs funcionam no Supabase dedicado | VALIDADO REMOTAMENTE | Seis migrations aplicadas; backfill com 101 grupos e replay com zero duplicações |
+| Classificação | Alterações registram histórico e exigem operator/owner | VALIDADO REMOTAMENTE | Ensaio temporário confirmou três mudanças auditadas, revisão de alias e limpeza integral |
 | Captura | Confidence high/moderate/low/unavailable invalida tendência fraca | TESTADO LOCALMENTE | `packages/capture-health/test/capture-health.test.js` |
 | Android | MessagingStyle cumulativo preserva ID e adiciona apenas mensagem nova | VALIDADO REMOTAMENTE | GitHub Actions run `33459336566`, commit `fa87236` |
