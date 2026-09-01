@@ -392,6 +392,16 @@ Ativar `context_spike`, tendência operacional e, após dados, entidades monitor
 
 ## 22. Roadmap executável
 
+### Prompts oficiais de execução
+
+O roadmap é executado por prompts versionados em [`docs/implementation-prompts/`](implementation-prompts/README.md):
+
+1. [`P0 — Estabilização da operação ativa`](implementation-prompts/P0-ESTABILIZACAO-OPERACAO-ATIVA.md);
+2. [`P1 — Métricas, tendências e Control Center`](implementation-prompts/P1-METRICAS-CONTROL-CENTER.md);
+3. [`P2 — Inteligência política agregada, segmentação e consultas`](implementation-prompts/P2-INTELIGENCIA-POLITICA-CONSULTAS.md).
+
+Cada prompt deve ser executado em uma tarefa própria contra a `main` mais recente. O agente verifica o gate anterior no código e nos testes antes de avançar. Uma fase incompleta não deve ser ocultada dentro da seguinte, mas a operação ativa também não deve ser interrompida: ingestão e fallback permanecem disponíveis durante todo o rollout.
+
 ### P0 — Estabilização da operação ativa
 
 1. **Schema do registry, aliases e auditoria de classificação.** Componentes: schema declarativo, migration, RLS, checks. Dependência: decisão D-017. Teste: constraints/RLS/backfill/histórico. Risco: colisão. Pronto quando a operação continua recebendo grupos e o shadow não altera ingestão.
