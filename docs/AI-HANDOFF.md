@@ -90,8 +90,11 @@ funções precisam ir juntas e depois dos secrets, nesta ordem:
      momento desta escrita), não apenas para os que tiveram evento;
    - `processing_runs.capture_confidence` e `capture_coverage` preenchidos;
    - `window_kind = 'canonical_slot'`.
-5. Esperar o mesmo slot do dia seguinte para obter a **segunda janela
-   comparável** e conferir `anchor.comparison_run_id` no read model.
+5. ~~Segunda janela comparável~~ — feito em 2026-09-03: a comparadora `7bd73774`
+   foi produzida pelo código corrigido e a política a escolhe corretamente. A
+   tendência ainda é suprimida por cobertura insuficiente, não por falta de
+   comparadora. Primeira tendência real estimada para 2026-09-05, slot das 08:00
+   de Recife. Ver seção 12 de `docs/P1.1-EXECUTION-REPORT.md`.
 6. Só então seguir para E2E de navegador, matriz de campo do Moto G84, SLOs e
    piloto.
 
@@ -212,3 +215,15 @@ Antes de parar, atualize este arquivo com data/commit, mudanças,
 migrations/functions/APK/flags, testes realmente executados, métricas atuais,
 bloqueios, próxima ação única e rollback. Não deixe decisões relevantes apenas
 em chat.
+
+## Primeira verificação da próxima sessão
+
+Antes de qualquer outra coisa, medir a cadência noturna das amostras de captura.
+Às 22:01 UTC de 2026-09-03 o intervalo desde a última amostra era de 33,2
+minutos, contra 3,6 de média diurna, perto do limite de 35 adotado em
+`capture_coverage@1`. A consulta está na seção 12 de
+`docs/P1.1-EXECUTION-REPORT.md`.
+
+Se algum intervalo noturno passar de 35 minutos, decidir entre ajustar a
+tolerância com justificativa medida ou tratar a lacuna como perda real de
+cobertura. Não ajustar a tolerância apenas para melhorar a métrica.
