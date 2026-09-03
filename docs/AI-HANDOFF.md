@@ -104,14 +104,13 @@ funções precisam ir juntas e depois dos secrets, nesta ordem:
 4. A série de amostras tem uma única linha: começou às 19:52 UTC de 2026-09-03.
    Enquanto não houver algumas horas de histórico, a cobertura de qualquer
    janela de 24 h será baixa por falta de amostras, e não por falha de captura.
-5. **A credencial do dispositivo está exposta.** O APK publicado na release
-   pública `quentalgabriel-cloud/radar-sensor-probe@v0.3.0-connected` carrega o
-   segredo de ingestão em claro no dex. Foi confirmado que ele corresponde à
-   única credencial ativa em `device_credentials`. Qualquer pessoa que baixe o
-   APK pode injetar eventos e heartbeats nesta rede. Não permite leitura do
-   Radar nem processamento. Registrado como D19; a decisão de rotacionar é
-   humana, porque o segredo é de build e rotacionar interrompe a captura até
-   reinstalar. Detalhes e opções em `docs/ANDROID-FIELD-EVIDENCE.md`.
+5. A credencial do dispositivo está embutida em claro no APK público. **Risco
+   aceito** em 2026-09-03 por Gabriel Quental, registrado em `docs/DECISIONS.md`
+   como D-021: o dispositivo está sob controle físico e a rede é piloto.
+   **Não rotacione nem torne o repositório privado sem falar com ele.** A
+   integridade do sinal passa a depender de detecção: qualquer volume ou origem
+   não explicados pelo aparelho devem ser tratados como possível injeção. A
+   consulta de acompanhamento está em `docs/ANDROID-FIELD-EVIDENCE.md`.
 6. O sensor em operação **não** é `apps/android-sensor`. A fonte é
    `quentalgabriel-cloud/radar-sensor-probe`, projeto Java independente. O
    módulo Kotlin deste monorepo nunca produziu a build de campo e hoje é código

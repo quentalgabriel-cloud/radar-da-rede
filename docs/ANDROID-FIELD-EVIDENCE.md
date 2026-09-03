@@ -287,18 +287,49 @@ produção pode ser extraída por qualquer um que baixe o APK.
 O risco é de **integridade**, não de confidencialidade: alguém poderia poluir o
 sinal operacional com eventos fabricados. Nada do que já foi capturado vaza.
 
-### Decisão pendente
+### Decisão: risco aceito em 2026-09-03
 
-Rotacionar a credencial interrompe a captura até o aparelho receber uma build
-nova, porque o segredo é de build. As opções não são exclusivas:
+Gabriel Quental avaliou e **assumiu o risco**. O repositório continua público, o
+APK continua como asset da release e a credencial **não** será rotacionada agora.
+A justificativa está registrada em `docs/DECISIONS.md` como D-021: o dispositivo
+está sob controle físico da operação, a rede é piloto e a rotação interromperia a
+captura até uma nova build ser instalada.
 
-1. tornar `radar-sensor-probe` privado, ou remover o APK dos assets da release —
-   reduz a exposição futura, não alcança cópias já baixadas;
-2. rotacionar a credencial, gerar build nova e reinstalar no Moto G84, em janela
-   combinada, com verificação de heartbeat depois da troca;
-3. mudar o provisionamento para runtime, de modo que o segredo deixe de existir
-   dentro do artefato — é a correção estrutural, e remove o problema de vez.
+**Não reverta essa decisão sem falar com ele.** Rotacionar, revogar a credencial
+ou tornar o repositório privado por iniciativa própria pararia a captura em
+operação.
 
-Enquanto a decisão não for tomada, vale monitorar `ingest_batches` e
-`normalized_events` por origem e volume incomum. Nenhuma ação foi executada nesta
-sessão: revogar a credencial pararia a captura em operação.
+A correção estrutural continua sendo provisionar o segredo em runtime, para que
+ele deixe de existir dentro do artefato. O gatilho combinado é aproveitar a
+próxima build do sensor, qualquer que seja o motivo dela, para fazer essa troca e
+rotacionar junto.
+
+### Acompanhamento, já que a proteção passa a ser detecção
+
+Baseline observado em 2026-09-03, com um único dispositivo ativo:
+
+| Dia | Eventos | Conversas |
+|---|---:|---:|
+| 2026-09-03 | 164 | 23 |
+| 2026-09-02 | 59 | 11 |
+| 2026-09-01 | 302 | 44 |
+| 2026-08-31 | 297 | 42 |
+| 2026-08-30 | 121 | 19 |
+| 2026-08-29 | 137 | 23 |
+
+Volume diário entre algumas dezenas e cerca de trezentos eventos, sempre de um
+único `device_id`. Consulta de acompanhamento:
+
+```sql
+select date_trunc('day', e.captured_at) as dia,
+       count(*) as eventos,
+       count(distinct e.conversation_id) as conversas,
+       count(distinct e.device_id) as dispositivos
+from public.normalized_events e
+group by 1 order by 1 desc limit 14;
+```
+
+Tratar como possível injeção, até prova em contrário: mais de um `device_id`
+ativo, volume diário muito fora dessa faixa, conversas que o aparelho não
+reporta no diagnóstico, ou eventos chegando enquanto o heartbeat indica o
+aparelho parado.

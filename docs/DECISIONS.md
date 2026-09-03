@@ -181,3 +181,15 @@ Os status usados são `ACEITA`, `PROVISÓRIA`, `HIPÓTESE` e `ESTACIONADA`.
 - **Evidência:** conhecimento de contexto está distribuído entre agentes e gerente de comunidade e precisa ser corrigível sem apagar histórico.
 - **Consequência:** `group_classification_changes` registra somente metadata administrativa; mensagens e participantes não são duplicados.
 - **Reabrir se:** erros operacionais demonstrarem necessidade de revisão adicional.
+
+## D-021 — Credencial do dispositivo embutida no APK público: risco aceito
+
+- **Status:** ACEITA
+- **Data:** 2026-09-03
+- **Responsável:** Gabriel Quental (dono do produto e do dispositivo)
+- **Decisão:** manter `quentalgabriel-cloud/radar-sensor-probe` público, manter o APK `v0.3.0-connected` como asset de release e **não** rotacionar a credencial de ingestão agora.
+- **Evidência:** o SHA-256 do segredo extraído do dex corresponde ao `token_hash` da única credencial ativa em `device_credentials`. O repositório é público, portanto o artefato é baixável por qualquer pessoa.
+- **Alcance do risco:** permite injetar eventos e heartbeats escopados a este dispositivo. **Não** permite ler o Radar (read model exige JWT de usuário e RLS por rede), processar janelas (`processing_credentials` é separada) nem classificar grupos (exige operator/owner). É risco de integridade do sinal, não de confidencialidade dos dados já capturados.
+- **Justificativa da aceitação:** o dispositivo está sob controle físico da operação, a rede é piloto e a rotação exige nova build e reinstalação, o que interromperia a captura em operação. O custo de mitigar agora supera o risco no estágio atual.
+- **Consequência:** a integridade do sinal passa a depender de detecção, não de prevenção. Qualquer anomalia de volume ou origem deve ser tratada como possível injeção até prova em contrário.
+- **Reabrir se:** a rede sair do piloto e passar a sustentar decisão operacional real; aparecerem eventos de origem ou volume não explicados pelo aparelho; o repositório precisar receber colaboradores externos; ou a próxima build do sensor for produzida por qualquer motivo — nesse caso, aproveitar para trocar o provisionamento para runtime e rotacionar junto.
