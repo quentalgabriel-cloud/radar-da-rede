@@ -2,6 +2,8 @@
 
 Data: 2026-09-03
 
+> **Adendo da auditoria pós-implementação (2026-09-03):** a implementação descrita abaixo permanece válida, mas a coleta shadow ainda não está operacional. A auditoria encontrou zero credenciais de processamento ativas, zero linhas em `group_metric_windows` e execução do workflow com o passo canônico pulado. Além disso, o gate analítico precisa das correções de âncora por execução, comparação de janelas e cobertura de captura descritas em [`PRODUCT-COMPLETION-ROADMAP.md`](PRODUCT-COMPLETION-ROADMAP.md). Portanto, a ativação está bloqueada até concluir [`P1.1-CONFIABILIDADE-E-ATIVACAO.md`](implementation-prompts/P1.1-CONFIABILIDADE-E-ATIVACAO.md).
+
 ## Resultado
 
 A implementação de P1 foi concluída e instalada em modo shadow. O Control Center permanece desligado por rede até existirem duas janelas reais equivalentes com confiança suficiente. Essa espera é parte do gate de qualidade, não uma lacuna de código.
@@ -55,7 +57,7 @@ Não houve backfill porque os eventos históricos não carregam a ligação imut
 
 ## Rollout
 
-1. As próximas consolidações persistem métricas shadow automaticamente.
+1. Restaurar e validar a consolidação agendada; somente depois as próximas consolidações persistirão métricas shadow automaticamente.
 2. Após duas janelas equivalentes, verificar volume, confidence e ausência de fusões ambíguas.
 3. Habilitar `networks.group_control_center_enabled` somente para a rede validada.
 4. Observar a primeira leitura ativa e comparar contagens agregadas com a janela processada.

@@ -1,5 +1,7 @@
 # Estado e próximas tarefas
 
+> **Ordem vigente em 2026-09-03:** este backlog contém histórico útil, mas foi substituído como plano de execução pelo [`PRODUCT-COMPLETION-ROADMAP.md`](PRODUCT-COMPLETION-ROADMAP.md). A próxima onda é P1.1; P2 permanece bloqueada até o gate de confiabilidade e ativação.
+
 ## Em andamento
 
 - [x] M1 — Synthetic Ingest Spine.

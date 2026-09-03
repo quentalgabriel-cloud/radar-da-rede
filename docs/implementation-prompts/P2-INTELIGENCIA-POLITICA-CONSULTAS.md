@@ -8,7 +8,18 @@ Menções políticas, reação/sentimento e segmentação estão desbloqueados. 
 
 ## Pré-condição obrigatória
 
-Confirme que P0 e P1 passaram seus gates: identidade de grupos, classificação, confidence, métricas, read model v0.2, feature flag e controle de acesso. Se faltar base necessária, corrija ou documente bloqueio técnico específico. Não misture fundação incompleta com inferência política.
+Confirme que P0 e P1.1 passaram seus gates: identidade de grupos, classificação suficiente no volume piloto, confidence por cobertura, métricas ancoradas à execução, comparação não ambígua, read model v0.2 somente leitura, feature flag, campo, observabilidade e controle de acesso. Se faltar qualquer base necessária, pare P2 e reporte o bloqueio técnico específico. Não corrija uma fundação ampla dentro da mesma onda de inferência política.
+
+Use [`../PRODUCT-COMPLETION-ROADMAP.md`](../PRODUCT-COMPLETION-ROADMAP.md) como ordem vigente.
+
+## Sequência obrigatória
+
+Divida a execução em duas entregas independentes:
+
+1. **P2A determinística:** entidades, aliases, menções agregadas, segmentação por grupo/contexto e catálogo de consultas estruturadas. Feche avaliação, autorização, provenance, flags e rollback antes de avançar.
+2. **P2B experimental:** reação/sentimento, telemetria/custo de IA e linguagem natural controlada. Só começa depois do gate P2A e de critérios de qualidade definidos previamente.
+
+Não implemente P2A e P2B no mesmo pull request ou rollout. P2A deve continuar funcional com P2B totalmente desligada.
 
 ## Objetivo de P2
 
@@ -166,4 +177,3 @@ Use feature flags separadas para tracked entities, reaction/sentiment, segmentat
 - documentação e CI estão atualizadas.
 
 Finalize com relatório de qualidade por tarefa, custos observados/estimados, limitações, testes, rollout, rollback e status individual de cada módulo. Não marque P2 inteira como concluída se apenas menções estiverem prontas.
-
