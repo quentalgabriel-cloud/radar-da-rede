@@ -104,12 +104,16 @@ funções precisam ir juntas e depois dos secrets, nesta ordem:
 4. A série de amostras tem uma única linha: começou às 19:52 UTC de 2026-09-03.
    Enquanto não houver algumas horas de histórico, a cobertura de qualquer
    janela de 24 h será baixa por falta de amostras, e não por falha de captura.
-5. O APK instalado no Moto G84 não reporta `notification_access`,
-   `whatsapp_installed` nem `network_type`, e o `listener_connected` chega nulo.
-   Enquanto isso durar, a confiança de captura fica limitada a `moderate`.
-   Nenhum APK do repositório reporta os três primeiros campos: isso é trabalho
-   Android pendente.
-6. Faltam E2E real de navegador e a matriz dirigida de campo no Moto G84.
+5. **O APK em operação não foi gerado por este repositório.** O diagnóstico de
+   campo de 2026-09-03 mostrou que o aparelho envia contadores
+   (`events_uploaded`, `snapshots_local`, `upload_failures`) e possui exportação
+   de diagnóstico que não existem em nenhum dos 19 arquivos Kotlin do
+   repositório, e não envia `listener_connected`, que o repositório envia
+   sempre. Detalhes em `docs/ANDROID-FIELD-EVIDENCE.md`, registrado como D18.
+   Isso bloqueia a matriz de campo e qualquer troca de APK, e mantém a confiança
+   de captura limitada a `moderate`.
+6. Falta E2E real de navegador. A matriz dirigida de campo está bloqueada por D18:
+   hoje, testar o aparelho é testar código que não está versionado.
 7. Retenção de `capture_health_samples` não foi definida.
 
 ## Gate para ativar o Control Center

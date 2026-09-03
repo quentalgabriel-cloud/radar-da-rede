@@ -91,3 +91,10 @@
 | Migration | `capture_coverage_and_run_anchor` é compatível com as funções antigas | VALIDADO REMOTAMENTE | `process-window` v5 processou e persistiu depois da aplicação |
 | Migration | `ingest_health_heartbeat` continua funcionando após a alteração | VALIDADO REMOTAMENTE | Execução em transação revertida, sem gravar dados de teste |
 | Radar Web | E2E de filtros, dialog, foco, ESC, mobile e reduced motion | NÃO TESTADO | Pendência da P1.1 |
+| Android | Continuidade do listener por vários dias | VALIDADO EM CAMPO | Diagnóstico de 2026-09-03: conectado desde 2026-08-29 14:30 UTC, sem nenhuma desconexão registrada |
+| Android | Envio sem perda nem duplicação | VALIDADO EM CAMPO | Contador do aparelho (1.080 eventos enviados, 0 falhas) confere exatamente com o banco |
+| Android | Fila drena sem retenção | VALIDADO EM CAMPO | `outbox_pending` zero no aparelho e no heartbeat |
+| Android | Teste de captura dirigido | VALIDADO EM CAMPO | Iniciado 2026-09-02 18:45:25 UTC, aprovado 19:11:49 UTC |
+| Captura | Tolerância de 35 min entre amostras é adequada | VALIDADO REMOTAMENTE | 28 amostras reais: intervalo médio 3,6 min, máximo 16,7 min, nenhum acima da tolerância |
+| Android | APK em operação corresponde ao código do repositório | **REPROVADO** | Contadores, `listener_connected` e exportação de diagnóstico divergem; ver `docs/ANDROID-FIELD-EVIDENCE.md` |
+| Android | Reboot, Doze, bateria, rede offline e grupos silenciados | NÃO TESTADO | Bloqueado por D18: testar o aparelho hoje é testar código não versionado |

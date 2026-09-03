@@ -86,3 +86,117 @@ Ambos fora do repositório, em `outputs/`:
 
 Nenhum dos dois foi confirmado como o instalado no aparelho. Registrar
 `versionCode`, hash e data de instalação é parte da matriz de campo pendente.
+
+## Diagnóstico de 3 de setembro de 2026
+
+Arquivo analisado localmente, não versionado:
+`radar-sensor-diagnostico-1788470700762.json`, gerado em 2026-09-03 21:25:00 UTC.
+
+SHA-256:
+`c59e7fab14e9d22502752de083bd5da3b44fe3d8bb365297acb6f91f1b467351`
+
+O próprio arquivo declara: conteúdo textual e identificadores foram removidos ou
+pseudonimizados. Somente métricas técnicas são registradas aqui. Nenhum rótulo de
+conversa, texto ou identificador real foi inspecionado ou copiado.
+
+### Aparelho e build
+
+| Campo | Valor |
+|---|---|
+| aparelho | motorola moto g84 5G |
+| Android | 15 (SDK 35), patch de segurança 2026-08-01 |
+| pacote | `br.com.radardarede.sensor` |
+| versão declarada | `0.3.0-connected`, parser `0.3.0`, probe contract `0.3.0` |
+
+### Estado observado
+
+- listener conectado, sem nenhuma desconexão registrada desde
+  **2026-08-29 14:30:46 UTC** — mais de cinco dias de continuidade;
+- `provisioned: true`, `outbox_pending: 0`, `upload_failures: 0`;
+- último heartbeat local em 21:24:39 UTC, dois minutos antes da exportação;
+- 500 snapshots locais, dos quais 80 exportados;
+- 50 incidentes técnicos: 49 remoções de notificação do WhatsApp e um teste de
+  captura iniciado, entre 2026-08-31 16:55 e 2026-09-03 10:51 UTC;
+- teste de captura iniciado em 2026-09-02 18:45:25 e aprovado às 19:11:49 UTC;
+- os 80 snapshots exportados cobrem de 2026-09-02 23:29 a 2026-09-03 20:00 UTC,
+  em 29 conversas distintas, 42 deles com mensagens e 215 mensagens estruturadas.
+
+### Conferência contra o banco
+
+| Métrica | Aparelho | Banco | Conferência |
+|---|---:|---:|---|
+| eventos enviados | 1.080 | 1.080 (`android_notification`) | **confere exatamente** |
+| falhas de upload | 0 | — | sem perda silenciosa |
+| fila pendente | 0 | — | nada retido |
+
+Não há perda nem duplicação entre o que o aparelho diz ter enviado e o que o
+banco persistiu. Essa é a evidência mais forte de confiabilidade da captura até
+agora, e vale para uma semana de operação real.
+
+### Calibração da tolerância de cobertura
+
+As 28 amostras de `capture_health_samples` acumuladas até 21:28 UTC têm intervalo
+mínimo de 0,3 min, médio de 3,6 min e máximo de **16,7 min**. Nenhum intervalo
+passou dos 35 minutos adotados como tolerância em `capture_coverage@1`. A
+tolerância está calibrada com folga contra dado real, e não por suposição.
+
+O aparelho reporta com frequência bem maior que os 15 minutos do
+`PeriodicWorkRequest`, provavelmente porque também envia heartbeat junto dos
+uploads.
+
+## Divergência crítica: o APK em operação não vem deste repositório
+
+O diagnóstico permitiu comparar, campo a campo, o que o aparelho envia com o que
+o código do repositório produziria. Eles **não são o mesmo programa**.
+
+| Evidência | Repositório | APK em operação |
+|---|---|---|
+| `counters` do heartbeat | `notifications_observed`, `events_emitted` | `events_uploaded`, `snapshots_local`, `upload_failures` |
+| `listener_connected` | enviado sempre | nunca chega |
+| `last_whatsapp_notification_at` | enviado junto de `last_event_captured_at` | só `last_event_captured_at` chega |
+| exportação de diagnóstico | não existe no código | existe e foi usada |
+
+Os campos do diagnóstico — `privacy_note`, `snapshot_count`, `probe_contract`,
+`incidents`, `parser_status`, `detail_ref`, `security_patch` — **não aparecem em
+nenhum dos 19 arquivos Kotlin do repositório**.
+
+A hipótese anterior, registrada em 2026-09-03, de que o aparelho rodava uma build
+anterior ao commit `8bf0cd0`, está **descartada**: esse commit foi o que
+introduziu o heartbeat, e o aparelho envia heartbeat. A explicação correta é
+outra: o APK em campo tem funcionalidade que o repositório não contém, e o
+repositório tem comportamento que o APK não apresenta. Os dois divergiram.
+
+Isso é coerente com os nomes dos commits `ebdc56b` e `8bf0cd0`, ambos começando
+com “Restore”: o código Android foi reconstruído parcialmente, e a reconstrução
+não reproduz a build que está em operação.
+
+### Consequências
+
+1. **A matriz de campo perde sentido enquanto isso durar.** Testar o aparelho
+   hoje é testar código que não está versionado; testar uma build do repositório
+   é testar algo que nunca operou.
+2. **Instalar a build do repositório seria uma regressão.** Perderia a exportação
+   de diagnóstico, mudaria os contadores do heartbeat e alteraria a cadeia de
+   captura que está funcionando bem há uma semana. Não deve ser feito só para
+   obter `listener_connected`.
+3. **A confiança de captura fica limitada a `moderate`**, porque
+   `notification_access`, `whatsapp_installed` e `network_type` não chegam — e
+   nenhuma das duas versões, nem a do repositório nem a de campo, os envia.
+4. **O SHA-256 registrado em `docs/DEPLOYMENTS.md` não identifica o que está
+   rodando.** Nenhum dos dois APKs locais foi confirmado como o instalado.
+
+### Próximo passo recomendado
+
+Antes de qualquer matriz de campo ou troca de APK, recuperar a procedência do
+código Android em operação. Em ordem de preferência:
+
+1. localizar a fonte que gerou a build instalada e versioná-la;
+2. se ela não existir mais, extrair `versionCode`, `versionName` e hash do APK
+   instalado no aparelho e registrar a build como artefato opaco, tratando o
+   repositório como o alvo de reconstrução;
+3. só então decidir se a próxima build acrescenta `notification_access`,
+   `whatsapp_installed` e `network_type`, preservando a exportação de
+   diagnóstico e os contadores atuais.
+
+Trocar o APK é mudança na captura em operação e exige janela combinada,
+verificação de heartbeat depois da troca e rollback preparado.
