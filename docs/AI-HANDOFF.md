@@ -97,7 +97,7 @@ funções precisam ir juntas e depois dos secrets, nesta ordem:
 
 ## Bloqueios que não podem ser ignorados
 
-1. Os três secrets do GitHub continuam ausentes; sem eles não há scheduler.
+1. ~~Secrets do GitHub~~ — resolvido em 2026-09-03: os três estão configurados e o scheduler foi provado nos dois caminhos.
 2. As Edge Functions implantadas ainda contêm a lógica antiga.
 3. Não existem SLOs nem alertas para heartbeat atrasado, processamento atrasado
    ou execução pulada.
