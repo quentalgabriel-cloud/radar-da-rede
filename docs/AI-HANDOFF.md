@@ -3,7 +3,7 @@
 - Atualizado em: 2026-09-03 (sessão P1.1, parte 1)
 - Branch: `main`
 - Base auditada: commit `86c66fb`
-- Trabalho desta sessão: branch `p1.1-confiabilidade-e-ativacao`, commits `838fb81`, `402e819` e `0754ca5`, ainda **não** publicada em `main`
+- Trabalho desta sessão: PR [#1](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/1), commits `838fb81`..`b65cdb1`, mesclado em `main` pelo merge `8e90141` em 2026-09-03
 - Projeto Supabase: `pluruijhqnueayrlkthx`
 - Rede piloto: `d1224e68-c51f-4b31-a7e6-7b91f1a65357`
 - Produção web: `https://radar-da-rede.vercel.app`
