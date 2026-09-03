@@ -51,5 +51,10 @@
 | Group Registry | Observações cosméticas são idempotentes e nomes iguais mantêm identidade da fonte | TESTADO LOCALMENTE | `packages/supabase-core/test/group-resolution.test.js` |
 | Group Registry | Migration e RPCs funcionam no Supabase dedicado | VALIDADO REMOTAMENTE | Seis migrations aplicadas; backfill com 101 grupos e replay com zero duplicações |
 | Classificação | Alterações registram histórico e exigem operator/owner | VALIDADO REMOTAMENTE | Ensaio temporário confirmou três mudanças auditadas, revisão de alias e limpeza integral |
+| Classificação | Repetição sem mudança não cria histórico | VALIDADO REMOTAMENTE | Ensaio remoto de no-op com contagem estável |
+| Group Registry | Rename substantivo não funde grupos e registra motivo | VALIDADO REMOTAMENTE | Alias ambíguo, `source_identity_label_changed` e confirmação humana |
+| Group Registry | Resumo sanitizado cobre decisões e pendências | VALIDADO REMOTAMENTE | 124 grupos/aliases; contagens sem conteúdo de mensagens |
+| Radar Web | Classificação, revisão de alias e histórico respeitam permissão | TESTADO LOCALMENTE | Provider autenticado, renderização por `can_manage` e enforcement RPC remoto |
 | Captura | Confidence high/moderate/low/unavailable invalida tendência fraca | TESTADO LOCALMENTE | `packages/capture-health/test/capture-health.test.js` |
+| Captura | Campos de saúde ausentes não produzem confidence alta | TESTADO LOCALMENTE | Diagnóstico Moto G84 + teste `health_fields_incomplete` |
 | Android | MessagingStyle cumulativo preserva ID e adiciona apenas mensagem nova | VALIDADO REMOTAMENTE | GitHub Actions run `33459336566`, commit `fa87236` |

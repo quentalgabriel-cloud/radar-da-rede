@@ -6,11 +6,12 @@
 - **Project ref:** `pluruijhqnueayrlkthx`
 - **Região:** `sa-east-1`
 - **Estado:** `ACTIVE_HEALTHY`
-- **Migrations:** seis aplicadas, incluindo `group_registry_foundation` (`20260901014113`) e `group_registry_advisor_indexes`.
-- **Edge Functions:** seis ativas: `ingest-events` v2, `ingest-health` v2, `process-window` v2, `radar-read-model` v7, `capture-diagnostic` v1 e `process-latest-window` v3.
+- **Migrations:** oito aplicadas, incluindo foundation, índices, explicabilidade e acesso da interface do Group Registry.
+- **Edge Functions:** seis ativas: `ingest-events` v2, `ingest-health` v2, `process-window` v3, `radar-read-model` v9, `capture-diagnostic` v1 e `process-latest-window` v4.
 - **Ensaio remoto:** aprovado em 2026-08-26 com replay idempotente e proveniência completa.
 - **Group Registry shadow:** ativado em 2026-08-31. Backfill de 101 observações criou 101 grupos/aliases; repetição resolveu as 101 observações e criou zero registros. Os 652 eventos e 110 lotes permaneceram intactos.
 - **Classificação administrativa:** RPCs de classificação e revisão validadas remotamente com owner/operator, histórico auditável e limpeza integral dos dados temporários do ensaio.
+- **Estado em 2026-09-03:** 124 grupos/aliases, 1.064 eventos e 175 lotes; nenhuma ambiguidade real pendente no instante da consulta.
 
 ## Radar Web
 

@@ -224,6 +224,55 @@ const renderGroups = () => {
         </details>
       `;
     }).join("");
+  renderGroupRegistry();
+};
+
+const registryLabel = (value) => ({
+  unclassified: "Não classificado", partially_classified: "Classificação parcial", confirmed: "Confirmado",
+  automatic: "Automático", ambiguous: "Revisar", rejected: "Rejeitado"
+})[value] ?? value ?? "Não informado";
+
+const renderGroupRegistry = () => {
+  const section = document.querySelector("#group-registry");
+  const registry = state.data?.group_registry;
+  section.hidden = state.mode !== "live" || !registry;
+  if (section.hidden) return;
+  const summary = registry.summary ?? {};
+  document.querySelector("#registry-summary").textContent =
+    `${summary.groups ?? 0} grupos · ${summary.unclassified ?? 0} não classificados · ${summary.ambiguous ?? 0} aliases para revisar.`;
+  const aliasesByGroup = new Map();
+  for (const alias of registry.aliases ?? []) aliasesByGroup.set(alias.group_id, [...(aliasesByGroup.get(alias.group_id) ?? []), alias]);
+  const changesByGroup = new Map();
+  for (const change of registry.changes ?? []) changesByGroup.set(change.group_id, [...(changesByGroup.get(change.group_id) ?? []), change]);
+  const query = state.query.toLocaleLowerCase("pt-BR");
+  const groups = (registry.groups ?? []).filter((group) => [group.current_label, group.territory, group.municipality, group.context_label]
+    .some((value) => String(value ?? "").toLocaleLowerCase("pt-BR").includes(query)));
+  document.querySelector("#registry-list").innerHTML = groups.map((group) => {
+    const aliases = aliasesByGroup.get(group.id) ?? [];
+    const changes = changesByGroup.get(group.id) ?? [];
+    const editable = registry.can_manage ? `
+      <form class="registry-form" data-group-id="${escapeHtml(group.id)}">
+        <label>Origem<select name="origin"><option value="unknown">Desconhecida</option><option value="legacy">Legado</option><option value="current_operation">Operação atual</option></select></label>
+        <label>Contexto<select name="context_type"><option value="">Não informado</option>${["territory","leadership","project","theme","community","event","organic","other"].map((value) => `<option value="${value}">${registryLabel(value)}</option>`).join("")}</select></label>
+        <label>Nome do contexto<input name="context_label" value="${escapeHtml(group.context_label ?? "")}" maxlength="255"></label>
+        <label>Município<input name="municipality" value="${escapeHtml(group.municipality ?? "")}" maxlength="160"></label>
+        <label>Território<input name="territory" value="${escapeHtml(group.territory ?? "")}" maxlength="160"></label>
+        <label>Referência operacional<input name="primary_steward_label" value="${escapeHtml(group.primary_steward_label ?? "")}" maxlength="160"></label>
+        <label>Classificação<select name="classification_status"><option value="unclassified">Não classificado</option><option value="partially_classified">Parcial</option><option value="confirmed">Confirmado</option></select></label>
+        <button class="primary-button" type="submit">Salvar classificação</button><span class="registry-message" role="status"></span>
+      </form>` : '<p class="notice">Você pode consultar esta classificação. Alterações são restritas à gestão da rede.</p>';
+    return `<details class="group-card registry-card" data-registry-group="${escapeHtml(group.id)}">
+      <summary><div><strong>${escapeHtml(group.current_label)}</strong><span>${escapeHtml(registryLabel(group.classification_status))}</span></div><span>${escapeHtml(formatTime(group.last_seen_at))}</span></summary>
+      <div class="group-body">${editable}
+        <details><summary>Aliases observados (${aliases.length})</summary><div>${aliases.map((alias) => `<div class="alias-row"><span>${escapeHtml(alias.observed_label)} · ${escapeHtml(registryLabel(alias.resolution_status))}</span>${registry.can_manage && alias.resolution_status === "ambiguous" ? `<button type="button" data-review-alias="${escapeHtml(alias.id)}" data-resolution="confirmed">Confirmar</button><button type="button" data-review-alias="${escapeHtml(alias.id)}" data-resolution="rejected">Rejeitar</button>` : ""}</div>`).join("") || "Nenhum alias."}</div></details>
+        <details><summary>Ver histórico (${changes.length})</summary><div>${changes.map((change) => `<p>${escapeHtml(formatTime(change.changed_at))}: ${escapeHtml(change.field_name)}</p>`).join("") || "Nenhuma alteração manual."}</div></details>
+      </div></details>`;
+  }).join("") || '<p class="empty">Nenhum grupo do registro encontrado.</p>';
+  for (const group of groups) {
+    const form = document.querySelector(`[data-group-id="${CSS.escape(group.id)}"]`);
+    if (!form) continue;
+    for (const name of ["origin", "context_type", "classification_status"]) form.elements[name].value = group[name] ?? "";
+  }
 };
 
 const renderHealth = () => {
@@ -425,6 +474,35 @@ document.querySelector("#attention-list").addEventListener("click", (event) => {
   renderSituations();
   showScreen("situations");
   document.querySelectorAll("#situation-list .situation-card")[Number(button.dataset.openSituation)]?.scrollIntoView({ behavior: "smooth", block: "start" });
+});
+document.querySelector("#registry-list").addEventListener("submit", async (event) => {
+  const form = event.target.closest("[data-group-id]");
+  if (!form) return;
+  event.preventDefault();
+  const message = form.querySelector(".registry-message");
+  const values = Object.fromEntries(new FormData(form));
+  for (const field of ["context_type", "context_label", "municipality", "territory", "primary_steward_label"]) {
+    if (values[field] === "") values[field] = null;
+  }
+  message.textContent = "Salvando…";
+  try {
+    await state.provider.classifyGroup(form.dataset.groupId, values);
+    message.textContent = "Classificação salva.";
+    await refreshRadar("manual");
+  } catch {
+    message.textContent = "Não foi possível salvar. Confirme sua permissão e os campos.";
+  }
+});
+document.querySelector("#registry-list").addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-review-alias]");
+  if (!button) return;
+  button.disabled = true;
+  try {
+    await state.provider.reviewGroupAlias(button.dataset.reviewAlias, button.dataset.resolution);
+    await refreshRadar("manual");
+  } catch {
+    button.disabled = false;
+  }
 });
 document.querySelector("#refresh-button").addEventListener("click", () => {
   refreshRadar("manual").catch(() => {});

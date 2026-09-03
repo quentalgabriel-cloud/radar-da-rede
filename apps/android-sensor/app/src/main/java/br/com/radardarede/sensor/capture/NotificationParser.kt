@@ -30,6 +30,7 @@ class MessagingStyleWhatsAppParser : NotificationParser {
             .firstOrNull(String::isNotEmpty)
             ?: return emptyList()
         val conversationId = "wa_${sha256(conversation).take(32)}"
+        val occurrences = mutableMapOf<String, Int>()
         return snapshot.messages.mapIndexedNotNull { index, message ->
             val text = message.text.trim()
             val occurredAt = message.occurredAtEpochMillis
@@ -38,12 +39,15 @@ class MessagingStyleWhatsAppParser : NotificationParser {
             }
             val senderRef = message.sender?.trim()?.takeIf(String::isNotEmpty)
                 ?.let { "sender_${sha256(it).take(24)}" }
-            val fingerprint = listOf(
+            val baseFingerprint = listOf(
                 conversationId,
                 occurredAt.toString(),
                 senderRef.orEmpty(),
                 sha256(text),
             ).joinToString("|")
+            val occurrence = occurrences.getOrDefault(baseFingerprint, 0)
+            occurrences[baseFingerprint] = occurrence + 1
+            val fingerprint = if (occurrence == 0) baseFingerprint else "$baseFingerprint|duplicate:$occurrence"
             NormalizedEvent(
                 eventId = nameUuid("radar-event-v1:$fingerprint"),
                 networkId = networkId,
@@ -60,6 +64,7 @@ class MessagingStyleWhatsAppParser : NotificationParser {
                 metadata = mapOf(
                     "notification_key" to snapshot.sourceEventId,
                     "message_index" to index,
+                    "message_occurrence" to occurrence,
                     "evidence" to "notification_messaging_style",
                 ),
             )

@@ -92,3 +92,26 @@ test("Supabase provider captures an implicit auth redirect session", () => {
   assert.equal(session.refresh_token, "refresh-token");
   assert.equal(storage.size(), 1);
 });
+
+test("Supabase provider sends administrative mutations with the user token", async () => {
+  const requests = [];
+  const provider = createSupabaseProvider({
+    url: "https://example.supabase.co",
+    publishableKey: "sb_publishable_test",
+    fetchImpl: async (url, options) => {
+      requests.push({ url, options });
+      if (url.includes("grant_type=password")) return Response.json({ access_token: "user-jwt", refresh_token: "refresh-token" });
+      return Response.json({});
+    },
+    storage: createStorage()
+  });
+  await provider.signIn("operator@example.com", "correct-horse-battery-staple");
+  await provider.classifyGroup("group-id", { classification_status: "confirmed" });
+  await provider.reviewGroupAlias("alias-id", "rejected");
+  assert.match(requests[1].url, /\/rest\/v1\/rpc\/classify_group$/);
+  assert.equal(requests[1].options.headers.authorization, "Bearer user-jwt");
+  assert.deepEqual(JSON.parse(requests[1].options.body), {
+    p_group_id: "group-id", p_changes: { classification_status: "confirmed" }
+  });
+  assert.match(requests[2].url, /\/rest\/v1\/rpc\/review_group_alias$/);
+});

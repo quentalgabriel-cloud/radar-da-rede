@@ -49,4 +49,11 @@ describe("capture confidence", () => {
     assert.equal(evaluateCaptureConfidence({ ...healthy, status: "offline_recovery" }, window).level, "moderate");
     assert.equal(evaluateCaptureConfidence({ ...healthy, observed_at: "2026-08-31T16:00:00.000Z" }, window).level, "unavailable");
   });
+  it("does not infer healthy coverage from missing diagnostic fields", () => {
+    const incomplete = { ...healthy };
+    delete incomplete.notification_access;
+    assert.deepEqual(evaluateCaptureConfidence(incomplete, window), {
+      level: "unavailable", reason: "health_fields_incomplete", trend_valid: false
+    });
+  });
 });

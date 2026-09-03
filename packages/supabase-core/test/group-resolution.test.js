@@ -39,7 +39,7 @@ test("shadow resolution reports outcomes without changing events", async () => {
 
   const summary = await resolveGroupObservationsShadow(admin, "11111111-1111-8111-8111-111111111111", input);
   assert.deepEqual(summary, {
-    observed: 1, resolved: 1, ambiguous: 0, rejected: 0, created: 1, available: true
+    observed: 1, resolved: 1, ambiguous: 0, rejected: 0, created: 1, available: true, enabled: true
   });
   assert.equal(input[0].conversation_id, "wa_original");
 });
@@ -50,4 +50,32 @@ test("shadow resolution degrades safely before the migration is available", asyn
   assert.equal(summary.available, false);
   assert.equal(summary.observed, 1);
   assert.equal(summary.error_code, "PGRST202");
+});
+
+test("shadow resolution keeps ambiguous and rejected decisions out of resolved totals", async () => {
+  const admin = { rpc: async () => ({
+    data: [
+      { resolution_status: "ambiguous", created: true },
+      { resolution_status: "rejected", created: false }
+    ], error: null
+  }) };
+  const summary = await resolveGroupObservationsShadow(admin, "11111111-1111-8111-8111-111111111111", [
+    event(), event({ conversation_id: "wa_other" })
+  ]);
+  assert.equal(summary.resolved, 0);
+  assert.equal(summary.ambiguous, 1);
+  assert.equal(summary.rejected, 1);
+});
+
+test("shadow resolution can be disabled without calling the registry", async () => {
+  const previousDeno = globalThis.Deno;
+  globalThis.Deno = { env: { get: () => "false" } };
+  try {
+    const admin = { rpc: async () => assert.fail("disabled shadow must not call the registry") };
+    const summary = await resolveGroupObservationsShadow(admin, "11111111-1111-8111-8111-111111111111", [event()]);
+    assert.equal(summary.enabled, false);
+    assert.equal(summary.observed, 1);
+  } finally {
+    if (previousDeno === undefined) delete globalThis.Deno; else globalThis.Deno = previousDeno;
+  }
 });

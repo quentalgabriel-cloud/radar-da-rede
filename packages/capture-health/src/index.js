@@ -120,6 +120,10 @@ export const evaluateCaptureConfidence = (health, options = {}) => {
   if (!health?.observed_at || !Number.isFinite(startsAt) || !Number.isFinite(endsAt)) {
     return confidence("unavailable", "health_or_window_unavailable");
   }
+  if ([health.notification_access, health.listener_connected, health.whatsapp_installed, health.network_type]
+    .some((value) => value === null || value === undefined)) {
+    return confidence("unavailable", "health_fields_incomplete");
+  }
   if (Date.parse(health.observed_at) < startsAt) {
     return confidence("unavailable", "heartbeat_does_not_cover_window");
   }

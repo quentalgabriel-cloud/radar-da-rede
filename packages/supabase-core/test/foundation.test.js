@@ -44,6 +44,8 @@ test("group registry stays additive, scoped and administratively audited", async
   assert.match(sql, /create or replace function public\.classify_group/);
   assert.match(sql, /to_jsonb\(v_group\)->change\.key/);
   assert.match(sql, /resolution_status.*automatic.*confirmed.*ambiguous.*rejected/s);
+  assert.match(sql, /resolution_reason/);
+  assert.match(sql, /create or replace function public\.group_registry_summary/);
   assert.match(sql, /grant execute on function public\.resolve_group_observations\(uuid, jsonb\) to service_role/);
   assert.doesNotMatch(eventContract, /group_id/);
 });

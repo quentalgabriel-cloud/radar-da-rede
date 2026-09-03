@@ -102,6 +102,20 @@ class MessagingStyleWhatsAppParserTest {
         assertTrue(first.eventId != otherGroup.eventId)
     }
 
+    @Test
+    fun `recreated notification keeps identity while legitimate identical messages remain distinct`() {
+        val parser = MessagingStyleWhatsAppParser()
+        val capturedAt = 4_000_000L
+        val message = NotificationMessage("Mensagem igual", capturedAt - 1_000L, "Pessoa A")
+        val original = groupSnapshot(capturedAt, listOf(message))
+        val recreated = groupSnapshot(capturedAt + 2_000L, listOf(message)).copy(sourceEventId = "new-notification-key")
+        val legitimatePair = groupSnapshot(capturedAt + 2_000L, listOf(message, message))
+
+        assertEquals(parser.parse(original, NETWORK_ID, DEVICE_ID).single().eventId,
+            parser.parse(recreated, NETWORK_ID, DEVICE_ID).single().eventId)
+        assertEquals(2, parser.parse(legitimatePair, NETWORK_ID, DEVICE_ID).map { it.eventId }.distinct().size)
+    }
+
     private fun groupSnapshot(
         capturedAt: Long,
         messages: List<NotificationMessage>,

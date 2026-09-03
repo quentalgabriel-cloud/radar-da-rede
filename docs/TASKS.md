@@ -9,7 +9,8 @@
 - [x] P0 — Resolvedor shadow e capture confidence implementados/testados localmente.
 - [x] P0 — Aplicar migrations no Supabase dedicado e validar RLS/RPCs remotamente.
 - [x] P0 — Executar backfill shadow idempotente e habilitar a base de classificação administrativa.
-- [ ] P0 — Expor a classificação administrativa na interface e iniciar classificação progressiva pela operação.
+- [x] P0 — Expor classificação, aliases e histórico na interface com enforcement de owner/operator.
+- [ ] Operação contínua — Classificar progressivamente os grupos, sem bloquear os não classificados.
 
 ## Fundação
 
@@ -57,7 +58,7 @@
 
 ## Ordem de execução
 
-1. Expor a classificação progressiva para gerente de comunidade/operator sem interromper grupos não classificados.
-2. Observar o resolvedor shadow na operação e revisar apenas aliases ambíguos, quando surgirem.
+1. Confirmar o deploy web da interface administrativa e iniciar classificação progressiva.
+2. Observar o resolvedor shadow e revisar apenas aliases ambíguos, quando surgirem.
 3. Configurar os secrets do workflow e observar uma consolidação remota idempotente.
-4. Validar a janela de 24 horas e avançar ao gate P1.
+4. Validar a janela de 24 horas e iniciar P1 somente após registrar o fechamento P0.

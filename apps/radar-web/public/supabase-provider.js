@@ -89,6 +89,11 @@ export const createSupabaseProvider = ({ url, publishableKey, fetchImpl = fetch,
     }
   };
 
+  const authenticatedRpc = async (name, body) => {
+    if (!session?.access_token) throw new Error("authentication_required");
+    return request(`/rest/v1/rpc/${name}`, { method: "POST", body, accessToken: session.access_token });
+  };
+
   return {
     restoreSession,
     captureRedirectSession,
@@ -109,6 +114,12 @@ export const createSupabaseProvider = ({ url, publishableKey, fetchImpl = fetch,
       save(null);
       if (accessToken) await request("/auth/v1/logout", { method: "POST", accessToken }).catch(() => {});
     },
-    readModel
+    readModel,
+    classifyGroup: (groupId, changes) => authenticatedRpc("classify_group", {
+      p_group_id: groupId, p_changes: changes
+    }),
+    reviewGroupAlias: (aliasId, resolutionStatus, groupId = null) => authenticatedRpc("review_group_alias", {
+      p_alias_id: aliasId, p_resolution_status: resolutionStatus, p_group_id: groupId
+    })
   };
 };

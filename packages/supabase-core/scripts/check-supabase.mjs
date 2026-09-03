@@ -12,6 +12,14 @@ const groupRegistryAdvisorIndexesMigration = await readFile(
   resolve(repositoryRoot, "supabase/migrations/20260831220000_group_registry_advisor_indexes.sql"),
   "utf8",
 );
+const groupRegistryExplainabilityMigration = await readFile(
+  resolve(repositoryRoot, "supabase/migrations/20260831230000_group_registry_explainability.sql"),
+  "utf8",
+);
+const groupRegistryUiAccessMigration = await readFile(
+  resolve(repositoryRoot, "supabase/migrations/20260903190000_group_registry_ui_access.sql"),
+  "utf8",
+);
 const config = await readFile(resolve(repositoryRoot, "supabase/config.toml"), "utf8");
 const handler = await readFile(
   resolve(repositoryRoot, "supabase/functions/_shared/handler.ts"),
@@ -106,7 +114,7 @@ assert.doesNotMatch(sql, /grant[^;]+device_credentials[^;]+authenticated/i);
 const groupRegistryMarker = "-- P0 group registry foundation for the active operation.";
 assert.equal(
   sql.slice(sql.indexOf(groupRegistryMarker)).trim(),
-  `${groupRegistryMigration.trim()}\n\n${groupRegistryAdvisorIndexesMigration.trim()}`,
+  `${groupRegistryMigration.trim()}\n\n${groupRegistryAdvisorIndexesMigration.trim()}\n\n${groupRegistryExplainabilityMigration.trim()}\n\n${groupRegistryUiAccessMigration.trim()}`,
   "group registry migration and declarative schema diverged",
 );
 for (const table of ["groups", "group_aliases", "group_classification_changes"]) {

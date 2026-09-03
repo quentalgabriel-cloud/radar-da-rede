@@ -29,6 +29,9 @@ export function buildGroupObservations(events) {
 
 export async function resolveGroupObservationsShadow(admin, networkId, events) {
   const observations = buildGroupObservations(events);
+  if (globalThis?.Deno?.env?.get?.("GROUP_RESOLUTION_SHADOW_ENABLED") === "false") {
+    return { ...emptySummary(), observed: observations.length, enabled: false };
+  }
   if (observations.length === 0) return emptySummary();
 
   const { data, error } = await admin.rpc("resolve_group_observations", {
@@ -52,5 +55,5 @@ export async function resolveGroupObservationsShadow(admin, networkId, events) {
 }
 
 function emptySummary() {
-  return { observed: 0, resolved: 0, ambiguous: 0, rejected: 0, created: 0, available: true };
+  return { observed: 0, resolved: 0, ambiguous: 0, rejected: 0, created: 0, available: true, enabled: true };
 }

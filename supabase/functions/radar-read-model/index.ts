@@ -43,7 +43,7 @@ const authenticatedHandler = withSupabase({ auth: "user" }, async (request, cont
   if (runError) return databaseFailure("run_query_failed", runError.code);
   if (!run) return json(404, { error: "processing_run_not_found" });
 
-  const [eventResult, factResult, signalResult, alertResult, healthResult, transitionResult, diagnosticResult] = await Promise.all([
+  const [eventResult, factResult, signalResult, alertResult, healthResult, transitionResult, diagnosticResult, groupResult, aliasResult, changeResult, registrySummaryResult, registryManageResult] = await Promise.all([
     context.supabase.from("normalized_events")
       .select("event_id,conversation_id,conversation_label,occurred_at,text,metadata")
       .eq("network_id", networkId)
@@ -65,9 +65,21 @@ const authenticatedHandler = withSupabase({ auth: "user" }, async (request, cont
       .eq("network_id", networkId).order("occurred_at", { ascending: false }).limit(12),
     context.supabase.from("diagnostic_tests")
       .select("id,started_at,expires_at,completed_at,status,latency_ms,failure_stage")
-      .eq("network_id", networkId).order("started_at", { ascending: false }).limit(1).maybeSingle()
+      .eq("network_id", networkId).order("started_at", { ascending: false }).limit(1).maybeSingle(),
+    context.supabase.from("groups")
+      .select("id,current_label,origin,context_type,context_label,municipality,territory,primary_steward_label,status,naming_status,classification_status,classification_source,classified_at,first_seen_at,last_seen_at")
+      .eq("network_id", networkId).order("last_seen_at", { ascending: false }).limit(500),
+    context.supabase.from("group_aliases")
+      .select("id,group_id,source,observed_label,resolution_status,resolution_reason,confidence,first_seen_at,last_seen_at")
+      .eq("network_id", networkId).order("last_seen_at", { ascending: false }).limit(1000),
+    context.supabase.from("group_classification_changes")
+      .select("id,group_id,changed_at,field_name,previous_value,new_value,change_source")
+      .eq("network_id", networkId).order("changed_at", { ascending: false }).limit(1000),
+    context.supabase.rpc("group_registry_summary", { p_network_id: networkId }),
+    context.supabase.rpc("can_manage_group_registry", { p_network_id: networkId })
   ]);
-  const failed = [eventResult, factResult, signalResult, alertResult, healthResult, transitionResult, diagnosticResult].find((result) => result.error);
+  const failed = [eventResult, factResult, signalResult, alertResult, healthResult, transitionResult, diagnosticResult,
+    groupResult, aliasResult, changeResult, registrySummaryResult, registryManageResult].find((result) => result.error);
   if (failed?.error) return databaseFailure("read_model_query_failed", failed.error.code);
 
   let diagnostic = diagnosticResult.data ?? null;
@@ -99,7 +111,16 @@ const authenticatedHandler = withSupabase({ auth: "user" }, async (request, cont
     healthTransitions: transitionResult.data ?? [],
     diagnosticTest: diagnostic
   });
-  return json(200, model);
+  return json(200, {
+    ...model,
+    group_registry: {
+      summary: registrySummaryResult.data ?? {},
+      can_manage: registryManageResult.data === true,
+      groups: groupResult.data ?? [],
+      aliases: aliasResult.data ?? [],
+      changes: changeResult.data ?? []
+    }
+  });
 });
 
 export default {

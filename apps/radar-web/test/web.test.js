@@ -31,6 +31,7 @@ it("serves the Radar shell and generated view model", async () => {
   assert.match(html, /Radar hoje/);
   assert.match(html, /data-screen="situations"/);
   assert.match(html, /data-screen="groups"/);
+  assert.match(html, /id="group-registry"/);
   assert.match(html, />E-mail ou usuário</);
   assert.match(html, /autocomplete="username"/);
   assert.match(html, /id="refresh-status"/);
@@ -68,6 +69,8 @@ it("keeps scripts free of innerHTML values that bypass escapeHtml for external t
   assert.doesNotMatch(source, /<p>\$\{event\.text\}/);
   assert.doesNotMatch(source, /service_role|sb_secret_/i);
   assert.doesNotMatch(source, /process-window|processing_secret/i);
+  assert.match(source, /classifyGroup/);
+  assert.match(source, /reviewGroupAlias/);
 });
 
 it("ships one shared refresh controller without privileged processing", async () => {
