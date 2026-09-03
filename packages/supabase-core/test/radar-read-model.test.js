@@ -4,6 +4,7 @@ import { analyzeEvents } from "../../intelligence/src/index.js";
 import { loadScenario } from "../../testkit/src/index.js";
 import { buildAnalysisPayload } from "../../../supabase/functions/_shared/analysis-payload.js";
 import { buildPersistedRadarViewModel } from "../../../supabase/functions/_shared/radar-read-model.js";
+import { buildGroupControlCenter } from "../../../supabase/functions/_shared/group-trends.js";
 
 test("persisted read model keeps the synthetic UI contract", async () => {
   const scenario = await loadScenario("material-shortage");
@@ -40,4 +41,8 @@ test("persisted read model keeps the synthetic UI contract", async () => {
   assert.equal(model.territories.length, 3);
   assert.ok(model.conversations.every((conversation) => Array.isArray(conversation.topics)));
   assert.equal(model.provenance.processing_run_id, run.id);
+  const controlCenter = buildGroupControlCenter({ groups: [], metrics: [], enabled: false });
+  assert.equal(controlCenter.schema_version, "0.2.0");
+  assert.equal(controlCenter.enabled, false);
+  assert.ok(Array.isArray(controlCenter.groups));
 });

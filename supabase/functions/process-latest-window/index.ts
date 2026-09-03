@@ -4,6 +4,7 @@ import { corsHeaders } from "npm:@supabase/supabase-js@2.112.4/cors";
 import { buildAnalysisPayload } from "../_shared/analysis-payload.js";
 import { canonicalizeConversationEvent } from "../_shared/canonical-conversations.js";
 import { resolveGroupObservationsShadow } from "../_shared/group-resolution.js";
+import { buildEventGroupLinks, loadCaptureConfidence, persistAnalysisWithMetrics } from "../_shared/group-metrics.js";
 import { analyzeEvents } from "../_shared/intelligence.js";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -68,6 +69,7 @@ const authenticatedHandler = withSupabase({ auth: "user" }, async (request, cont
 
   const endsAt = latestEvent.occurred_at;
   const groupResolution = await resolveGroupObservationsShadow(admin, networkId, events ?? []);
+  const captureConfidence = await loadCaptureConfidence(admin, networkId, startsAt, endsAt);
   const analysisEvents = (events ?? []).map(canonicalizeConversationEvent);
   const analysis = analyzeEvents(analysisEvents);
   const payload = await buildAnalysisPayload({
@@ -75,9 +77,11 @@ const authenticatedHandler = withSupabase({ auth: "user" }, async (request, cont
     startsAt,
     endsAt,
     events: analysisEvents,
-    analysis
+    analysis,
+    groupLinks: buildEventGroupLinks(events ?? [], groupResolution.links),
+    captureConfidence
   });
-  const { data: persisted, error: persistError } = await admin.rpc("persist_analysis", { p_analysis: payload });
+  const { data: persisted, error: persistError, metrics_persisted, fallback_reason } = await persistAnalysisWithMetrics(admin, payload);
   if (persistError) return json(500, { error: "analysis_persist_failed" });
 
   const result = Array.isArray(persisted) ? persisted[0] : persisted;
@@ -85,7 +89,9 @@ const authenticatedHandler = withSupabase({ auth: "user" }, async (request, cont
     status: "processed",
     processed: true,
     window: { starts_at: startsAt, ends_at: endsAt, event_count: events?.length ?? 0 },
-    group_resolution: groupResolution,
+    group_resolution: { ...groupResolution, links: undefined },
+    capture_confidence: captureConfidence,
+    group_metrics: { persisted: metrics_persisted, fallback_reason },
     ...result
   });
 });

@@ -11,7 +11,14 @@ const state = {
   refreshController: null,
   query: "",
   scenario: null,
-  severity: "all"
+  severity: "all",
+  groupCondition: "all",
+  groupTrend: "all",
+  groupStatus: "all",
+  groupOrigin: "all",
+  groupContext: "all",
+  groupSort: "attention",
+  controlGroups: new Map()
 };
 
 const formatTime = (value) => value
@@ -29,6 +36,8 @@ const escapeHtml = (value) => String(value ?? "").replace(/[&<>'"]/g, (character
 const safeSeverity = (value) => new Set(["high", "medium", "low"]).has(value) ? value : "low";
 const severityLabel = { high: "Atenção", medium: "Em acompanhamento", low: "Informativo" };
 const activityLabel = { high: "Alta", medium: "Moderada", low: "Baixa" };
+const conditionLabel = { critical: "Crítica", attention: "Atenção", watch: "Observação", normal: "Normal" };
+const trendLabel = { growing: "Crescendo", stable: "Estável", declining: "Caindo", unavailable: "Sem comparação" };
 
 const plural = (value, singular, pluralForm) => `${value} ${value === 1 ? singular : pluralForm}`;
 
@@ -192,6 +201,11 @@ const renderSituations = () => {
 
 const renderGroups = () => {
   const query = state.query.toLocaleLowerCase("pt-BR");
+  const controlCenter = state.data.group_control_center;
+  const controlEnabled = controlCenter?.enabled === true;
+  document.querySelector("#control-center").hidden = !controlEnabled;
+  document.querySelector("#conversation-list").hidden = controlEnabled;
+  if (controlEnabled) renderControlCenter(controlCenter, query);
   const conversations = (state.data.conversations ?? []).filter((conversation) =>
     [conversation.label, conversation.territory, ...(conversation.topics ?? [])]
       .some((value) => String(value ?? "").toLocaleLowerCase("pt-BR").includes(query))
@@ -225,6 +239,73 @@ const renderGroups = () => {
       `;
     }).join("");
   renderGroupRegistry();
+};
+
+const renderControlCenter = (controlCenter, query) => {
+  const summary = controlCenter.summary ?? {};
+  document.querySelector("#control-center-summary").innerHTML = [
+    [summary.monitored ?? 0, "monitorados"], [summary.active ?? 0, "ativos no período"],
+    [summary.attention ?? 0, "em atenção"], [summary.declining ?? 0, "caindo"],
+    [summary.unclassified ?? 0, "não classificados"]
+  ].map(([value, label]) => `<article class="metric-card"><strong>${escapeHtml(value)}</strong><span>${escapeHtml(label)}</span></article>`).join("");
+  const conditionWeight = { critical: 4, attention: 3, watch: 2, normal: 1 };
+  const directionDelta = (group) => Number(group.trend?.delta ?? 0);
+  state.controlGroups = new Map((controlCenter.groups ?? []).map((group) => [group.id, group]));
+  populateControlFilter("#origin-filter", [...new Set((controlCenter.groups ?? []).map((group) => group.origin).filter(Boolean))], state.groupOrigin);
+  populateControlFilter("#context-filter", [...new Set((controlCenter.groups ?? []).map((group) => group.context?.label).filter(Boolean))], state.groupContext);
+  const groups = (controlCenter.groups ?? []).filter((group) => {
+    const matchesQuery = [group.label, group.context?.label, group.context?.territory]
+      .some((value) => String(value ?? "").toLocaleLowerCase("pt-BR").includes(query));
+    const matchesStatus = state.groupStatus === "all" || (state.groupStatus === "inactive" && group.event_count === 0)
+      || (state.groupStatus === "unclassified" && group.classification_status !== "confirmed");
+    return matchesQuery && matchesStatus && (state.groupCondition === "all" || group.condition === state.groupCondition)
+      && (state.groupTrend === "all" || group.trend?.direction === state.groupTrend)
+      && (state.groupOrigin === "all" || group.origin === state.groupOrigin)
+      && (state.groupContext === "all" || group.context?.label === state.groupContext);
+  }).sort((a, b) => {
+    if (state.groupSort === "decline") return directionDelta(a) - directionDelta(b);
+    if (state.groupSort === "growth") return directionDelta(b) - directionDelta(a);
+    if (state.groupSort === "activity") return b.event_count - a.event_count;
+    if (state.groupSort === "recent") return Date.parse(b.last_seen_at ?? 0) - Date.parse(a.last_seen_at ?? 0);
+    return (conditionWeight[b.condition] ?? 0) - (conditionWeight[a.condition] ?? 0) || b.open_situation_count - a.open_situation_count;
+  });
+  document.querySelector("#control-group-list").innerHTML = groups.length === 0
+    ? '<div class="empty-state"><strong>Nenhum grupo neste filtro.</strong><span>Ajuste busca, condição ou tendência.</span></div>'
+    : groups.map((group) => {
+      const trend = group.trend ?? { direction: "unavailable" };
+      const delta = trend.delta == null ? trendLabel[trend.direction] : `${trend.delta > 0 ? "+" : ""}${trend.delta} · ${trendLabel[trend.direction]}`;
+      return `<details class="group-card control-card condition-${escapeHtml(group.condition)}">
+        <summary><div><strong>${escapeHtml(group.label)}</strong><span>${escapeHtml(group.context?.label || group.origin || "Contexto não informado")}</span></div>
+        <span class="condition-badge">${escapeHtml(conditionLabel[group.condition] ?? group.condition)}</span></summary>
+        <div class="group-body"><dl><div><dt>Atividade</dt><dd>${escapeHtml(group.event_count)}</dd></div><div><dt>Tendência</dt><dd>${escapeHtml(delta)}</dd></div><div><dt>Situações abertas</dt><dd>${escapeHtml(group.open_situation_count)}</dd></div><div><dt>Última atividade</dt><dd>${escapeHtml(formatTime(group.last_seen_at))}</dd></div></dl>
+        <div class="tag-list">${(group.topics ?? []).map((topic) => `<span>${escapeHtml(topic.label)} · ${escapeHtml(topic.count)}</span>`).join("") || "<span>Sem assunto classificado</span>"}</div>
+        ${group.capture_confidence !== "high" ? `<p class="confidence-warning">Confiança de captura: ${escapeHtml(group.capture_confidence)}. A tendência pode estar indisponível.</p>` : ""}
+        <p class="sparkline-text" aria-label="Histórico de atividade">Histórico: ${(group.sparkline ?? []).map((point) => escapeHtml(point.value)).join(" · ") || "ainda sem janela comparável"}</p>
+        <button class="text-button" type="button" data-open-group="${escapeHtml(group.id)}">Abrir detalhes</button></div>
+      </details>`;
+    }).join("");
+};
+
+const populateControlFilter = (selector, values, selected) => {
+  const select = document.querySelector(selector);
+  const first = select.options[0].outerHTML;
+  select.innerHTML = first + values.sort((a, b) => a.localeCompare(b, "pt-BR"))
+    .map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join("");
+  select.value = values.includes(selected) ? selected : "all";
+};
+
+const openGroupDrawer = (group) => {
+  if (!group) return;
+  const drawer = document.querySelector("#group-drawer");
+  document.querySelector("#group-drawer-title").textContent = group.label;
+  document.querySelector("#group-drawer-content").innerHTML = `
+    <section class="drawer-section"><h3>Visão geral</h3><p>${escapeHtml(conditionLabel[group.condition])} · ${escapeHtml(trendLabel[group.trend?.direction])} · ${escapeHtml(group.event_count)} atividades.</p></section>
+    <section class="drawer-section"><h3>Contexto</h3><p>${escapeHtml(group.context?.label || "Não informado")} · ${escapeHtml(group.origin || "Origem não informada")}</p></section>
+    <section class="drawer-section"><h3>Movimentos e assuntos</h3><div class="tag-list">${(group.topics ?? []).map((topic) => `<span>${escapeHtml(topic.label)} · ${escapeHtml(topic.count)}</span>`).join("") || "<span>Sem assunto classificado</span>"}</div></section>
+    <section class="drawer-section"><h3>Situações</h3><p>${escapeHtml(group.open_situation_count)} abertas.</p></section>
+    <section class="drawer-section"><h3>Histórico e evidência</h3><p>${(group.sparkline ?? []).map((point) => `${escapeHtml(formatTime(point.at))}: ${escapeHtml(point.value)}`).join("<br>") || "Ainda não há duas janelas comparáveis."}</p></section>
+    <section class="drawer-section"><h3>Confiança da captura</h3><p>${escapeHtml(group.capture_confidence)}. Tendências ficam indisponíveis quando a janela atual ou anterior não tem cobertura suficiente.</p></section>`;
+  drawer.showModal();
 };
 
 const registryLabel = (value) => ({
@@ -507,6 +588,17 @@ document.querySelector("#registry-list").addEventListener("click", async (event)
 document.querySelector("#refresh-button").addEventListener("click", () => {
   refreshRadar("manual").catch(() => {});
 });
+for (const [selector, key] of [["#condition-filter", "groupCondition"], ["#trend-filter", "groupTrend"], ["#group-status-filter", "groupStatus"], ["#origin-filter", "groupOrigin"], ["#context-filter", "groupContext"], ["#group-sort", "groupSort"]]) {
+  document.querySelector(selector).addEventListener("change", (event) => {
+    state[key] = event.target.value;
+    renderGroups();
+  });
+}
+document.querySelector("#control-group-list").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-open-group]");
+  if (button) openGroupDrawer(state.controlGroups.get(button.dataset.openGroup));
+});
+document.querySelector("#close-group-drawer").addEventListener("click", () => document.querySelector("#group-drawer").close());
 document.querySelector("#scenario-select").addEventListener("change", (event) => {
   const url = new URL(location.href);
   url.searchParams.set("scenario", event.target.value);

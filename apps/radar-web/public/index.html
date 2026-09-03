@@ -117,6 +117,23 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
             <input id="search-input" type="search" placeholder="Buscar grupo, território ou assunto">
           </label>
+          <section id="control-center" hidden aria-labelledby="control-center-title">
+            <div class="section-heading"><div><p class="eyebrow">Control Center</p><h2 id="control-center-title">Leitura comparável dos grupos</h2></div></div>
+            <div id="control-center-summary" class="metric-grid compact" aria-label="Resumo dos grupos"></div>
+            <div class="control-filters">
+              <label>Condição<select id="condition-filter"><option value="all">Todas</option><option value="critical">Crítica</option><option value="attention">Atenção</option><option value="watch">Observação</option><option value="normal">Normal</option></select></label>
+              <label>Tendência<select id="trend-filter"><option value="all">Todas</option><option value="growing">Crescendo</option><option value="stable">Estável</option><option value="declining">Caindo</option><option value="unavailable">Sem comparação</option></select></label>
+              <label>Status<select id="group-status-filter"><option value="all">Todos</option><option value="inactive">Sem atividade</option><option value="unclassified">Não classificados</option></select></label>
+              <label>Origem<select id="origin-filter"><option value="all">Todas</option></select></label>
+              <label>Contexto<select id="context-filter"><option value="all">Todos</option></select></label>
+              <label>Ordenar<select id="group-sort"><option value="attention">Maior atenção</option><option value="decline">Maior queda</option><option value="growth">Maior crescimento</option><option value="activity">Maior atividade</option><option value="recent">Mais recente</option></select></label>
+            </div>
+            <div id="control-group-list" class="group-list"></div>
+          </section>
+          <dialog id="group-drawer" aria-labelledby="group-drawer-title">
+            <div class="drawer-header"><h2 id="group-drawer-title">Detalhes do grupo</h2><button type="button" id="close-group-drawer" aria-label="Fechar detalhes">×</button></div>
+            <div id="group-drawer-content"></div>
+          </dialog>
           <div id="conversation-list" class="group-list"></div>
           <section id="group-registry" class="content-section" hidden aria-labelledby="registry-title">
             <div class="section-heading"><div><p class="eyebrow">Organização</p><h2 id="registry-title">Classificação dos grupos</h2></div></div>

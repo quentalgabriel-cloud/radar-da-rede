@@ -14,6 +14,8 @@ it("builds an actionable material-shortage view with provenance", async () => {
   assert.ok(model.territories.every((territory) => typeof territory.open_situation_count === "number"));
   assert.ok(model.conversations.every((conversation) => Array.isArray(conversation.topics)));
   assert.match(model.provenance.warning, /dados sintéticos/i);
+  assert.equal(model.group_control_center.schema_version, "0.2.0");
+  assert.equal(model.group_control_center.enabled, false);
 });
 
 it("builds the same portable view-model shape for every scenario", async () => {
@@ -26,5 +28,6 @@ it("builds the same portable view-model shape for every scenario", async () => {
     assert.equal(model.overview.territory_count, new Set(scenario.events.map((event) => event.metadata?.territory).filter(Boolean)).size);
     assert.equal(model.health.status, scenario.heartbeat.status);
     assert.ok(model.recent_events.every((event) => typeof event.id === "string"));
+    assert.equal(model.group_control_center.groups.length, model.conversations.length);
   }
 });

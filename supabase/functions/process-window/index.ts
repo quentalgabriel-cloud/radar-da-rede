@@ -2,6 +2,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.112.4";
 import { buildAnalysisPayload, validateProcessWindow } from "../_shared/analysis-payload.js";
 import { analyzeEvents } from "../_shared/intelligence.js";
 import { resolveGroupObservationsShadow } from "../_shared/group-resolution.js";
+import { buildEventGroupLinks, loadCaptureConfidence, persistAnalysisWithMetrics } from "../_shared/group-metrics.js";
 import { authenticateProcessor } from "../_shared/processing-auth.ts";
 
 const MAX_EVENTS = 5_000;
@@ -43,15 +44,18 @@ Deno.serve(async (request) => {
   if ((events?.length ?? 0) > MAX_EVENTS) return json(422, { error: "window_too_large" });
 
   const groupResolution = await resolveGroupObservationsShadow(admin, window.network_id, events ?? []);
+  const captureConfidence = await loadCaptureConfidence(admin, window.network_id, window.starts_at, window.ends_at);
   const analysis = analyzeEvents(events ?? []);
   const payload = await buildAnalysisPayload({
     networkId: window.network_id,
     startsAt: window.starts_at,
     endsAt: window.ends_at,
     events: events ?? [],
-    analysis
+    analysis,
+    groupLinks: buildEventGroupLinks(events ?? [], groupResolution.links),
+    captureConfidence
   });
-  const { data, error } = await admin.rpc("persist_analysis", { p_analysis: payload });
+  const { data, error, metrics_persisted, fallback_reason } = await persistAnalysisWithMetrics(admin, payload);
   if (error) {
     console.error("persist_analysis_failed", { code: error.code });
     return json(500, { error: "processing_failed" });
@@ -59,7 +63,9 @@ Deno.serve(async (request) => {
 
   return json(200, {
     ...(Array.isArray(data) ? data[0] : data ?? {}),
-    group_resolution: groupResolution
+    group_resolution: { ...groupResolution, links: undefined },
+    capture_confidence: captureConfidence,
+    group_metrics: { persisted: metrics_persisted, fallback_reason }
   });
 });
 

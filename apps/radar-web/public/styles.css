@@ -156,6 +156,23 @@ h3 { letter-spacing: 0; }
 .search-field { display: flex; align-items: center; gap: 9px; margin-bottom: 14px; padding: 11px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
 .search-field svg { color: var(--muted); }
 .search-field input { width: 100%; border: 0; outline: 0; background: transparent; color: var(--ink); }
+.control-filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 12px 0; }
+.control-filters label { display: grid; gap: 4px; color: var(--muted); font-size: 10px; }
+.control-filters select { min-height: 40px; padding: 7px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); }
+.condition-badge { padding: 5px 8px; border-radius: 999px; background: var(--surface-soft); font-size: 10px; font-weight: 800; }
+.condition-critical { border-left: 4px solid var(--status-critical); }
+.condition-attention { border-left: 4px solid var(--status-attention); }
+.condition-watch { border-left: 4px solid #7b6b22; }
+.condition-normal { border-left: 4px solid var(--status-ok); }
+.confidence-warning, .sparkline-text { color: var(--muted); font-size: 11px; line-height: 1.45; }
+.control-card .text-button { margin: 0 14px 14px; }
+#group-drawer { width: min(520px, 100%); max-width: none; height: 100%; max-height: none; margin: 0 0 0 auto; padding: 20px; border: 0; background: var(--bg); box-shadow: -16px 0 42px rgba(20, 33, 29, .18); }
+#group-drawer::backdrop { background: rgba(20, 33, 29, .45); }
+.drawer-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--line); }
+.drawer-header button { width: 42px; height: 42px; border: 0; background: transparent; color: var(--muted); font-size: 28px; cursor: pointer; }
+.drawer-section { padding: 15px 0; border-bottom: 1px solid var(--line); }
+.drawer-section h3 { margin: 0 0 8px; font-size: 13px; }
+.drawer-section p { color: var(--muted); font-size: 12px; line-height: 1.5; }
 .group-card { overflow: hidden; }
 .group-card > summary { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px; cursor: pointer; list-style: none; }
 .group-card > summary::-webkit-details-marker { display: none; }
@@ -217,6 +234,7 @@ h3 { letter-spacing: 0; }
   .situation-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .territory-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+@media (max-width: 599px) { .control-filters { grid-template-columns: 1fr; } #group-drawer { inset: 0; width: 100%; height: 100%; margin: 0; } }
 @media (min-width: 820px) {
   h1 { font-size: 36px; }
   .movement-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }

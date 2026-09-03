@@ -27,6 +27,13 @@ export function buildGroupObservations(events) {
   return [...observations.values()].sort((a, b) => a.observation_key.localeCompare(b.observation_key));
 }
 
+export function groupObservationKey(event) {
+  const source = typeof event?.source === "string" ? event.source : "";
+  const sourceConversationId = typeof event?.conversation_id === "string" ? event.conversation_id.trim() : "";
+  const normalizedLabel = canonicalConversationLabel(event?.conversation_label).toLocaleLowerCase("pt-BR");
+  return source && sourceConversationId && normalizedLabel ? [source, sourceConversationId, normalizedLabel].join(":") : null;
+}
+
 export async function resolveGroupObservationsShadow(admin, networkId, events) {
   const observations = buildGroupObservations(events);
   if (globalThis?.Deno?.env?.get?.("GROUP_RESOLUTION_SHADOW_ENABLED") === "false") {
@@ -50,10 +57,11 @@ export async function resolveGroupObservationsShadow(admin, networkId, events) {
     summary.ambiguous += row.resolution_status === "ambiguous" ? 1 : 0;
     summary.rejected += row.resolution_status === "rejected" ? 1 : 0;
     summary.created += row.created === true ? 1 : 0;
+    if (row.observation_key && row.group_id) summary.links[row.observation_key] = row.group_id;
     return summary;
   }, { ...emptySummary(), observed: observations.length, available: true });
 }
 
 function emptySummary() {
-  return { observed: 0, resolved: 0, ambiguous: 0, rejected: 0, created: 0, available: true, enabled: true };
+  return { observed: 0, resolved: 0, ambiguous: 0, rejected: 0, created: 0, available: true, enabled: true, links: {} };
 }

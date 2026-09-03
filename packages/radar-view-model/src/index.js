@@ -176,6 +176,7 @@ export const buildRadarViewModel = (scenario) => {
         topics: [...topicCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3).map(([label]) => label)
       };
     }).sort((a, b) => b.open_situation_count - a.open_situation_count || b.event_count - a.event_count),
+    group_control_center: buildSyntheticControlCenter([...conversations.values()]),
     recent_events: [...scenario.events]
       .sort((a, b) => Date.parse(b.occurred_at) - Date.parse(a.occurred_at))
       .map((event) => ({
@@ -202,3 +203,33 @@ export const buildRadarViewModel = (scenario) => {
     }
   };
 };
+
+const buildSyntheticControlCenter = (conversations) => ({
+  schema_version: "0.2.0",
+  enabled: false,
+  available: conversations.length > 0,
+  metrics_version: "1.0.0",
+  trend_version: "1.0.0",
+  summary: {
+    monitored: conversations.length,
+    active: conversations.filter((item) => item.event_count > 0).length,
+    attention: 0,
+    declining: 0,
+    unclassified: conversations.length
+  },
+  groups: conversations.map((item) => ({
+    id: item.id,
+    label: item.label,
+    origin: "synthetic",
+    context: { type: item.territory ? "territory" : null, label: item.territory, municipality: null, territory: item.territory, steward: null },
+    classification_status: "unclassified",
+    condition: "normal",
+    trend: { metric: "event_count", current: item.event_count, previous: null, delta: null, percent: null, direction: "unavailable", combined_volume: item.event_count, capture_confidence: "unavailable" },
+    event_count: item.event_count,
+    open_situation_count: 0,
+    last_seen_at: item.last_seen_at,
+    capture_confidence: "unavailable",
+    sparkline: []
+  })),
+  contexts: []
+});

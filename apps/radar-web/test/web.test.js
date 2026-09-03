@@ -32,6 +32,12 @@ it("serves the Radar shell and generated view model", async () => {
   assert.match(html, /data-screen="situations"/);
   assert.match(html, /data-screen="groups"/);
   assert.match(html, /id="group-registry"/);
+  assert.match(html, /id="control-center"/);
+  assert.match(html, /id="condition-filter"/);
+  assert.match(html, /id="group-status-filter"/);
+  assert.match(html, /id="origin-filter"/);
+  assert.match(html, /id="context-filter"/);
+  assert.match(html, /<dialog id="group-drawer"/);
   assert.match(html, />E-mail ou usuário</);
   assert.match(html, /autocomplete="username"/);
   assert.match(html, /id="refresh-status"/);
@@ -41,6 +47,8 @@ it("serves the Radar shell and generated view model", async () => {
   assert.equal(data.attention.length, 1);
   assert.equal(data.overview.territory_count, 3);
   assert.equal(data.territories.length, 3);
+  assert.equal(data.group_control_center.schema_version, "0.2.0");
+  assert.equal(data.group_control_center.enabled, false);
   const config = await (await fetch(`${endpoint}/data/runtime-config.json`)).json();
   assert.equal(config.live.enabled, false);
 });
@@ -71,6 +79,9 @@ it("keeps scripts free of innerHTML values that bypass escapeHtml for external t
   assert.doesNotMatch(source, /process-window|processing_secret/i);
   assert.match(source, /classifyGroup/);
   assert.match(source, /reviewGroupAlias/);
+  assert.match(source, /renderControlCenter/);
+  assert.match(source, /group_control_center/);
+  assert.match(source, /showModal/);
 });
 
 it("ships one shared refresh controller without privileged processing", async () => {

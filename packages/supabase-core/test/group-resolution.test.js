@@ -33,13 +33,14 @@ test("shadow resolution reports outcomes without changing events", async () => {
     rpc: async (name, args) => {
       assert.equal(name, "resolve_group_observations");
       assert.equal(args.p_observations.length, 1);
-      return { data: [{ resolution_status: "automatic", created: true }], error: null };
+      return { data: [{ observation_key: "android_notification:wa_original:grupo esperança", group_id: "group-1", resolution_status: "automatic", created: true }], error: null };
     }
   };
 
   const summary = await resolveGroupObservationsShadow(admin, "11111111-1111-8111-8111-111111111111", input);
   assert.deepEqual(summary, {
-    observed: 1, resolved: 1, ambiguous: 0, rejected: 0, created: 1, available: true, enabled: true
+    observed: 1, resolved: 1, ambiguous: 0, rejected: 0, created: 1, available: true, enabled: true,
+    links: { "android_notification:wa_original:grupo esperança": "group-1" }
   });
   assert.equal(input[0].conversation_id, "wa_original");
 });

@@ -4,6 +4,8 @@ import { corsHeaders } from "npm:@supabase/supabase-js@2.112.4/cors";
 import { buildAnalysisPayload } from "../_shared/analysis-payload.js";
 import { canonicalizeConversationEvent } from "../_shared/canonical-conversations.js";
 import { resolveGroupObservationsShadow } from "../_shared/group-resolution.js";
+import { buildEventGroupLinks, loadCaptureConfidence, persistAnalysisWithMetrics } from "../_shared/group-metrics.js";
+import { buildGroupControlCenter } from "../_shared/group-trends.js";
 import { analyzeEvents } from "../_shared/intelligence.js";
 import { buildPersistedRadarViewModel } from "../_shared/radar-read-model.js";
 
@@ -18,7 +20,7 @@ const authenticatedHandler = withSupabase({ auth: "user" }, async (request, cont
 
   const { data: network, error: networkError } = await context.supabase
     .from("networks")
-    .select("id,name")
+    .select("id,name,group_control_center_enabled")
     .eq("id", networkId)
     .maybeSingle();
   if (networkError) return databaseFailure("network_query_failed", networkError.code);
@@ -43,7 +45,7 @@ const authenticatedHandler = withSupabase({ auth: "user" }, async (request, cont
   if (runError) return databaseFailure("run_query_failed", runError.code);
   if (!run) return json(404, { error: "processing_run_not_found" });
 
-  const [eventResult, factResult, signalResult, alertResult, healthResult, transitionResult, diagnosticResult, groupResult, aliasResult, changeResult, registrySummaryResult, registryManageResult] = await Promise.all([
+  const [eventResult, factResult, signalResult, alertResult, healthResult, transitionResult, diagnosticResult, groupResult, aliasResult, changeResult, registrySummaryResult, registryManageResult, groupMetricResult] = await Promise.all([
     context.supabase.from("normalized_events")
       .select("event_id,conversation_id,conversation_label,occurred_at,text,metadata")
       .eq("network_id", networkId)
@@ -76,10 +78,13 @@ const authenticatedHandler = withSupabase({ auth: "user" }, async (request, cont
       .select("id,group_id,changed_at,field_name,previous_value,new_value,change_source")
       .eq("network_id", networkId).order("changed_at", { ascending: false }).limit(1000),
     context.supabase.rpc("group_registry_summary", { p_network_id: networkId }),
-    context.supabase.rpc("can_manage_group_registry", { p_network_id: networkId })
+    context.supabase.rpc("can_manage_group_registry", { p_network_id: networkId }),
+    context.supabase.from("group_metric_windows")
+      .select("processing_run_id,group_id,starts_at,ends_at,event_count,fact_count,alert_count,demand_count,agenda_count,problem_count,open_situation_count,critical_situation_count,capture_confidence,metrics_version")
+      .eq("network_id", networkId).order("ends_at", { ascending: false }).limit(4000)
   ]);
   const failed = [eventResult, factResult, signalResult, alertResult, healthResult, transitionResult, diagnosticResult,
-    groupResult, aliasResult, changeResult, registrySummaryResult, registryManageResult].find((result) => result.error);
+    groupResult, aliasResult, changeResult, registrySummaryResult, registryManageResult, groupMetricResult].find((result) => result.error);
   if (failed?.error) return databaseFailure("read_model_query_failed", failed.error.code);
 
   let diagnostic = diagnosticResult.data ?? null;
@@ -113,6 +118,11 @@ const authenticatedHandler = withSupabase({ auth: "user" }, async (request, cont
   });
   return json(200, {
     ...model,
+    group_control_center: buildGroupControlCenter({
+      groups: groupResult.data ?? [],
+      metrics: groupMetricResult.data ?? [],
+      enabled: network.group_control_center_enabled === true
+    }),
     group_registry: {
       summary: registrySummaryResult.data ?? {},
       can_manage: registryManageResult.data === true,
@@ -174,10 +184,12 @@ async function ensureLatestAnalysis(admin: ReturnType<typeof createClient>, netw
     .order("occurred_at", { ascending: true }).limit(MAX_EVENTS + 1);
   if (eventError || (events?.length ?? 0) > MAX_EVENTS) return "analysis_window_unavailable";
 
-  await resolveGroupObservationsShadow(admin, networkId, events ?? []);
+  const groupResolution = await resolveGroupObservationsShadow(admin, networkId, events ?? []);
+  const captureConfidence = await loadCaptureConfidence(admin, networkId, startsAt, latestEvent.occurred_at);
   const analysisEvents = (events ?? []).map(canonicalizeConversationEvent);
   const analysis = analyzeEvents(analysisEvents);
-  const payload = await buildAnalysisPayload({ networkId, startsAt, endsAt: latestEvent.occurred_at, events: analysisEvents, analysis });
-  const { error: persistError } = await admin.rpc("persist_analysis", { p_analysis: payload });
+  const payload = await buildAnalysisPayload({ networkId, startsAt, endsAt: latestEvent.occurred_at, events: analysisEvents, analysis,
+    groupLinks: buildEventGroupLinks(events ?? [], groupResolution.links), captureConfidence });
+  const { error: persistError } = await persistAnalysisWithMetrics(admin, payload);
   return persistError ? "analysis_persist_failed" : null;
 }

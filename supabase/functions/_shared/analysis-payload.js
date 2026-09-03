@@ -1,3 +1,5 @@
+import { buildGroupMetrics } from "./group-metrics.js";
+
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const MAX_WINDOW_MILLISECONDS = 7 * 24 * 60 * 60 * 1000;
 
@@ -29,7 +31,7 @@ export function validateProcessWindow(value) {
   };
 }
 
-export async function buildAnalysisPayload({ networkId, startsAt, endsAt, events, analysis }) {
+export async function buildAnalysisPayload({ networkId, startsAt, endsAt, events, analysis, groupLinks = {}, captureConfidence = null }) {
   const inputHash = await sha256(JSON.stringify(events.map((event) => ({
     event_id: event.event_id,
     occurred_at: event.occurred_at,
@@ -78,7 +80,8 @@ export async function buildAnalysisPayload({ networkId, startsAt, endsAt, events
       summary: alert.reason,
       source_event_ids: alert.source_event_ids,
       payload: alert
-    })))
+    }))),
+    group_metrics: buildGroupMetrics({ events, analysis, groupLinks, captureConfidence })
   };
 }
 
@@ -95,4 +98,3 @@ async function deterministicUuid(value) {
   const hex = [...bytes].map((byte) => byte.toString(16).padStart(2, "0")).join("");
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
-

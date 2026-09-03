@@ -20,6 +20,15 @@ Se algum item faltar, corrija a lacuna ou declare P1 bloqueada com evidência. N
 
 Entregar métricas reproduzíveis por grupo e janela, separar condição/tendência/confiança, criar read model v0.2 aditivo e transformar Grupos em Control Center utilizável no desktop e mobile.
 
+## Ajustes de execução após o fechamento real da P0
+
+- Use a ligação `observation_key -> group_id` retornada pelo resolvedor durante o processamento; não tente reconstruir identidade por label no browser ou depois da persistência.
+- O diagnóstico de campo não prova todos os campos de saúde. Campo ausente produz `capture_confidence=unavailable`.
+- Persista métricas em shadow desde a primeira janela, mas não fabrique tendência sem janela anterior equivalente.
+- A flag do Control Center é independente da flag do resolvedor P0. O rollout começa desligado e só é recomendado após duas janelas comparáveis ou fixtures explícitas.
+- `active_sender_count` fica fora desta entrega: estabilidade entre fontes/dispositivos ainda não foi comprovada.
+- O relatório consolidado anterior à P0 contém descrições históricas desatualizadas; código, migrations e `docs/P0-CLOSURE-REPORT.md` são a fonte do estado atual.
+
 ## Etapa 1 — Contrato analítico
 
 Defina e teste o contrato de `group_metric_windows`:
@@ -149,4 +158,3 @@ Baseline por grupo sem histórico, média móvel prematura, score único, contex
 - P0 permanece íntegro.
 
 Finalize com resumo, screenshots/evidências quando disponíveis, testes, riscos, rollout, rollback e recomendação objetiva sobre habilitar a flag. Não inicie P2 silenciosamente.
-

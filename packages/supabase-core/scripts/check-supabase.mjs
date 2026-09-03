@@ -20,6 +20,10 @@ const groupRegistryUiAccessMigration = await readFile(
   resolve(repositoryRoot, "supabase/migrations/20260903190000_group_registry_ui_access.sql"),
   "utf8",
 );
+const groupMetricWindowsMigration = await readFile(
+  resolve(repositoryRoot, "supabase/migrations/20260903200000_group_metric_windows.sql"),
+  "utf8",
+);
 const config = await readFile(resolve(repositoryRoot, "supabase/config.toml"), "utf8");
 const handler = await readFile(
   resolve(repositoryRoot, "supabase/functions/_shared/handler.ts"),
@@ -69,6 +73,10 @@ const groupResolution = await readFile(
   resolve(repositoryRoot, "supabase/functions/_shared/group-resolution.js"),
   "utf8",
 );
+const groupMetrics = await readFile(
+  resolve(repositoryRoot, "supabase/functions/_shared/group-metrics.js"),
+  "utf8",
+);
 const processingAuth = await readFile(
   resolve(repositoryRoot, "supabase/functions/_shared/processing-auth.ts"),
   "utf8",
@@ -112,9 +120,11 @@ assert.doesNotMatch(sql, /function public\.is_network_member/);
 assert.match(sql, /revoke all on all tables in schema public from anon, authenticated/);
 assert.doesNotMatch(sql, /grant[^;]+device_credentials[^;]+authenticated/i);
 const groupRegistryMarker = "-- P0 group registry foundation for the active operation.";
+const normalizedSql = (value) => value.replace(/\r\n/g, "\n").trim();
 assert.equal(
-  sql.slice(sql.indexOf(groupRegistryMarker)).trim(),
-  `${groupRegistryMigration.trim()}\n\n${groupRegistryAdvisorIndexesMigration.trim()}\n\n${groupRegistryExplainabilityMigration.trim()}\n\n${groupRegistryUiAccessMigration.trim()}`,
+  normalizedSql(sql.slice(sql.indexOf(groupRegistryMarker))),
+  [groupRegistryMigration, groupRegistryAdvisorIndexesMigration, groupRegistryExplainabilityMigration,
+    groupRegistryUiAccessMigration, groupMetricWindowsMigration].map(normalizedSql).join("\n\n"),
   "group registry migration and declarative schema diverged",
 );
 for (const table of ["groups", "group_aliases", "group_classification_changes"]) {
@@ -127,6 +137,10 @@ assert.match(sql, /create or replace function public\.classify_group/);
 assert.match(sql, /private\.can_manage_network/);
 assert.match(sql, /group_classification_changes/);
 assert.doesNotMatch(sql, /grant (?:insert|update|delete)[^;]+groups[^;]+authenticated/i);
+assert.ok(tables.includes("group_metric_windows"), "missing group metric windows table");
+assert.match(sql, /create or replace function public\.persist_analysis_v2/);
+assert.match(sql, /grant execute on function public\.persist_analysis_v2\(jsonb\) to service_role/);
+assert.match(sql, /group_control_center_enabled boolean not null default false/);
 
 const banner = "// GENERATED from packages/contracts/src/index.js — do not edit manually.\n";
 assert.equal(generatedContracts, banner + canonicalContracts, "Edge contract copy is stale");
@@ -134,7 +148,7 @@ const intelligenceBanner = "// GENERATED from packages/intelligence/src/index.js
 assert.equal(generatedIntelligence, intelligenceBanner + canonicalIntelligence, "Edge intelligence copy is stale");
 assert.match(processWindow, /authenticateProcessor/);
 assert.match(processWindow, /processing_scope_mismatch/);
-assert.match(processWindow, /persist_analysis/);
+assert.match(processWindow, /persistAnalysisWithMetrics/);
 assert.match(processingAuth, /processing_credentials/);
 assert.match(processingAuth, /crypto\.subtle\.digest\("SHA-256"/);
 assert.match(radarReadModel, /@supabase\/server@1\.4\.1/);
@@ -144,7 +158,9 @@ assert.match(radarReadModel, /capture_health_transitions/);
 assert.match(captureDiagnostic, /withSupabase\(\{ auth: "user" \}/);
 assert.match(captureDiagnostic, /diagnostic_tests/);
 assert.match(processLatestWindow, /canonicalizeConversationEvent/);
-assert.match(processLatestWindow, /persist_analysis/);
+assert.match(processLatestWindow, /persistAnalysisWithMetrics/);
+assert.match(groupMetrics, /persist_analysis_v2/);
+assert.match(groupMetrics, /fallback_reason: "v2_unavailable"/);
 assert.match(canonicalConversations, /cumulativeCountSuffix/);
 assert.match(captureHealth, /evaluateCaptureHealth/);
 assert.match(captureHealth, /evaluateCaptureConfidence/);
