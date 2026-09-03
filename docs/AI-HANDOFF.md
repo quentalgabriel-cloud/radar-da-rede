@@ -98,7 +98,7 @@ funções precisam ir juntas e depois dos secrets, nesta ordem:
 ## Bloqueios que não podem ser ignorados
 
 1. ~~Secrets do GitHub~~ — resolvido em 2026-09-03: os três estão configurados e o scheduler foi provado nos dois caminhos.
-2. As Edge Functions implantadas ainda contêm a lógica antiga.
+2. ~~Edge Functions antigas~~ — resolvido em 2026-09-03: `process-window` v6, `process-latest-window` v7 e `radar-read-model` v13 estão implantadas e o read model foi conferido byte a byte contra o repositório.
 3. Não existem SLOs nem alertas para heartbeat atrasado, processamento atrasado
    ou execução pulada.
 4. A série de amostras tem uma única linha: começou às 19:52 UTC de 2026-09-03.
