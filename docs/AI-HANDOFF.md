@@ -64,8 +64,9 @@ Confirme tudo novamente antes de alterar.
 
 ## Próxima ação exata
 
-**Fazer o release coordenado da P1.1.** As três funções precisam ir juntas e
-depois dos secrets, nesta ordem:
+**Fazer o release coordenado da P1.1**, seguindo `docs/RUNBOOK-P1.1-RELEASE.md`,
+que traz os comandos exatos, já conferidos na máquina de operação. As três
+funções precisam ir juntas e depois dos secrets, nesta ordem:
 
 1. Configurar os três GitHub Actions Secrets em
    `quentalgabriel-cloud/radar-da-rede` (Settings → Secrets and variables →
