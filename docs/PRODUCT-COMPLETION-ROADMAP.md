@@ -39,7 +39,7 @@ A coluna “antes” é o diagnóstico que abriu a P1.1. A coluna “depois” �
 |---|---:|---:|---|
 | Eventos persistidos | 1.064 | 1.064 | ingestão real existe |
 | Batches | 175 | 175 | fluxo do sensor já operou |
-| Grupos no registry | 124 | 124 | identidade base existe |
+| Grupos no registry | 124 | 151 | o resolvedor shadow registrou 27 conversas novas na consolidação |
 | Grupos confirmados | 0 | 0 | classificação operacional ainda não começou |
 | Aliases ambíguos | 0 | 0 | não há fila ambígua no momento |
 | Linhas de métricas P1 | 0 | 30 | primeira janela real produzida |

@@ -11,7 +11,7 @@
 - **Ensaio remoto:** aprovado em 2026-08-26 com replay idempotente e proveniência completa.
 - **Group Registry shadow:** ativado em 2026-08-31. Backfill de 101 observações criou 101 grupos/aliases; repetição resolveu as 101 observações e criou zero registros. Os 652 eventos e 110 lotes permaneceram intactos.
 - **Classificação administrativa:** RPCs de classificação e revisão validadas remotamente com owner/operator, histórico auditável e limpeza integral dos dados temporários do ensaio.
-- **Estado em 2026-09-03:** 124 grupos/aliases, 1.064 eventos e 175 lotes; nenhuma ambiguidade real pendente no instante da consulta. Nove execuções de processamento, sendo uma `canonical_slot` e oito `legacy_on_read`, e 30 linhas em `group_metric_windows`.
+- **Estado em 2026-09-03:** 151 grupos/aliases (eram 124 antes da consolidação desta sessão, que registrou 27 conversas observadas pela primeira vez), 1.064 eventos e 175 lotes; nenhuma ambiguidade real pendente no instante da consulta. Nove execuções de processamento, sendo uma `canonical_slot` e oito `legacy_on_read`, e 30 linhas em `group_metric_windows`.
 
 ## Radar Web
 

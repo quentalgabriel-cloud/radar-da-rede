@@ -30,7 +30,7 @@ Relatório completo desta sessão: `docs/P1.1-EXECUTION-REPORT.md`.
 |---|---:|
 | eventos | 1.064 |
 | batches | 175 |
-| grupos | 124 |
+| grupos | 151 (eram 124; ver nota abaixo) |
 | grupos confirmados | 0 |
 | aliases ambíguos | 0 |
 | métricas P1 (`group_metric_windows`) | 30 |
@@ -49,6 +49,16 @@ Funções implantadas: `process-window` v5, `process-latest-window` v6,
 Migrations aplicadas: 11. As duas novas são `capture_coverage_and_run_anchor` e
 `processing_run_legacy_window_provenance`. Elas são compatíveis com as funções
 antigas — comprovado por uma execução real depois da aplicação.
+
+O registry passou de 124 para 151 grupos. Isso é o comportamento previsto do
+resolvedor shadow da P0: cada processamento registra as conversas observadas
+pela primeira vez. Como o último processamento anterior era de 2026-09-02, a
+janela consolidada nesta sessão trouxe 27 conversas novas, com primeiro evento
+entre 2026-09-02 22:59 e 2026-09-03 15:40 UTC. Nenhum evento histórico recebeu
+backfill de identidade e nenhum grupo foi fundido por semelhança de nome.
+
+Consequência prática: as 30 linhas de métrica cobrem 30 dos 151 grupos. Depois
+do deploy, uma execução deve produzir uma linha por grupo ativo.
 
 Confirme tudo novamente antes de alterar.
 
@@ -75,8 +85,8 @@ depois dos secrets, nesta ordem:
    Não implante `radar-read-model` antes do passo 2: ela deixa de consolidar ao
    responder GET, e sem scheduler funcionando a produção ficaria sem atualização.
 4. Executar uma janela canônica com o código novo e conferir no banco:
-   - `group_metric_windows` com uma linha para **cada** grupo ativo (124), não
-     apenas para os que tiveram evento;
+   - `group_metric_windows` com uma linha para **cada** grupo ativo (151 no
+     momento desta escrita), não apenas para os que tiveram evento;
    - `processing_runs.capture_confidence` e `capture_coverage` preenchidos;
    - `window_kind = 'canonical_slot'`.
 5. Esperar o mesmo slot do dia seguinte para obter a **segunda janela
