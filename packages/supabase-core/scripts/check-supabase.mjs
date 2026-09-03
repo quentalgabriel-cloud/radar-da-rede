@@ -113,7 +113,8 @@ assert.doesNotMatch(sql, /function public\.is_network_member/);
 assert.match(sql, /revoke all on all tables in schema public from anon, authenticated/);
 assert.doesNotMatch(sql, /grant[^;]+device_credentials[^;]+authenticated/i);
 const groupRegistryMarker = "-- P0 group registry foundation for the active operation.";
-const normalizedSql = (value) => value.replace(/\r\n/g, "\n").trim();
+const normalizedText = (value) => value.replace(/\r\n/g, "\n");
+const normalizedSql = (value) => normalizedText(value).trim();
 assert.equal(
   normalizedSql(sql.slice(sql.indexOf(groupRegistryMarker))),
   [groupRegistryMigration, groupRegistryAdvisorIndexesMigration, groupRegistryExplainabilityMigration,
@@ -145,12 +146,15 @@ assert.match(sql, /update public\.processing_runs set window_kind = 'legacy_on_r
 assert.match(groupAnalytics, /same_slot_previous_day@1/);
 assert.match(groupAnalytics, /synthesized_zero/);
 
+// The comparison ignores line endings: a Windows checkout materializes these
+// files with CRLF, and a byte comparison would fail there while passing on the
+// Linux runner. Only the content may differ, never the platform.
 for (const { canonical, edge } of EDGE_GENERATED_MODULES) {
   const canonicalSource = await readFile(resolve(repositoryRoot, canonical), "utf8");
   const generated = await readFile(resolve(repositoryRoot, edge), "utf8");
   assert.equal(
-    generated,
-    generatedBanner(canonical) + canonicalSource,
+    normalizedText(generated),
+    normalizedText(generatedBanner(canonical) + canonicalSource),
     "Edge copy " + edge + " is stale; run pnpm --filter @radar-rede/supabase-core sync:edge",
   );
 }
