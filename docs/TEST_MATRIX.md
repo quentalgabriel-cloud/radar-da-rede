@@ -58,3 +58,36 @@
 | Captura | Confidence high/moderate/low/unavailable invalida tendência fraca | TESTADO LOCALMENTE | `packages/capture-health/test/capture-health.test.js` |
 | Captura | Campos de saúde ausentes não produzem confidence alta | TESTADO LOCALMENTE | Diagnóstico Moto G84 + teste `health_fields_incomplete` |
 | Android | MessagingStyle cumulativo preserva ID e adiciona apenas mensagem nova | VALIDADO REMOTAMENTE | GitHub Actions run `33459336566`, commit `fa87236` |
+| Consolidação | Configuração ausente derruba o job em vez de pular o passo | TESTADO LOCALMENTE | `packages/supabase-core/test/consolidation-config.test.js`; execução com env vazio saiu com código 1 |
+| Consolidação | Sumário do job identifica a rede sem expor o UUID | TESTADO LOCALMENTE | `consolidation-config.test.js`; `network_ref` é prefixo do SHA-256 |
+| Consolidação | Janela canônica real é processada de ponta a ponta | VALIDADO REMOTAMENTE | Execução `954bd295-06cc-4a45-a7ce-d7914a5277c0`, 189 eventos, 30 métricas |
+| Consolidação | Replay da mesma janela não duplica execução, fatos, alertas nem métricas | VALIDADO REMOTAMENTE | Três execuções da mesma janela mantiveram 1 run, 4 fatos, 4 sinais, 1 alerta e 30 métricas |
+| Consolidação | Credencial inválida produz falha visível sem persistir nada | VALIDADO REMOTAMENTE | `401 invalid_processing_credentials` e saída 1 |
+| Consolidação | Revogar a credencial de processamento não interrompe a ingestão | TESTADO ESTATICAMENTE | Ingestão usa `device_credentials`; processamento usa `processing_credentials` |
+| Consolidação | Execução agendada real no GitHub Actions | NÃO TESTADO | Aguarda os três secrets |
+| Control Center | Grupo ativo antes e inativo agora aparece com zero da execução atual | TESTADO LOCALMENTE | `packages/group-analytics/test/group-analytics.test.js` |
+| Control Center | Grupo novo e grupo sem histórico reportam tendência indisponível com motivo | TESTADO LOCALMENTE | idem |
+| Control Center | Execução parcialmente persistida é sinalizada como inconsistente | TESTADO LOCALMENTE | idem |
+| Control Center | Replay da mesma execução produz a mesma saída | TESTADO LOCALMENTE | idem |
+| Control Center | Métricas persistem uma linha por grupo monitorado | TESTADO LOCALMENTE | `group-analytics` e `packages/supabase-core/test/group-metrics.test.js` |
+| Comparação | Janelas móveis adjacentes nunca viram comparadora | TESTADO LOCALMENTE | `group-analytics.test.js` |
+| Comparação | Atraso do scheduler dentro de 30 min ainda casa com o slot do dia anterior | TESTADO LOCALMENTE | idem |
+| Comparação | Virada de dia mantém o mesmo slot | TESTADO LOCALMENTE | idem |
+| Comparação | Janela manual ou legada não compara com janela agendada | TESTADO LOCALMENTE | idem |
+| Cobertura | Janela totalmente coberta com configuração confirmada chega a `high` | TESTADO LOCALMENTE | `packages/capture-health/test/capture-coverage.test.js` |
+| Cobertura | Um único heartbeat recente não prova 24 horas | TESTADO LOCALMENTE | idem |
+| Cobertura | Lacunas no começo, meio e fim reduzem o nível | TESTADO LOCALMENTE | idem |
+| Cobertura | Adaptador que não reporta configuração não alcança `high` | TESTADO LOCALMENTE | idem |
+| Cobertura | Dois dispositivos cobrindo metades diferentes formam uma janela | TESTADO LOCALMENTE | idem |
+| Cobertura | Incidente na janela derruba o nível mesmo com cobertura total | TESTADO LOCALMENTE | idem |
+| Cobertura | Heartbeat real grava amostra append-only | VALIDADO REMOTAMENTE | Heartbeat do Moto G84 de 2026-09-03 19:52:02 UTC criou a primeira amostra sem interromper a ingestão |
+| Read model | GET não usa service role, não consolida e não grava | TESTADO ESTATICAMENTE | `check-supabase.mjs` reprova service role, persistência ou `.update(` |
+| Read model | Resposta declara truncamento por consulta e freshness da janela | TESTADO ESTATICAMENTE | idem |
+| Refresh manual | Exige operator/owner e respeita intervalo mínimo | TESTADO ESTATICAMENTE | idem |
+| Paridade | Cópia Edge de contratos, inteligência, saúde e analytics é idêntica à canônica | TESTADO ESTATICAMENTE | `check-supabase.mjs` reprovou uma cópia desatualizada durante a P1.1 |
+| Paridade | Laboratório sintético e Edge usam a mesma engine de Control Center | TESTADO LOCALMENTE | `packages/radar-view-model/test/view-model.test.js` |
+| Persistência | Cadeia `persist_analysis_v3 → v2 → v1` degrada um passo por vez | TESTADO LOCALMENTE | `packages/supabase-core/test/group-metrics.test.js` |
+| Persistência | Erro real não é confundido com função ausente | TESTADO LOCALMENTE | idem |
+| Migration | `capture_coverage_and_run_anchor` é compatível com as funções antigas | VALIDADO REMOTAMENTE | `process-window` v5 processou e persistiu depois da aplicação |
+| Migration | `ingest_health_heartbeat` continua funcionando após a alteração | VALIDADO REMOTAMENTE | Execução em transação revertida, sem gravar dados de teste |
+| Radar Web | E2E de filtros, dialog, foco, ESC, mobile e reduced motion | NÃO TESTADO | Pendência da P1.1 |

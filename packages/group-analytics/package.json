@@ -1,0 +1,14 @@
+{
+  "name": "@radar-rede/group-analytics",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Engine canônica de métricas, condição, tendência e Control Center por grupo.",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "build": "node --check src/index.js",
+    "test": "node --test test/*.test.js"
+  }
+}

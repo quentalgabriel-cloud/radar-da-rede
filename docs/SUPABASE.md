@@ -110,3 +110,37 @@ values ('<network-id>', '<auth-user-id>', 'operator');
 ```
 
 Esse vínculo não é automático: cadastro no Auth não concede acesso aos dados.
+
+## Cobertura de captura e âncora de execução (P1.1)
+
+`adapter_health` mantém uma única linha por dispositivo, atualizada a cada
+heartbeat. Ela prova o último contato, não a continuidade de uma janela de 24
+horas. Por isso a P1.1 acrescentou `capture_health_samples`, append-only, com
+uma linha por heartbeat (`heartbeat_id` como chave primária e `on conflict do
+nothing`, de modo que um reenvio nunca derruba a ingestão). A gravação acontece
+dentro de `ingest_health_heartbeat`, em `private.record_capture_health_sample`.
+Não houve backfill: a série começa no primeiro heartbeat após a migration.
+
+`evaluateCaptureCoverage` (`capture_coverage@1`) mede a cobertura observada:
+duas amostras consecutivas separadas por até 35 minutos comprovam captura viva
+no intervalo entre elas. A cadência do sensor é de 15 minutos e 35 minutos é a
+mesma tolerância já usada para declarar um aparelho sem contato. Vários
+dispositivos são combinados por união dos intervalos cobertos. `high` exige
+cobertura de pelo menos 90%, maior lacuna dentro da tolerância, nenhum incidente
+na janela e configuração de captura confirmada pelo adaptador; a ausência desses
+campos limita o resultado a `moderate`.
+
+`processing_runs` ganhou `capture_confidence`, `capture_coverage` e
+`window_kind`. `persist_analysis_v3` grava essas colunas e as métricas por grupo
+na mesma transação; `persist_analysis_v2` e `persist_analysis` continuam
+existindo, e o cliente degrada da v3 para a v2 e para a v1 quando a função não
+existir. Isso mantém rollback por camada.
+
+`window_kind` distingue `canonical_slot`, `manual_refresh` e `legacy_on_read`.
+As execuções criadas antes da P1.1 vinham do read model consolidando ao
+responder um GET; elas foram marcadas como `legacy_on_read` para que uma janela
+de horário arbitrário nunca seja usada como comparadora de tendência.
+
+`radar-read-model` passou a ser leitura pura: não usa service role, não
+consolida e não grava. O refresh deliberado continua em `process-latest-window`,
+restrito a operator/owner e com intervalo mínimo de cinco minutos.

@@ -4,7 +4,7 @@ import { analyzeEvents } from "../../intelligence/src/index.js";
 import { loadScenario } from "../../testkit/src/index.js";
 import { buildAnalysisPayload } from "../../../supabase/functions/_shared/analysis-payload.js";
 import { buildPersistedRadarViewModel } from "../../../supabase/functions/_shared/radar-read-model.js";
-import { buildGroupControlCenter } from "../../../supabase/functions/_shared/group-trends.js";
+import { buildGroupControlCenter } from "../../../supabase/functions/_shared/group-analytics.js";
 
 test("persisted read model keeps the synthetic UI contract", async () => {
   const scenario = await loadScenario("material-shortage");

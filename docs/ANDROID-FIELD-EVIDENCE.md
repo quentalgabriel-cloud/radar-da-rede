@@ -38,3 +38,51 @@ O arquivo não é versionado porque preserva estrutura derivada de notificaçõe
 - `parser_status=RAW` nos snapshots descreve a origem preservada do diagnóstico e não significa que nenhum evento foi emitido.
 - As 80 amostras exportadas cobrem aproximadamente 24 horas, não todo o período desde a instalação.
 - Não foram inspecionados nem registrados textos, nomes de grupos ou identificadores reais.
+
+## Verificação remota de 2026-09-03
+
+Consulta direta a `public.adapter_health` no projeto `pluruijhqnueayrlkthx`:
+
+- os heartbeats chegam e são recentes;
+- `adapter_version` é `0.3.0-connected` e `parser_version` é `0.3.0`;
+- `listener_connected`, `notification_access`, `whatsapp_installed`,
+  `network_type`, `last_whatsapp_notification_at` e `last_parsed_event_at`
+  estão **nulos**;
+- há 15 transições registradas em `capture_health_transitions`, todas derivadas
+  de `status` e `outbox_pending` (7 `queue_backlog`, 7 `recovered`,
+  1 `monitoring_started`).
+
+O RPC `ingest_health_heartbeat` persiste todos esses campos e o schema de
+contrato os aceita, então a ausência vem do que o aparelho envia.
+
+`PayloadCodec.heartbeat` no repositório envia `listener_connected` desde o
+commit `8bf0cd0` (2026-08-31 16:45 -03:00). Como o campo chega nulo, o APK em
+operação é anterior a esse commit — coerente com `docs/DEPLOYMENTS.md`, que já
+registrava a instalação da build de heartbeat como pendente.
+
+`notification_access`, `whatsapp_installed` e `network_type` **não são enviados
+por nenhuma versão do repositório**. Isso é lacuna de produto, não de instalação.
+
+### Consequência analítica
+
+A regra de confiança anterior exigia esses quatro campos e devolvia
+`unavailable` sempre que qualquer um faltasse. Como `computeMetricTrend` suprime
+a tendência quando a confiança é `unavailable`, o Control Center anterior nunca
+mostraria tendência com dados reais, qualquer que fosse o volume capturado.
+
+A regra de cobertura da P1.1 degrada em vez de zerar: sem os campos de
+configuração o nível fica limitado a `moderate`, com razão
+`configuration_not_reported`. Para chegar a `high` são necessários continuidade
+observada e um APK que reporte a configuração da captura.
+
+### Artefatos locais
+
+Ambos fora do repositório, em `outputs/`:
+
+| Artefato | SHA-256 |
+|---|---|
+| `radar-sensor-v0.3.0-connected-debug/app-debug.apk` | `9861b1104b818f4f6658c0b423a494fdd411d884c1292763730565185b2cef24` |
+| `radar-sensor-v0.3.0-connected-heartbeat/app-debug.apk` | `882f4143bcf4b7ade3806a6ed0c8eccdd9fc8b1fb9a1260d62d476eab392037a` |
+
+Nenhum dos dois foi confirmado como o instalado no aparelho. Registrar
+`versionCode`, hash e data de instalação é parte da matriz de campo pendente.

@@ -10,6 +10,7 @@
     "test": "node --test test/*.test.js"
   },
   "dependencies": {
+    "@radar-rede/group-analytics": "workspace:*",
     "@radar-rede/intelligence": "workspace:*",
     "@radar-rede/testkit": "workspace:*"
   }

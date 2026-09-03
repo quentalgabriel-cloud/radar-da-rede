@@ -1,4 +1,5 @@
 import { analyzeEvents } from "@radar-rede/intelligence";
+import { buildGroupControlCenter, buildGroupMetrics } from "@radar-rede/group-analytics";
 
 const labelForCategory = {
   agenda_mobilizacao: "Agenda e mobilização",
@@ -176,7 +177,7 @@ export const buildRadarViewModel = (scenario) => {
         topics: [...topicCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3).map(([label]) => label)
       };
     }).sort((a, b) => b.open_situation_count - a.open_situation_count || b.event_count - a.event_count),
-    group_control_center: buildSyntheticControlCenter([...conversations.values()]),
+    group_control_center: buildSyntheticControlCenter(scenario, analysis, [...conversations.values()]),
     recent_events: [...scenario.events]
       .sort((a, b) => Date.parse(b.occurred_at) - Date.parse(a.occurred_at))
       .map((event) => ({
@@ -204,32 +205,44 @@ export const buildRadarViewModel = (scenario) => {
   };
 };
 
-const buildSyntheticControlCenter = (conversations) => ({
-  schema_version: "0.2.0",
-  enabled: false,
-  available: conversations.length > 0,
-  metrics_version: "1.0.0",
-  trend_version: "1.0.0",
-  summary: {
-    monitored: conversations.length,
-    active: conversations.filter((item) => item.event_count > 0).length,
-    attention: 0,
-    declining: 0,
-    unclassified: conversations.length
-  },
-  groups: conversations.map((item) => ({
-    id: item.id,
-    label: item.label,
-    origin: "synthetic",
-    context: { type: item.territory ? "territory" : null, label: item.territory, municipality: null, territory: item.territory, steward: null },
-    classification_status: "unclassified",
-    condition: "normal",
-    trend: { metric: "event_count", current: item.event_count, previous: null, delta: null, percent: null, direction: "unavailable", combined_volume: item.event_count, capture_confidence: "unavailable" },
-    event_count: item.event_count,
-    open_situation_count: 0,
-    last_seen_at: item.last_seen_at,
-    capture_confidence: "unavailable",
-    sparkline: []
-  })),
-  contexts: []
-});
+// The synthetic laboratory runs the same canonical engine as the Edge Function,
+// so a rule can never be true in one environment and false in the other.
+const buildSyntheticControlCenter = (scenario, analysis, conversations) => {
+  const occurredAt = scenario.events.map((event) => Date.parse(event.occurred_at)).filter(Number.isFinite);
+  const run = {
+    id: "synthetic-run",
+    window_kind: "canonical_slot",
+    starts_at: new Date(Math.min(...occurredAt)).toISOString(),
+    ends_at: new Date(Math.max(...occurredAt)).toISOString()
+  };
+  // A synthetic scenario carries a single heartbeat, which cannot demonstrate
+  // coverage of the window; the lab says so instead of implying confidence.
+  const capture = { level: "unavailable", reason: "synthetic_scenario", trend_valid: false };
+  const groupLinks = Object.fromEntries(scenario.events.map((event) => [event.event_id, event.conversation_id]));
+  const metrics = buildGroupMetrics({
+    events: scenario.events,
+    analysis,
+    groupLinks,
+    captureConfidence: capture,
+    monitoredGroupIds: conversations.map((conversation) => conversation.id)
+  }).map((metric) => ({ ...metric, processing_run_id: run.id, starts_at: run.starts_at, ends_at: run.ends_at }));
+  return buildGroupControlCenter({
+    groups: conversations.map((conversation) => ({
+      id: conversation.id,
+      current_label: conversation.label,
+      origin: "synthetic",
+      context_type: conversation.territory ? "territory" : null,
+      context_label: conversation.territory ? humanize(conversation.territory) : null,
+      municipality: null,
+      territory: conversation.territory ? humanize(conversation.territory) : null,
+      primary_steward_label: null,
+      classification_status: "unclassified",
+      last_seen_at: conversation.last_seen_at
+    })),
+    metrics,
+    runs: [run],
+    currentRunId: run.id,
+    capture,
+    enabled: false
+  });
+};

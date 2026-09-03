@@ -65,3 +65,26 @@
 2. Observar o resolvedor shadow e revisar apenas aliases ambíguos, quando surgirem.
 3. Configurar os secrets do workflow e observar uma consolidação remota idempotente.
 4. Validar a janela de 24 horas e iniciar P1 somente após registrar o fechamento P0.
+
+## P1.1 — confiabilidade analítica e ativação
+
+- [x] Auditar estado local e remoto contra o handoff antes de planejar.
+- [x] Criar credencial de processamento pelo mecanismo existente.
+- [x] Fazer o workflow de consolidação falhar quando faltar configuração.
+- [x] Registrar sumário auditável do job sem expor segredos.
+- [x] Executar uma janela canônica real e provar replay idempotente.
+- [ ] Configurar os três GitHub Actions Secrets e observar uma execução agendada.
+- [x] Ancorar o Control Center em uma execução da rede, com zero explícito por grupo.
+- [x] Versionar a política de comparação `same_slot_previous_day@1`.
+- [x] Medir confiança de captura por cobertura observada, com amostras append-only.
+- [x] Tornar o read model somente leitura e restringir o refresh manual por papel.
+- [x] Unificar a engine analítica e verificar a cópia Edge no CI.
+- [x] Trocar "situações abertas" por "situações no período" e mostrar janela e comparador.
+- [ ] Implantar `process-window`, `process-latest-window` e `radar-read-model` a partir do repositório.
+- [ ] Produzir duas janelas comparáveis com o código corrigido.
+- [ ] Definir SLOs e alertas de heartbeat, atraso, execução pulada e ausência de métricas.
+- [ ] Executar E2E de navegador em desktop e smartphone.
+- [ ] Executar a matriz de campo de 24 a 72 horas no Moto G84 e registrar hash do APK.
+- [ ] Fazer o sensor Android reportar `notification_access`, `whatsapp_installed` e `network_type`.
+- [ ] Definir retenção de `capture_health_samples`.
+- [ ] Validar vocabulário, prioridades e horizonte com a coordenação.

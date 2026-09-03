@@ -165,6 +165,8 @@ h3 { letter-spacing: 0; }
 .condition-watch { border-left: 4px solid #7b6b22; }
 .condition-normal { border-left: 4px solid var(--status-ok); }
 .confidence-warning, .sparkline-text { color: var(--muted); font-size: 11px; line-height: 1.45; }
+.anchor-block { display: grid; gap: 4px; margin: 8px 0 12px; }
+.anchor-note { color: var(--muted); font-size: 12px; line-height: 1.5; margin: 0; }
 .control-card .text-button { margin: 0 14px 14px; }
 #group-drawer { width: min(520px, 100%); max-width: none; height: 100%; max-height: none; margin: 0 0 0 auto; padding: 20px; border: 0; background: var(--bg); box-shadow: -16px 0 42px rgba(20, 33, 29, .18); }
 #group-drawer::backdrop { background: rgba(20, 33, 29, .45); }

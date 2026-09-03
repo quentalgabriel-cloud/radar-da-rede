@@ -31,7 +31,7 @@ export function validateProcessWindow(value) {
   };
 }
 
-export async function buildAnalysisPayload({ networkId, startsAt, endsAt, events, analysis, groupLinks = {}, captureConfidence = null }) {
+export async function buildAnalysisPayload({ networkId, startsAt, endsAt, events, analysis, groupLinks = {}, captureConfidence = null, monitoredGroupIds = [] }) {
   const inputHash = await sha256(JSON.stringify(events.map((event) => ({
     event_id: event.event_id,
     occurred_at: event.occurred_at,
@@ -50,7 +50,9 @@ export async function buildAnalysisPayload({ networkId, startsAt, endsAt, events
       pipeline_version: analysis.pipeline_version,
       taxonomy_version: analysis.taxonomy_version,
       input_event_count: events.length,
-      input_hash: inputHash
+      input_hash: inputHash,
+      capture_confidence: captureConfidence?.level ?? null,
+      capture_coverage: captureConfidence ?? null
     },
     facts: await Promise.all(analysis.facts.map(async (fact) => ({
       id: await deterministicUuid(`${runKey}:fact:${fact.category}`),
@@ -81,7 +83,7 @@ export async function buildAnalysisPayload({ networkId, startsAt, endsAt, events
       source_event_ids: alert.source_event_ids,
       payload: alert
     }))),
-    group_metrics: buildGroupMetrics({ events, analysis, groupLinks, captureConfidence })
+    group_metrics: buildGroupMetrics({ events, analysis, groupLinks, captureConfidence, monitoredGroupIds })
   };
 }
 

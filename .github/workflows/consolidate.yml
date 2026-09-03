@@ -22,21 +22,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - name: Check consolidation configuration
-        id: configuration
+      - name: Require consolidation configuration
         env:
           RADAR_SUPABASE_URL: ${{ secrets.RADAR_SUPABASE_URL }}
           RADAR_NETWORK_ID: ${{ secrets.RADAR_NETWORK_ID }}
           RADAR_PROCESSING_SECRET: ${{ secrets.RADAR_PROCESSING_SECRET }}
-        run: |
-          if [ -n "$RADAR_SUPABASE_URL" ] && [ -n "$RADAR_NETWORK_ID" ] && [ -n "$RADAR_PROCESSING_SECRET" ]; then
-            echo "configured=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "configured=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::Consolidation is not active: configure the three RADAR secrets."
-          fi
+        run: node packages/supabase-core/scripts/check-consolidation-config.mjs
       - name: Process canonical Radar window
-        if: steps.configuration.outputs.configured == 'true'
         env:
           RADAR_SUPABASE_URL: ${{ secrets.RADAR_SUPABASE_URL }}
           RADAR_NETWORK_ID: ${{ secrets.RADAR_NETWORK_ID }}

@@ -39,7 +39,7 @@ O fluxo de produto é Resumo -> Detalhe -> Evidência. Mensagens brutas não apa
 
 - **Radar:** situação geral, atenção, movimentos, territórios e atividade recente.
 - **Situações:** detalhe, intensidade, período, explicação e evidências controladas.
-- **Grupos:** atividade, assuntos, situações abertas e timeline contextualizada.
+- **Grupos:** atividade, assuntos, situações no período e timeline contextualizada.
 - **Status:** impacto operacional da captura; versões técnicas ficam recolhidas.
 
 ## Auditoria da interface anterior
@@ -66,7 +66,7 @@ Os identificadores usados por fixtures, URLs e testes permanecem técnicos. No s
 | --- | --- | --- | --- |
 | Status da captura | adapter_health | Saúde operacional | Existe; cobertura física ainda não validada. |
 | Grupos acompanhados | normalized_events agregados por grupo | Dado observado | Existe. |
-| Situações abertas | alerts | Decisão determinística do Core | Existe e mantém evidências de origem. |
+| Situações no período | alerts | Decisão determinística do Core | Existe e mantém evidências de origem. São contagens da janela analisada, não casos com ciclo de resolução; a linguagem foi corrigida na P1.1. |
 | Principais movimentos | facts | Agregação determinística | Existe; ainda não compara com histórico anterior. |
 | Territórios em destaque | facts + eventos relacionados | Derivação para produto | Existe quando o evento informa território. |
 | Explicação | contagem de grupos, atividades e territórios dos alertas | Derivação auditável | Existe sem expor score técnico. |
@@ -101,3 +101,24 @@ A identidade inicial da campanha é aplicada como uma camada pequena sobre o des
 - verde, âmbar e vermelho operacional continuam identificando normalidade, acompanhamento e urgência com apoio de texto, borda e forma.
 - amarelo aparece apenas como acento na estrela do lockup.
 - a estrela é uma assinatura do cabeçalho e não substitui ícones funcionais.
+
+## Janela e comparação no Control Center (P1.1)
+
+Um número sem o seu período não é sinal operacional. O Control Center passa a
+mostrar, acima da lista de grupos:
+
+- a janela atual, com início e fim;
+- a janela comparadora, ou o motivo textual de ela não existir;
+- a política de comparação em vigor (`same_slot_previous_day@1`);
+- quantos grupos monitorados ficaram sem atividade na execução atual.
+
+Regras de leitura mantidas:
+
+- crescimento não é lido como resultado positivo;
+- cor nunca é o único significado; condição, tendência e confiança aparecem como
+  texto;
+- um grupo sem atividade mostra zero com aviso de que o zero pertence à execução
+  atual e não reaproveita medição anterior;
+- confiança de captura aparece em português (alta, moderada, baixa,
+  indisponível) e explica que mede cobertura observada do período;
+- quando a tendência é indisponível, o motivo aparece junto, em vez de um traço.

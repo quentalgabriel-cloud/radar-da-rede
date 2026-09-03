@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import { EDGE_GENERATED_MODULES, generatedBanner } from "../src/edge-modules.js";
 
 const repositoryRoot = resolve(import.meta.dirname, "../../..");
 const sql = await readFile(resolve(repositoryRoot, "supabase/schemas/core.sql"), "utf8");
@@ -24,25 +25,17 @@ const groupMetricWindowsMigration = await readFile(
   resolve(repositoryRoot, "supabase/migrations/20260903200000_group_metric_windows.sql"),
   "utf8",
 );
+const captureCoverageMigration = await readFile(
+  resolve(repositoryRoot, "supabase/migrations/20260903210000_capture_coverage_and_run_anchor.sql"),
+  "utf8",
+);
 const config = await readFile(resolve(repositoryRoot, "supabase/config.toml"), "utf8");
 const handler = await readFile(
   resolve(repositoryRoot, "supabase/functions/_shared/handler.ts"),
   "utf8",
 );
-const canonicalContracts = await readFile(
-  resolve(repositoryRoot, "packages/contracts/src/index.js"),
-  "utf8",
-);
-const generatedContracts = await readFile(
-  resolve(repositoryRoot, "supabase/functions/_shared/contracts.js"),
-  "utf8",
-);
-const canonicalIntelligence = await readFile(
-  resolve(repositoryRoot, "packages/intelligence/src/index.js"),
-  "utf8",
-);
-const generatedIntelligence = await readFile(
-  resolve(repositoryRoot, "supabase/functions/_shared/intelligence.js"),
+const groupAnalytics = await readFile(
+  resolve(repositoryRoot, "supabase/functions/_shared/group-analytics.js"),
   "utf8",
 );
 const processWindow = await readFile(
@@ -124,7 +117,8 @@ const normalizedSql = (value) => value.replace(/\r\n/g, "\n").trim();
 assert.equal(
   normalizedSql(sql.slice(sql.indexOf(groupRegistryMarker))),
   [groupRegistryMigration, groupRegistryAdvisorIndexesMigration, groupRegistryExplainabilityMigration,
-    groupRegistryUiAccessMigration, groupMetricWindowsMigration].map(normalizedSql).join("\n\n"),
+    groupRegistryUiAccessMigration, groupMetricWindowsMigration, captureCoverageMigration]
+    .map(normalizedSql).join("\n\n"),
   "group registry migration and declarative schema diverged",
 );
 for (const table of ["groups", "group_aliases", "group_classification_changes"]) {
@@ -141,11 +135,25 @@ assert.ok(tables.includes("group_metric_windows"), "missing group metric windows
 assert.match(sql, /create or replace function public\.persist_analysis_v2/);
 assert.match(sql, /grant execute on function public\.persist_analysis_v2\(jsonb\) to service_role/);
 assert.match(sql, /group_control_center_enabled boolean not null default false/);
+assert.ok(tables.includes("capture_health_samples"), "missing append-only capture samples table");
+assert.match(sql, /create or replace function public\.persist_analysis_v3/);
+assert.match(sql, /grant execute on function public\.persist_analysis_v3\(jsonb\) to service_role/);
+assert.match(sql, /perform private\.record_capture_health_sample\(p_heartbeat\)/);
+assert.match(sql, /add column window_kind text not null default 'canonical_slot'/);
+assert.match(sql, /window_kind in \('canonical_slot', 'manual_refresh', 'legacy_on_read'\)/);
+assert.match(sql, /update public\.processing_runs set window_kind = 'legacy_on_read'/);
+assert.match(groupAnalytics, /same_slot_previous_day@1/);
+assert.match(groupAnalytics, /synthesized_zero/);
 
-const banner = "// GENERATED from packages/contracts/src/index.js — do not edit manually.\n";
-assert.equal(generatedContracts, banner + canonicalContracts, "Edge contract copy is stale");
-const intelligenceBanner = "// GENERATED from packages/intelligence/src/index.js — do not edit manually.\n";
-assert.equal(generatedIntelligence, intelligenceBanner + canonicalIntelligence, "Edge intelligence copy is stale");
+for (const { canonical, edge } of EDGE_GENERATED_MODULES) {
+  const canonicalSource = await readFile(resolve(repositoryRoot, canonical), "utf8");
+  const generated = await readFile(resolve(repositoryRoot, edge), "utf8");
+  assert.equal(
+    generated,
+    generatedBanner(canonical) + canonicalSource,
+    "Edge copy " + edge + " is stale; run pnpm --filter @radar-rede/supabase-core sync:edge",
+  );
+}
 assert.match(processWindow, /authenticateProcessor/);
 assert.match(processWindow, /processing_scope_mismatch/);
 assert.match(processWindow, /persistAnalysisWithMetrics/);
@@ -155,15 +163,28 @@ assert.match(radarReadModel, /@supabase\/server@1\.4\.1/);
 assert.match(radarReadModel, /withSupabase\(\{ auth: "user" \}/);
 assert.match(radarReadModel, /processing_runs/);
 assert.match(radarReadModel, /capture_health_transitions/);
+// P1.1: reading must never process or write with the service role.
+assert.doesNotMatch(radarReadModel, /SUPABASE_SERVICE_ROLE_KEY/);
+assert.doesNotMatch(radarReadModel, /persistAnalysisWithMetrics/);
+assert.doesNotMatch(radarReadModel, /\.update\(/);
+assert.match(radarReadModel, /read_only: true/);
+assert.match(radarReadModel, /selectComparisonRun/);
+assert.match(processLatestWindow, /manual_refresh_not_authorized/);
+assert.match(processLatestWindow, /rate_limited/);
+assert.match(processLatestWindow, /window_kind = "manual_refresh"/);
 assert.match(captureDiagnostic, /withSupabase\(\{ auth: "user" \}/);
 assert.match(captureDiagnostic, /diagnostic_tests/);
 assert.match(processLatestWindow, /canonicalizeConversationEvent/);
 assert.match(processLatestWindow, /persistAnalysisWithMetrics/);
+assert.match(groupMetrics, /persist_analysis_v3/);
 assert.match(groupMetrics, /persist_analysis_v2/);
 assert.match(groupMetrics, /fallback_reason: "v2_unavailable"/);
+assert.match(groupMetrics, /loadMonitoredGroupIds/);
+assert.match(groupMetrics, /capture_health_samples/);
 assert.match(canonicalConversations, /cumulativeCountSuffix/);
 assert.match(captureHealth, /evaluateCaptureHealth/);
 assert.match(captureHealth, /evaluateCaptureConfidence/);
+assert.match(captureHealth, /evaluateCaptureCoverage/);
 assert.match(groupResolution, /resolve_group_observations/);
 assert.match(processWindow, /resolveGroupObservationsShadow/);
 assert.match(processLatestWindow, /resolveGroupObservationsShadow/);
@@ -173,8 +194,13 @@ assert.match(consolidationSchedule, /CONSOLIDATION_WINDOW_HOURS = 24/);
 assert.match(consolidationRunner, /RADAR_PROCESSING_SECRET/);
 assert.match(consolidationRunner, /functions\/v1\/process-window/);
 assert.match(consolidationWorkflow, /cron: "0 11,16,21 \* \* \*"/);
-assert.match(consolidationWorkflow, /configured=true/);
-assert.match(consolidationWorkflow, /if: steps\.configuration\.outputs\.configured == 'true'/);
+// P1.1: a missing secret must turn the job red, never make it green and skip.
+assert.match(consolidationWorkflow, /check-consolidation-config\.mjs/);
+assert.doesNotMatch(consolidationWorkflow, /configured=true/);
+assert.doesNotMatch(consolidationWorkflow, /if: steps\./);
+assert.doesNotMatch(consolidationWorkflow, /::warning::/);
 assert.doesNotMatch(consolidationWorkflow, /SUPABASE_SERVICE_ROLE_KEY/);
+assert.match(consolidationRunner, /GITHUB_STEP_SUMMARY/);
+assert.match(consolidationRunner, /process\.exitCode = 1/);
 
 console.log(`Supabase foundation OK: ${tables.length} RLS tables and synced contracts.`);
