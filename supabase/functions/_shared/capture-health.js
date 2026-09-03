@@ -166,3 +166,157 @@ const result = (state, label, summary, detail) => ({
   next_action: detail.action,
   layers: { device: detail.device, capture: detail.capture, sync: detail.sync }
 });
+
+
+// --- Capture coverage (P1.1) -------------------------------------------------
+// A single recent heartbeat cannot prove continuity across a 24 hour window.
+// Coverage is measured from append-only samples: two consecutive samples closer
+// than the tolerated gap are evidence that capture was alive between them.
+
+export const CAPTURE_COVERAGE_VERSION = "capture_coverage@1";
+
+// The Android sensor reports every 15 minutes; 35 minutes is the same tolerance
+// already used to decide that a device stopped reporting.
+export const DEFAULT_MAX_SAMPLE_GAP_MS = 35 * MINUTE;
+
+const HIGH_COVERAGE_RATIO = 0.9;
+const MODERATE_COVERAGE_RATIO = 0.6;
+
+const INCIDENT_TRANSITIONS = ["listener_disconnected", "setup_required", "network_offline", "queue_backlog"];
+
+export const evaluateCaptureCoverage = (samples, options = {}) => {
+  const startsAt = Date.parse(options.startsAt ?? "");
+  const endsAt = Date.parse(options.endsAt ?? "");
+  const maxGap = options.maxSampleGapMs ?? DEFAULT_MAX_SAMPLE_GAP_MS;
+  if (!Number.isFinite(startsAt) || !Number.isFinite(endsAt) || endsAt <= startsAt) {
+    return coverageResult("unavailable", "invalid_window", { windowMs: 0, maxGap });
+  }
+  const windowMs = endsAt - startsAt;
+
+  const normalized = (samples ?? [])
+    .map((sample) => ({
+      deviceId: String(sample.device_id ?? sample.deviceId ?? "unknown"),
+      at: Date.parse(sample.observed_at ?? ""),
+      status: sample.status ?? null,
+      outboxPending: Number(sample.outbox_pending ?? 0),
+      notificationAccess: sample.notification_access ?? null,
+      listenerConnected: sample.listener_connected ?? null,
+      whatsappInstalled: sample.whatsapp_installed ?? null,
+      networkType: sample.network_type ?? null
+    }))
+    .filter((sample) => Number.isFinite(sample.at) && sample.at >= startsAt - maxGap && sample.at <= endsAt)
+    .sort((a, b) => a.at - b.at);
+
+  const inWindow = normalized.filter((sample) => sample.at >= startsAt);
+  const devices = new Set(inWindow.map((sample) => sample.deviceId));
+  const facts = {
+    windowMs, maxGap,
+    sampleCount: inWindow.length,
+    deviceCount: devices.size,
+    coveredMs: 0,
+    largestGapMs: windowMs,
+    configuration: "unknown",
+    incidentCount: 0
+  };
+  if (inWindow.length === 0) return coverageResult("unavailable", "no_capture_samples", facts);
+
+  const intervals = [];
+  for (const deviceId of new Set(normalized.map((sample) => sample.deviceId))) {
+    const series = normalized.filter((sample) => sample.deviceId === deviceId);
+    for (let index = 1; index < series.length; index += 1) {
+      const from = series[index - 1].at;
+      const to = series[index].at;
+      if (to - from > maxGap) continue;
+      const clippedFrom = Math.max(from, startsAt);
+      const clippedTo = Math.min(to, endsAt);
+      if (clippedTo > clippedFrom) intervals.push([clippedFrom, clippedTo]);
+    }
+  }
+  const merged = mergeIntervals(intervals);
+  facts.coveredMs = merged.reduce((total, [from, to]) => total + (to - from), 0);
+  facts.largestGapMs = largestUncovered(merged, startsAt, endsAt);
+
+  facts.configuration = describeConfiguration(inWindow);
+  const transitions = (options.transitions ?? []).filter((transition) => {
+    const occurredAt = Date.parse(transition?.occurred_at ?? "");
+    return Number.isFinite(occurredAt) && occurredAt >= startsAt && occurredAt <= endsAt
+      && INCIDENT_TRANSITIONS.includes(transition.kind);
+  });
+  const sampleIncidents = inWindow.filter((sample) => sample.listenerConnected === false
+    || sample.networkType === "offline" || sample.outboxPending > 0 || sample.status === "degraded");
+  facts.incidentCount = transitions.length + sampleIncidents.length;
+
+  if (facts.configuration === "not_configured") {
+    return coverageResult("unavailable", "capture_not_configured", facts);
+  }
+
+  const ratio = facts.coveredMs / windowMs;
+  let level;
+  let reason;
+  if (ratio >= HIGH_COVERAGE_RATIO && facts.largestGapMs <= maxGap) {
+    level = "high";
+    reason = "capture_covered_window";
+  } else if (ratio >= MODERATE_COVERAGE_RATIO) {
+    level = "moderate";
+    reason = "partial_coverage";
+  } else {
+    level = "low";
+    reason = ratio > 0 ? "sparse_coverage" : "no_demonstrable_continuity";
+  }
+  if (facts.incidentCount > 0 && level !== "low") {
+    level = "low";
+    reason = "capture_incident_in_window";
+  }
+  if (facts.configuration !== "confirmed" && level === "high") {
+    level = "moderate";
+    reason = "configuration_not_reported";
+  }
+  return coverageResult(level, reason, facts);
+};
+
+const describeConfiguration = (samples) => {
+  if (samples.some((sample) => sample.notificationAccess === false || sample.whatsappInstalled === false)) {
+    return "not_configured";
+  }
+  if (samples.some((sample) => sample.notificationAccess === true && sample.whatsappInstalled === true)) {
+    return "confirmed";
+  }
+  return "unknown";
+};
+
+const mergeIntervals = (intervals) => {
+  const sorted = [...intervals].sort((a, b) => a[0] - b[0]);
+  const merged = [];
+  for (const [from, to] of sorted) {
+    const last = merged.at(-1);
+    if (last && from <= last[1]) last[1] = Math.max(last[1], to);
+    else merged.push([from, to]);
+  }
+  return merged;
+};
+
+const largestUncovered = (merged, startsAt, endsAt) => {
+  let largest = 0;
+  let cursor = startsAt;
+  for (const [from, to] of merged) {
+    largest = Math.max(largest, from - cursor);
+    cursor = Math.max(cursor, to);
+  }
+  return Math.max(largest, endsAt - cursor);
+};
+
+const coverageResult = (level, reason, facts) => ({
+  level,
+  reason,
+  trend_valid: level === "high" || level === "moderate",
+  version: CAPTURE_COVERAGE_VERSION,
+  coverage_ratio: facts.windowMs > 0 ? Math.round((facts.coveredMs / facts.windowMs) * 10_000) / 10_000 : 0,
+  covered_seconds: Math.round(facts.coveredMs / 1000),
+  window_seconds: Math.round(facts.windowMs / 1000),
+  largest_gap_seconds: Math.round(facts.largestGapMs / 1000),
+  max_sample_gap_seconds: Math.round(facts.maxGap / 1000),
+  sample_count: facts.sampleCount,
+  device_count: facts.deviceCount,
+  incident_count: facts.incidentCount,
+  configuration: facts.configuration
+});

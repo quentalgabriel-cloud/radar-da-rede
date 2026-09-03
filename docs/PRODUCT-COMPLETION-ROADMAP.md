@@ -1,8 +1,8 @@
 # Radar da Rede — Roadmap de conclusão do produto
 
-Data da revisão: 2026-09-03  
-Estado de referência: `main` em `1935981`  
-Princípio: preservar a operação ativa enquanto aumentamos confiabilidade, utilidade e capacidade analítica.
+- Data da revisão: 2026-09-03 (atualizado ao fim da primeira sessão da P1.1)
+- Estado de referência: `main` em `86c66fb`
+- Princípio: preservar a operação ativa enquanto aumentamos confiabilidade, utilidade e capacidade analítica.
 
 ## 1. Direção do produto
 
@@ -33,21 +33,25 @@ P0 está tecnicamente implantada e P1 está instalada em modo shadow, mas P1 ain
 
 ### Estado observado
 
-| Evidência | Estado em 2026-09-03 | Leitura |
-|---|---:|---|
-| Eventos persistidos | 1.064 | ingestão real existe |
-| Batches | 175 | fluxo do sensor já operou |
-| Grupos no registry | 124 | identidade base existe |
-| Grupos confirmados | 0 | classificação operacional ainda não começou |
-| Aliases ambíguos | 0 | não há fila ambígua no momento |
-| Linhas de métricas P1 | 0 | P1 ainda não recebeu janela real |
-| Redes com Control Center ativo | 0 | rollout está protegido |
-| Credenciais de processamento ativas | 0 | consolidação agendada não consegue processar |
-| Último heartbeat observado | 2026-09-03 18:45:02 UTC | captura reportou saúde recentemente |
-| Último evento observado | 2026-09-03 16:35:36 UTC | dado real recente |
-| Último processamento observado | 2026-09-02 20:16:52 UTC | processamento está atrasado |
+A coluna “antes” é o diagnóstico que abriu a P1.1. A coluna “depois” é o estado ao fim da primeira sessão da P1.1.
 
-O workflow `Consolidate Radar` termina verde quando faltam secrets, mas pula o passo canônico. Portanto, verde atualmente não significa janela processada. Esse falso positivo operacional é o primeiro problema a corrigir.
+| Evidência | Antes | Depois | Leitura |
+|---|---:|---:|---|
+| Eventos persistidos | 1.064 | 1.064 | ingestão real existe |
+| Batches | 175 | 175 | fluxo do sensor já operou |
+| Grupos no registry | 124 | 151 | o resolvedor shadow registrou 27 conversas novas na consolidação |
+| Grupos confirmados | 0 | 0 | classificação operacional ainda não começou |
+| Aliases ambíguos | 0 | 0 | não há fila ambígua no momento |
+| Linhas de métricas P1 | 0 | 30 | primeira janela real produzida |
+| Execuções de processamento | 8 | 9 | uma delas é o primeiro slot canônico |
+| Redes com Control Center ativo | 0 | 0 | rollout continua protegido |
+| Credenciais de processamento ativas | 0 | 1 | consolidação voltou a ser possível |
+| Amostras de saúde append-only | inexistentes | 1 | tabela criada e alimentada por heartbeat real |
+| Último processamento observado | 2026-09-02 20:16 UTC | 2026-09-03 19:42 UTC | consolidação restaurada |
+
+O workflow `Consolidate Radar` terminava verde quando faltavam secrets e pulava o passo canônico. Esse falso positivo foi eliminado: a configuração é validada em um passo próprio que derruba o job. Falta configurar os secrets e observar uma execução agendada real.
+
+As 30 linhas de métrica cobrem 30 dos 124 grupos monitorados. Essa é a demonstração prática do débito D02 e a razão de a execução passar a persistir um zero explícito por grupo.
 
 ### Conclusão de prontidão
 
@@ -82,21 +86,23 @@ Pontuação: `(impacto + risco) × (6 - esforço)`, em escala de 1 a 5. Ela orde
 
 | ID | Débito | Categoria | I | R | E | Pontos | Decisão |
 |---|---|---|---:|---:|---:|---:|---|
-| D01 | Scheduler pula processamento sem falhar e não há credencial ativa | Operação | 5 | 5 | 2 | 40 | imediato |
-| D02 | Grupo sem evento na execução atual pode aparecer com sua métrica antiga como atual | Dados | 5 | 5 | 2 | 40 | bloqueia P1 |
-| D03 | Janelas móveis adjacentes de 24h se sobrepõem e geram comparações enganosas | Produto/Dados | 5 | 4 | 2 | 36 | bloqueia tendência |
-| D04 | Confidence pode usar um snapshot recente como evidência para toda a janela | Dados/Operação | 5 | 4 | 2 | 36 | bloqueia confiança alta |
-| D05 | GET do read model pode processar e escrever no banco | Arquitetura | 5 | 4 | 2 | 36 | remover antes de escala |
+| D01 | Scheduler pula processamento sem falhar e não há credencial ativa | Operação | 5 | 5 | 2 | 40 | ENDEREÇADO: falha visível implementada e credencial criada; secrets do GitHub PENDENTES |
+| D02 | Grupo sem evento na execução atual pode aparecer com sua métrica antiga como atual | Dados | 5 | 5 | 2 | 40 | CORRIGIDO no código; PENDENTE em produção até o deploy |
+| D03 | Janelas móveis adjacentes de 24h se sobrepõem e geram comparações enganosas | Produto/Dados | 5 | 4 | 2 | 36 | CORRIGIDO: política `same_slot_previous_day@1`; PENDENTE em produção |
+| D04 | Confidence pode usar um snapshot recente como evidência para toda a janela | Dados/Operação | 5 | 4 | 2 | 36 | CORRIGIDO: `capture_coverage@1` sobre amostras append-only; PENDENTE em produção |
+| D05 | GET do read model pode processar e escrever no banco | Arquitetura | 5 | 4 | 2 | 36 | CORRIGIDO no código; deploy só depois do scheduler funcionar |
 | D06 | Não há SLO/alerta para heartbeat, atraso, janela ausente ou workflow pulado | Observabilidade | 4 | 4 | 2 | 32 | imediato |
 | D07 | Matriz de campo do Moto G84 está incompleta | Android/Operação | 4 | 4 | 2 | 32 | antes da ativação ampla |
-| D08 | Cálculo live e sintético do Control Center está duplicado | Arquitetura/Testes | 4 | 3 | 2 | 28 | P1.1 |
+| D08 | Cálculo live e sintético do Control Center está duplicado | Arquitetura/Testes | 4 | 3 | 2 | 28 | CORRIGIDO: `packages/group-analytics` com verificação de sincronização no CI |
 | D09 | Não há E2E real de filtros, dialog, teclado, mobile e sessão | Qualidade/UX | 4 | 3 | 2 | 28 | antes da ativação |
 | D10 | Deploy de migrations/functions é manual e sujeito a drift | Release | 4 | 3 | 2 | 28 | hardening |
-| D11 | Documentação central contradiz o estado pós-P1 | Estratégia | 4 | 3 | 2 | 28 | imediato |
-| D12 | “Situações abertas” são contagens da janela, não casos com ciclo de resolução | Produto | 4 | 3 | 2 | 28 | corrigir linguagem/decidir ciclo |
+| D11 | Documentação central contradiz o estado pós-P1 | Estratégia | 4 | 3 | 2 | 28 | CORRIGIDO nesta sessão |
+| D12 | “Situações abertas” são contagens da janela, não casos com ciclo de resolução | Produto | 4 | 3 | 2 | 28 | CORRIGIDO na linguagem; decisão sobre ciclo continua com a coordenação |
 | D13 | Controles de retenção, exclusão, menor privilégio e incidente não estão fechados | Segurança/Dados | 5 | 4 | 3 | 27 | antes da P2 |
 | D14 | Identidade Android ainda deriva do título; renomear pode criar nova identidade | Android/Dados | 4 | 4 | 3 | 24 | investigar em campo |
-| D15 | Read model possui limites fixos sem paginação ou metadado de truncamento | Escala | 3 | 3 | 3 | 18 | antes de crescimento relevante |
+| D15 | Read model possui limites fixos sem paginação ou metadado de truncamento | Escala | 3 | 3 | 3 | 18 | PARCIAL: metadado de truncamento existe; paginação continua pendente |
+| D16 | APK em operação não reporta configuração da captura | Android/Dados | 4 | 3 | 3 | 21 | novo em 2026-09-03: limita a confiança a `moderate` |
+| D17 | `capture_health_samples` cresce sem política de retenção | Dados | 2 | 2 | 2 | 16 | novo em 2026-09-03: revisar em 90 dias ou com vários dispositivos |
 
 ## 5. Sequência de execução
 
@@ -284,6 +290,15 @@ Regras:
 - manter reserva de capacidade para confiabilidade e débito; proposta inicial: 70% roadmap, 20% confiabilidade/débito e 10% descoberta, ajustada à capacidade real.
 
 ## 8. Próxima ação recomendada
+
+A primeira sessão da P1.1 está registrada em [`P1.1-EXECUTION-REPORT.md`](P1.1-EXECUTION-REPORT.md).
+A onda R0 foi cumprida fora do GitHub e as correções analíticas estão
+implementadas e testadas localmente. A ação seguinte é o release coordenado:
+secrets do GitHub, execução agendada observada, deploy das três Edge Functions a
+partir do repositório e, no dia seguinte, a segunda janela comparável.
+Depois disso vêm SLOs, E2E e matriz de campo.
+
+O prompt original permanece a referência da fase:
 
 Executar o prompt [`P1.1-CONFIABILIDADE-E-ATIVACAO.md`](implementation-prompts/P1.1-CONFIABILIDADE-E-ATIVACAO.md). Ele começa restaurando a consolidação, corrige as três lacunas analíticas e só então autoriza a ativação piloto. O prompt P2 atual deve ser revisado após esse gate e dividido em P2A/P2B durante sua execução.
 

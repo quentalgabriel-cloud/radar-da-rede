@@ -41,6 +41,8 @@ importers:
         specifier: workspace:*
         version: link:../contracts
 
+  packages/group-analytics: {}
+
   packages/intelligence:
     dependencies:
       '@radar-rede/contracts':
@@ -52,6 +54,9 @@ importers:
 
   packages/radar-view-model:
     dependencies:
+      '@radar-rede/group-analytics':
+        specifier: workspace:*
+        version: link:../group-analytics
       '@radar-rede/intelligence':
         specifier: workspace:*
         version: link:../intelligence

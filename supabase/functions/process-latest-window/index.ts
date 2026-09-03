@@ -4,12 +4,14 @@ import { corsHeaders } from "npm:@supabase/supabase-js@2.112.4/cors";
 import { buildAnalysisPayload } from "../_shared/analysis-payload.js";
 import { canonicalizeConversationEvent } from "../_shared/canonical-conversations.js";
 import { resolveGroupObservationsShadow } from "../_shared/group-resolution.js";
-import { buildEventGroupLinks, loadCaptureConfidence, persistAnalysisWithMetrics } from "../_shared/group-metrics.js";
+import { buildEventGroupLinks, loadCaptureCoverage, loadMonitoredGroupIds, persistAnalysisWithMetrics } from "../_shared/group-metrics.js";
 import { analyzeEvents } from "../_shared/intelligence.js";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const WINDOW_MS = 24 * 60 * 60 * 1_000;
 const MAX_EVENTS = 5_000;
+// A manual refresh is deliberate, not a polling mechanism.
+const MIN_INTERVAL_MS = 5 * 60 * 1_000;
 
 const authenticatedHandler = withSupabase({ auth: "user" }, async (request, context) => {
   if (request.method !== "POST") return json(405, { error: "method_not_allowed" });
@@ -25,6 +27,12 @@ const authenticatedHandler = withSupabase({ auth: "user" }, async (request, cont
     .maybeSingle();
   if (membershipError) return json(500, { error: "membership_check_failed" });
   if (!network) return json(404, { error: "network_not_found" });
+
+  // Reading is open to every member; forcing a consolidation is not.
+  const { data: canManage, error: roleError } = await context.supabase
+    .rpc("can_manage_group_registry", { p_network_id: networkId });
+  if (roleError) return json(500, { error: "authorization_check_failed" });
+  if (canManage !== true) return json(403, { error: "manual_refresh_not_authorized" });
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -45,7 +53,7 @@ const authenticatedHandler = withSupabase({ auth: "user" }, async (request, cont
 
   const { data: currentRun, error: currentRunError } = await admin
     .from("processing_runs")
-    .select("ends_at")
+    .select("ends_at,completed_at")
     .eq("network_id", networkId)
     .order("ends_at", { ascending: false })
     .limit(1)
@@ -53,6 +61,15 @@ const authenticatedHandler = withSupabase({ auth: "user" }, async (request, cont
   if (currentRunError) return json(500, { error: "run_query_failed" });
   if (currentRun?.ends_at && Date.parse(currentRun.ends_at) >= Date.parse(latestEvent.occurred_at)) {
     return json(200, { status: "up_to_date", processed: false });
+  }
+  if (currentRun?.completed_at && Date.now() - Date.parse(currentRun.completed_at) < MIN_INTERVAL_MS) {
+    return json(429, {
+      status: "rate_limited",
+      processed: false,
+      retry_after_seconds: Math.ceil(
+        (MIN_INTERVAL_MS - (Date.now() - Date.parse(currentRun.completed_at))) / 1000
+      )
+    });
   }
 
   const startsAt = new Date(Math.max(0, Date.parse(latestEvent.occurred_at) - WINDOW_MS)).toISOString();
@@ -69,7 +86,9 @@ const authenticatedHandler = withSupabase({ auth: "user" }, async (request, cont
 
   const endsAt = latestEvent.occurred_at;
   const groupResolution = await resolveGroupObservationsShadow(admin, networkId, events ?? []);
-  const captureConfidence = await loadCaptureConfidence(admin, networkId, startsAt, endsAt);
+  const captureConfidence = await loadCaptureCoverage(admin, networkId, startsAt, endsAt);
+  const monitoredGroups = await loadMonitoredGroupIds(admin, networkId);
+  if (monitoredGroups.error) return json(500, { error: "monitored_group_query_failed" });
   const analysisEvents = (events ?? []).map(canonicalizeConversationEvent);
   const analysis = analyzeEvents(analysisEvents);
   const payload = await buildAnalysisPayload({
@@ -79,19 +98,29 @@ const authenticatedHandler = withSupabase({ auth: "user" }, async (request, cont
     events: analysisEvents,
     analysis,
     groupLinks: buildEventGroupLinks(events ?? [], groupResolution.links),
-    captureConfidence
+    captureConfidence,
+    monitoredGroupIds: monitoredGroups.ids
   });
-  const { data: persisted, error: persistError, metrics_persisted, fallback_reason } = await persistAnalysisWithMetrics(admin, payload);
+  // The window does not follow a canonical slot, so it must never be used as a
+  // trend comparator for a scheduled window.
+  payload.run.window_kind = "manual_refresh";
+  const { data: persisted, error: persistError, metrics_persisted, coverage_persisted, fallback_reason } = await persistAnalysisWithMetrics(admin, payload);
   if (persistError) return json(500, { error: "analysis_persist_failed" });
 
   const result = Array.isArray(persisted) ? persisted[0] : persisted;
   return json(200, {
     status: "processed",
     processed: true,
-    window: { starts_at: startsAt, ends_at: endsAt, event_count: events?.length ?? 0 },
+    window: { starts_at: startsAt, ends_at: endsAt, event_count: events?.length ?? 0, window_kind: "manual_refresh" },
     group_resolution: { ...groupResolution, links: undefined },
     capture_confidence: captureConfidence,
-    group_metrics: { persisted: metrics_persisted, fallback_reason },
+    group_metrics: {
+      persisted: metrics_persisted,
+      coverage_persisted,
+      fallback_reason,
+      monitored_group_count: monitoredGroups.ids.length,
+      metric_row_count: payload.group_metrics.length
+    },
     ...result
   });
 });

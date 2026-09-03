@@ -38,6 +38,21 @@ const severityLabel = { high: "Atenção", medium: "Em acompanhamento", low: "In
 const activityLabel = { high: "Alta", medium: "Moderada", low: "Baixa" };
 const conditionLabel = { critical: "Crítica", attention: "Atenção", watch: "Observação", normal: "Normal" };
 const trendLabel = { growing: "Crescendo", stable: "Estável", declining: "Caindo", unavailable: "Sem comparação" };
+const captureLabel = {
+  high: "alta", moderate: "moderada", low: "baixa", unavailable: "indisponível"
+};
+// Why a comparison is missing matters more than the fact that it is missing.
+const trendReasons = {
+  no_previous_run: "ainda não há uma execução anterior",
+  no_run_at_previous_day_slot: "não há execução no mesmo horário do dia anterior",
+  no_comparable_window: "não há janela de duração equivalente",
+  current_window_is_not_a_canonical_slot: "a janela atual não é uma consolidação agendada",
+  capture_confidence_insufficient: "a cobertura da captura não sustenta a comparação",
+  comparison_unavailable: "sem janela comparadora",
+  invalid_current_run: "a execução atual está inconsistente",
+  no_current_run: "nenhuma execução disponível"
+};
+const trendReasonLabel = (reason) => trendReasons[reason] ?? reason;
 
 const plural = (value, singular, pluralForm) => `${value} ${value === 1 ? singular : pluralForm}`;
 
@@ -143,7 +158,7 @@ const renderOverview = () => {
 
   document.querySelector("#metric-grid").innerHTML = [
     [overview.conversation_count, "grupos acompanhados"],
-    [overview.alert_count, "situações abertas"],
+    [overview.alert_count, "situações no período"],
     [overview.territory_count ?? territories.length, "territórios com atividade"],
     [overview.event_count, "atividades observadas"]
   ].map(([value, label]) => `<div class="metric"><strong>${escapeHtml(value)}</strong><span>${label}</span></div>`).join("");
@@ -172,7 +187,7 @@ const renderOverview = () => {
     ? '<p class="empty">Ainda não há território informado para este período.</p>'
     : territories.slice(0, 6).map((territory) => `
       <article class="territory-card">
-        <header><strong>${escapeHtml(territory.label)}</strong><span>${escapeHtml(plural(territory.open_situation_count, "situação ativa", "situações ativas"))}</span></header>
+        <header><strong>${escapeHtml(territory.label)}</strong><span>${escapeHtml(plural(territory.open_situation_count, "situação no período", "situações no período"))}</span></header>
         <div class="topic-list">${territory.topics.length > 0
           ? territory.topics.map((topic) => `<span>→ ${escapeHtml(topic.label)}</span>`).join("")
           : "<span>Atividade sem assunto classificado</span>"}</div>
@@ -226,14 +241,14 @@ const renderGroups = () => {
           <div class="group-body">
             <dl>
               <div><dt>Última atividade</dt><dd>${escapeHtml(formatTime(conversation.last_seen_at))}</dd></div>
-              <div><dt>Situações abertas</dt><dd>${escapeHtml(conversation.open_situation_count ?? 0)}</dd></div>
+              <div><dt>Situações no período</dt><dd>${escapeHtml(conversation.open_situation_count ?? 0)}</dd></div>
             </dl>
             <div class="tag-list">${(conversation.topics ?? []).map((topic) => `<span>${escapeHtml(topic)}</span>`).join("") || "<span>Sem assunto classificado</span>"}</div>
             <h3>Trecho da conversa</h3>
             <div class="timeline">${events.slice().reverse().map((event) => `
               <div class="timeline-item"><time>${escapeHtml(formatTime(event.occurred_at))}</time><p>“${escapeHtml(event.text)}”</p></div>
             `).join("") || '<p class="empty">Ainda não há mensagens disponíveis.</p>'}</div>
-            ${conversation.open_situation_count > 0 ? `<div class="radar-note"><strong>Radar identificou</strong><span>${escapeHtml(plural(conversation.open_situation_count, "situação em acompanhamento", "situações em acompanhamento"))} neste grupo.</span></div>` : ""}
+            ${conversation.open_situation_count > 0 ? `<div class="radar-note"><strong>Radar identificou</strong><span>${escapeHtml(plural(conversation.open_situation_count, "situação registrada no período", "situações registradas no período"))} neste grupo.</span></div>` : ""}
           </div>
         </details>
       `;
@@ -248,6 +263,7 @@ const renderControlCenter = (controlCenter, query) => {
     [summary.attention ?? 0, "em atenção"], [summary.declining ?? 0, "caindo"],
     [summary.unclassified ?? 0, "não classificados"]
   ].map(([value, label]) => `<article class="metric-card"><strong>${escapeHtml(value)}</strong><span>${escapeHtml(label)}</span></article>`).join("");
+  renderControlCenterAnchor(controlCenter);
   const conditionWeight = { critical: 4, attention: 3, watch: 2, normal: 1 };
   const directionDelta = (group) => Number(group.trend?.delta ?? 0);
   state.controlGroups = new Map((controlCenter.groups ?? []).map((group) => [group.id, group]));
@@ -273,17 +289,47 @@ const renderControlCenter = (controlCenter, query) => {
     ? '<div class="empty-state"><strong>Nenhum grupo neste filtro.</strong><span>Ajuste busca, condição ou tendência.</span></div>'
     : groups.map((group) => {
       const trend = group.trend ?? { direction: "unavailable" };
-      const delta = trend.delta == null ? trendLabel[trend.direction] : `${trend.delta > 0 ? "+" : ""}${trend.delta} · ${trendLabel[trend.direction]}`;
+      const situationCount = group.situation_count ?? group.open_situation_count ?? 0;
+      const delta = trend.delta == null
+        ? `${trendLabel[trend.direction]}${trend.unavailable_reason ? ` · ${trendReasonLabel(trend.unavailable_reason)}` : ""}`
+        : `${trend.delta > 0 ? "+" : ""}${trend.delta} · ${trendLabel[trend.direction]}`;
       return `<details class="group-card control-card condition-${escapeHtml(group.condition)}">
         <summary><div><strong>${escapeHtml(group.label)}</strong><span>${escapeHtml(group.context?.label || group.origin || "Contexto não informado")}</span></div>
         <span class="condition-badge">${escapeHtml(conditionLabel[group.condition] ?? group.condition)}</span></summary>
-        <div class="group-body"><dl><div><dt>Atividade</dt><dd>${escapeHtml(group.event_count)}</dd></div><div><dt>Tendência</dt><dd>${escapeHtml(delta)}</dd></div><div><dt>Situações abertas</dt><dd>${escapeHtml(group.open_situation_count)}</dd></div><div><dt>Última atividade</dt><dd>${escapeHtml(formatTime(group.last_seen_at))}</dd></div></dl>
+        <div class="group-body"><dl><div><dt>Atividade</dt><dd>${escapeHtml(group.event_count)}</dd></div><div><dt>Tendência</dt><dd>${escapeHtml(delta)}</dd></div><div><dt>Situações no período</dt><dd>${escapeHtml(situationCount)}</dd></div><div><dt>Última atividade</dt><dd>${escapeHtml(formatTime(group.last_seen_at))}</dd></div></dl>
         <div class="tag-list">${(group.topics ?? []).map((topic) => `<span>${escapeHtml(topic.label)} · ${escapeHtml(topic.count)}</span>`).join("") || "<span>Sem assunto classificado</span>"}</div>
-        ${group.capture_confidence !== "high" ? `<p class="confidence-warning">Confiança de captura: ${escapeHtml(group.capture_confidence)}. A tendência pode estar indisponível.</p>` : ""}
+        ${group.metric_source === "synthesized_zero" ? '<p class="confidence-warning">Sem atividade nesta execução. O zero pertence à janela atual e não reaproveita uma medição anterior.</p>' : ""}
+        ${group.capture_confidence !== "high" ? `<p class="confidence-warning">Confiança de captura: ${escapeHtml(captureLabel[group.capture_confidence] ?? group.capture_confidence)}. A tendência pode estar indisponível.</p>` : ""}
         <p class="sparkline-text" aria-label="Histórico de atividade">Histórico: ${(group.sparkline ?? []).map((point) => escapeHtml(point.value)).join(" · ") || "ainda sem janela comparável"}</p>
         <button class="text-button" type="button" data-open-group="${escapeHtml(group.id)}">Abrir detalhes</button></div>
       </details>`;
     }).join("");
+};
+
+// The operator has to see which window is on screen and what it is compared
+// with. A number without its period is not an operational signal.
+const renderControlCenterAnchor = (controlCenter) => {
+  const target = document.querySelector("#control-center-anchor");
+  if (!target) return;
+  const anchor = controlCenter.anchor ?? {};
+  const consistency = controlCenter.consistency ?? {};
+  if (!anchor.current_run_id) {
+    target.innerHTML = '<p class="anchor-note">Nenhuma consolidação disponível. O Control Center não tem janela para exibir.</p>';
+    return;
+  }
+  const comparison = anchor.comparison_run_id
+    ? `Comparado com ${escapeHtml(formatTime(anchor.comparison_window_start))} → ${escapeHtml(formatTime(anchor.comparison_window_end))}.`
+    : `Sem comparação: ${escapeHtml(trendReasonLabel(anchor.comparison_unavailable_reason))}.`;
+  const overlap = anchor.windows_overlap
+    ? '<p class="confidence-warning">As janelas comparadas se sobrepõem; a diferença não deve ser lida como tendência.</p>'
+    : "";
+  const partial = consistency.consistent === false
+    ? '<p class="confidence-warning">A execução atual está inconsistente entre grupos monitorados e métricas persistidas.</p>'
+    : "";
+  target.innerHTML = `
+    <p class="anchor-note">Janela atual: ${escapeHtml(formatTime(anchor.current_window_start))} → ${escapeHtml(formatTime(anchor.current_window_end))}. ${comparison}</p>
+    <p class="anchor-note">Política de comparação: ${escapeHtml(anchor.comparison_policy ?? "não informada")}. ${escapeHtml(consistency.synthesized_zero_count ?? 0)} de ${escapeHtml(consistency.monitored_group_count ?? 0)} grupos sem atividade nesta execução.</p>
+    ${overlap}${partial}`;
 };
 
 const populateControlFilter = (selector, values, selected) => {
@@ -302,9 +348,9 @@ const openGroupDrawer = (group) => {
     <section class="drawer-section"><h3>Visão geral</h3><p>${escapeHtml(conditionLabel[group.condition])} · ${escapeHtml(trendLabel[group.trend?.direction])} · ${escapeHtml(group.event_count)} atividades.</p></section>
     <section class="drawer-section"><h3>Contexto</h3><p>${escapeHtml(group.context?.label || "Não informado")} · ${escapeHtml(group.origin || "Origem não informada")}</p></section>
     <section class="drawer-section"><h3>Movimentos e assuntos</h3><div class="tag-list">${(group.topics ?? []).map((topic) => `<span>${escapeHtml(topic.label)} · ${escapeHtml(topic.count)}</span>`).join("") || "<span>Sem assunto classificado</span>"}</div></section>
-    <section class="drawer-section"><h3>Situações</h3><p>${escapeHtml(group.open_situation_count)} abertas.</p></section>
+    <section class="drawer-section"><h3>Situações</h3><p>${escapeHtml(group.situation_count ?? group.open_situation_count ?? 0)} no período analisado. O Radar conta ocorrências da janela; não existe ciclo de resolução.</p></section>
     <section class="drawer-section"><h3>Histórico e evidência</h3><p>${(group.sparkline ?? []).map((point) => `${escapeHtml(formatTime(point.at))}: ${escapeHtml(point.value)}`).join("<br>") || "Ainda não há duas janelas comparáveis."}</p></section>
-    <section class="drawer-section"><h3>Confiança da captura</h3><p>${escapeHtml(group.capture_confidence)}. Tendências ficam indisponíveis quando a janela atual ou anterior não tem cobertura suficiente.</p></section>`;
+    <section class="drawer-section"><h3>Confiança da captura</h3><p>${escapeHtml(captureLabel[group.capture_confidence] ?? group.capture_confidence)}. A confiança mede a cobertura observada do período; tendências ficam indisponíveis quando a janela atual ou a comparadora não têm cobertura suficiente.</p></section>`;
   drawer.showModal();
 };
 

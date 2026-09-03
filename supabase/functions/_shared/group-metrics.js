@@ -1,42 +1,10 @@
 import { groupObservationKey } from "./group-resolution.js";
-import { evaluateCaptureConfidence } from "./capture-health.js";
+import { evaluateCaptureConfidence, evaluateCaptureCoverage } from "./capture-health.js";
+import { buildGroupMetrics, GROUP_METRICS_VERSION } from "./group-analytics.js";
 
-export const GROUP_METRICS_VERSION = "1.0.0";
+export { buildGroupMetrics, GROUP_METRICS_VERSION };
 
-export function buildGroupMetrics({ events, analysis, groupLinks, captureConfidence }) {
-  const byGroup = new Map();
-  const eventGroup = new Map();
-  for (const event of events ?? []) {
-    const groupId = groupLinks?.[event.event_id];
-    if (!groupId) continue;
-    eventGroup.set(event.event_id, groupId);
-    const metric = byGroup.get(groupId) ?? emptyMetric(groupId, captureConfidence);
-    metric.event_count += 1;
-    byGroup.set(groupId, metric);
-  }
-  for (const fact of analysis?.facts ?? []) {
-    const groups = groupsFor(fact.source_event_ids, eventGroup);
-    for (const groupId of groups) {
-      const metric = byGroup.get(groupId);
-      if (!metric) continue;
-      metric.fact_count += 1;
-      const mentions = fact.source_event_ids.filter((id) => eventGroup.get(id) === groupId).length;
-      if (fact.category === "demanda_territorial") metric.demand_count += mentions;
-      if (fact.category === "agenda_mobilizacao") metric.agenda_count += mentions;
-      if (fact.category === "problema_operacional") metric.problem_count += mentions;
-    }
-  }
-  for (const alert of analysis?.alerts ?? []) {
-    for (const groupId of groupsFor(alert.source_event_ids, eventGroup)) {
-      const metric = byGroup.get(groupId);
-      if (!metric) continue;
-      metric.alert_count += 1;
-      metric.open_situation_count += 1;
-      if (alert.severity === "high" || alert.severity === "critical") metric.critical_situation_count += 1;
-    }
-  }
-  return [...byGroup.values()].sort((a, b) => a.group_id.localeCompare(b.group_id));
-}
+const MAX_CAPTURE_SAMPLES = 4_000;
 
 export function buildEventGroupLinks(events, observationLinks) {
   return Object.fromEntries((events ?? []).flatMap((event) => {
@@ -46,48 +14,74 @@ export function buildEventGroupLinks(events, observationLinks) {
   }));
 }
 
-export async function loadCaptureConfidence(admin, networkId, startsAt, endsAt) {
-  const [healthResult, transitionResult] = await Promise.all([
-    admin.from("adapter_health").select("observed_at,notification_access,listener_connected,whatsapp_installed,network_type,outbox_pending,status,recovered_at")
-      .eq("network_id", networkId).order("observed_at", { ascending: false }).limit(1).maybeSingle(),
+/**
+ * Every group the network monitors, so that a run can persist an explicit zero
+ * for groups without events instead of leaving a hole a later read would fill
+ * with an older window.
+ */
+export async function loadMonitoredGroupIds(admin, networkId) {
+  const { data, error } = await admin
+    .from("groups").select("id").eq("network_id", networkId).eq("status", "active");
+  if (error) return { ids: [], error };
+  return { ids: (data ?? []).map((group) => group.id), error: null };
+}
+
+/**
+ * Capture confidence measured as observed coverage of the window.
+ * Falls back to the v0.1 snapshot rule only when the append-only sample table is
+ * not available yet, so a partial rollout keeps producing a defensible value.
+ */
+export async function loadCaptureCoverage(admin, networkId, startsAt, endsAt) {
+  const [sampleResult, transitionResult] = await Promise.all([
+    admin.from("capture_health_samples")
+      .select("device_id,observed_at,status,outbox_pending,notification_access,listener_connected,whatsapp_installed,network_type")
+      .eq("network_id", networkId)
+      .gte("observed_at", new Date(Date.parse(startsAt) - 60 * 60_000).toISOString())
+      .lte("observed_at", endsAt)
+      .order("observed_at", { ascending: true })
+      .limit(MAX_CAPTURE_SAMPLES),
     admin.from("capture_health_transitions").select("occurred_at,kind")
       .eq("network_id", networkId).gte("occurred_at", startsAt).lte("occurred_at", endsAt)
   ]);
-  if (healthResult.error || transitionResult.error) return { level: "unavailable", reason: "health_query_failed", trend_valid: false };
-  return evaluateCaptureConfidence(healthResult.data, { startsAt, endsAt, transitions: transitionResult.data ?? [] });
+  if (transitionResult.error) {
+    return { level: "unavailable", reason: "health_query_failed", trend_valid: false, version: "unavailable" };
+  }
+  if (sampleResult.error) {
+    const legacy = await loadLegacyCaptureConfidence(admin, networkId, startsAt, endsAt, transitionResult.data ?? []);
+    return { ...legacy, version: "capture_snapshot@0.1", degraded_source: "capture_health_samples_unavailable" };
+  }
+  return evaluateCaptureCoverage(sampleResult.data ?? [], {
+    startsAt, endsAt, transitions: transitionResult.data ?? []
+  });
+}
+
+async function loadLegacyCaptureConfidence(admin, networkId, startsAt, endsAt, transitions) {
+  const { data, error } = await admin
+    .from("adapter_health")
+    .select("observed_at,notification_access,listener_connected,whatsapp_installed,network_type,outbox_pending,status,recovered_at")
+    .eq("network_id", networkId).order("observed_at", { ascending: false }).limit(1).maybeSingle();
+  if (error) return { level: "unavailable", reason: "health_query_failed", trend_valid: false };
+  return evaluateCaptureConfidence(data, { startsAt, endsAt, transitions });
 }
 
 export async function persistAnalysisWithMetrics(admin, payload) {
   const metricsEnabled = globalThis?.Deno?.env?.get?.("GROUP_METRICS_SHADOW_ENABLED") !== "false";
   if (!metricsEnabled) {
     const result = await admin.rpc("persist_analysis", { p_analysis: payload });
-    return { ...result, metrics_persisted: false, fallback_reason: "flag_disabled" };
+    return { ...result, metrics_persisted: false, coverage_persisted: false, fallback_reason: "flag_disabled" };
   }
-  const result = await admin.rpc("persist_analysis_v2", { p_analysis: payload });
-  if (!result.error) return { ...result, metrics_persisted: true, fallback_reason: null };
-  if (!["42883", "PGRST202"].includes(result.error.code)) {
-    return { ...result, metrics_persisted: false, fallback_reason: null };
+  const v3 = await admin.rpc("persist_analysis_v3", { p_analysis: payload });
+  if (!v3.error) return { ...v3, metrics_persisted: true, coverage_persisted: true, fallback_reason: null };
+  if (!isMissingFunction(v3.error)) {
+    return { ...v3, metrics_persisted: false, coverage_persisted: false, fallback_reason: null };
+  }
+  const v2 = await admin.rpc("persist_analysis_v2", { p_analysis: payload });
+  if (!v2.error) return { ...v2, metrics_persisted: true, coverage_persisted: false, fallback_reason: "v3_unavailable" };
+  if (!isMissingFunction(v2.error)) {
+    return { ...v2, metrics_persisted: false, coverage_persisted: false, fallback_reason: null };
   }
   const fallback = await admin.rpc("persist_analysis", { p_analysis: payload });
-  return { ...fallback, metrics_persisted: false, fallback_reason: "v2_unavailable" };
+  return { ...fallback, metrics_persisted: false, coverage_persisted: false, fallback_reason: "v2_unavailable" };
 }
 
-function groupsFor(ids, eventGroup) {
-  return new Set((ids ?? []).map((id) => eventGroup.get(id)).filter(Boolean));
-}
-
-function emptyMetric(groupId, captureConfidence) {
-  return {
-    group_id: groupId,
-    event_count: 0,
-    fact_count: 0,
-    alert_count: 0,
-    demand_count: 0,
-    agenda_count: 0,
-    problem_count: 0,
-    open_situation_count: 0,
-    critical_situation_count: 0,
-    capture_confidence: captureConfidence?.level ?? "unavailable",
-    metrics_version: GROUP_METRICS_VERSION
-  };
-}
+const isMissingFunction = (error) => ["42883", "PGRST202"].includes(error?.code);
