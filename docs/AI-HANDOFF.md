@@ -187,6 +187,7 @@ Confirme o inventário no ambiente antes de qualquer rollback.
 - `AGENTS.md`
 - `docs/PRODUCT-COMPLETION-ROADMAP.md`
 - `docs/implementation-prompts/P1.1-CONFIABILIDADE-E-ATIVACAO.md`
+- `docs/RUNBOOK-P1.1-RELEASE.md`
 - `docs/P1.1-EXECUTION-REPORT.md`
 - `docs/P0-CLOSURE-REPORT.md`
 - `docs/P1-EXECUTION-REPORT.md`
