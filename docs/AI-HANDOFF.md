@@ -3,6 +3,7 @@
 - Atualizado em: 2026-09-03 (sessão P1.1, parte 1)
 - Branch: `main`
 - Base auditada: commit `86c66fb`
+- Trabalho desta sessão: commit `838fb81` na branch `p1.1-confiabilidade-e-ativacao`, ainda **não** publicada em `main`
 - Projeto Supabase: `pluruijhqnueayrlkthx`
 - Rede piloto: `d1224e68-c51f-4b31-a7e6-7b91f1a65357`
 - Produção web: `https://radar-da-rede.vercel.app`
