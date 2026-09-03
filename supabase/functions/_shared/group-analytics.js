@@ -112,11 +112,25 @@ export function deriveGroupCondition(metric) {
 const runDuration = (run) => Date.parse(run?.ends_at) - Date.parse(run?.starts_at);
 const runKind = (run) => run?.window_kind ?? "canonical_slot";
 
+// Uma mesma janela pode ter mais de uma execução: eventos atrasados do outbox
+// mudam o conjunto analisado e produzem uma execução nova para o mesmo período.
+// A mais recentemente concluída supera as anteriores. Sem esse desempate a
+// âncora dependeria da ordem de retorno do banco e poderia eleger a execução
+// antiga como estado atual.
+const runRecency = (a, b) => Date.parse(b.ends_at) - Date.parse(a.ends_at)
+  || completedAt(b) - completedAt(a)
+  || String(b.id).localeCompare(String(a.id));
+
+const completedAt = (run) => {
+  const value = Date.parse(run?.completed_at ?? "");
+  return Number.isFinite(value) ? value : Number.NEGATIVE_INFINITY;
+};
+
 export function selectCurrentRun(runs = []) {
   const usable = runs.filter((run) => run?.id && Number.isFinite(Date.parse(run.ends_at))
     && Number.isFinite(Date.parse(run.starts_at)));
   if (usable.length === 0) return null;
-  return [...usable].sort((a, b) => Date.parse(b.ends_at) - Date.parse(a.ends_at))[0];
+  return [...usable].sort(runRecency)[0];
 }
 
 /**
@@ -141,7 +155,9 @@ export function selectComparisonRun(currentRun, runs = []) {
     .filter(comparable)
     .map((run) => ({ run, distance: Math.abs(Date.parse(run.ends_at) - target) }))
     .filter((candidate) => Number.isFinite(candidate.distance))
-    .sort((a, b) => a.distance - b.distance);
+    // Empate de distância também é decidido pela execução mais recente, para
+    // que uma janela reprocessada não perca para a sua própria versão antiga.
+    .sort((a, b) => a.distance - b.distance || runRecency(a.run, b.run));
   const match = candidates.find((candidate) => candidate.distance <= COMPARISON_END_TOLERANCE_MS);
   if (match) return { run: match.run, reason: null };
   if (runKind(currentRun) !== "canonical_slot") {

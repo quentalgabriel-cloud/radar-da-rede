@@ -249,3 +249,43 @@ test("a legacy window as the current anchor is reported, not silently compared",
   assert.equal(model.anchor.current_run_id, legacy.id);
   assert.equal(model.anchor.comparison_unavailable_reason, "current_window_is_not_a_canonical_slot");
 });
+
+// Eventos atrasados do outbox mudam o conjunto analisado e produzem uma segunda
+// execução para a mesma janela. Foi o que aconteceu em produção em 2026-09-03.
+const REPROCESSED_OLD = { ...RUN_TODAY, id: "run-today-old", completed_at: "2026-09-03T19:42:11.000Z" };
+const REPROCESSED_NEW = { ...RUN_TODAY, id: "run-today-new", completed_at: "2026-09-03T20:42:37.000Z" };
+
+test("duas execuções da mesma janela elegem a mais recente, em qualquer ordem", () => {
+  assert.equal(selectCurrentRun([REPROCESSED_NEW, REPROCESSED_OLD]).id, "run-today-new");
+  assert.equal(selectCurrentRun([REPROCESSED_OLD, REPROCESSED_NEW]).id, "run-today-new");
+});
+
+test("a âncora não reaproveita a execução antiga da mesma janela", () => {
+  const build = (runs) => buildGroupControlCenter({
+    groups: [group("g1")],
+    runs,
+    metrics: [
+      metric(REPROCESSED_OLD.id, "g1", 189),
+      metric(REPROCESSED_NEW.id, "g1", 193)
+    ]
+  });
+  for (const runs of [[REPROCESSED_OLD, REPROCESSED_NEW], [REPROCESSED_NEW, REPROCESSED_OLD]]) {
+    const model = build(runs);
+    assert.equal(model.anchor.current_run_id, "run-today-new");
+    assert.equal(model.groups[0].event_count, 193);
+  }
+});
+
+test("sem completed_at a escolha continua determinística", () => {
+  const a = { ...RUN_TODAY, id: "aaa" };
+  const b = { ...RUN_TODAY, id: "bbb" };
+  assert.equal(selectCurrentRun([a, b]).id, selectCurrentRun([b, a]).id);
+});
+
+test("a comparadora reprocessada vence a sua própria versão antiga", () => {
+  const oldPrevious = { ...RUN_YESTERDAY, id: "yesterday-old", completed_at: "2026-09-02T21:05:00.000Z" };
+  const newPrevious = { ...RUN_YESTERDAY, id: "yesterday-new", completed_at: "2026-09-02T22:30:00.000Z" };
+  for (const runs of [[RUN_TODAY, oldPrevious, newPrevious], [RUN_TODAY, newPrevious, oldPrevious]]) {
+    assert.equal(selectComparisonRun(RUN_TODAY, runs).run.id, "yesterday-new");
+  }
+});

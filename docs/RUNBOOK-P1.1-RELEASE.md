@@ -74,15 +74,13 @@ Se o arquivo já não existir, não tente recuperá-lo. Crie uma credencial nova
 
 ```powershell
 gh workflow run "Consolidate Radar"
-Start-Sleep -Seconds 20
-gh run list --workflow "Consolidate Radar" --limit 1
+Start-Sleep -Seconds 15
+$run = gh run list --workflow consolidate.yml --limit 1 --json databaseId --jq '.[0].databaseId'
+gh run watch $run --exit-status
 ```
 
-Aguarde terminar e veja o sumário:
-
-```powershell
-gh run watch --exit-status
-```
+Sempre passe o id da execução. `gh run watch` sem argumento abre um seletor
+interativo e engole o próximo comando que você colar.
 
 Esperado: `success`. Abra o run no navegador (`gh run view --web`) e confira a
 tabela do sumário: status `completed`, janela, execução, contagens e duração.
@@ -97,8 +95,9 @@ Este é o gate que elimina o falso verde. Leva um minuto.
 ```powershell
 gh secret delete RADAR_NETWORK_ID
 gh workflow run "Consolidate Radar"
-Start-Sleep -Seconds 20
-gh run watch
+Start-Sleep -Seconds 15
+$run = gh run list --workflow consolidate.yml --limit 1 --json databaseId --jq '.[0].databaseId'
+gh run watch $run
 ```
 
 Esperado: **failure**, com a mensagem
@@ -142,7 +141,9 @@ O `verify_jwt` de cada função vem de `supabase/config.toml` e não deve mudar:
 
 ```powershell
 gh workflow run "Consolidate Radar"
-gh run watch --exit-status
+Start-Sleep -Seconds 15
+$run = gh run list --workflow consolidate.yml --limit 1 --json databaseId --jq '.[0].databaseId'
+gh run watch $run --exit-status
 ```
 
 Depois abra o SQL Editor do Supabase e rode:
@@ -161,7 +162,7 @@ select
   (select count(*) from public.groups g
     where g.network_id = r.network_id and g.status = 'active') as grupos_ativos
 from public.processing_runs r
-order by r.ends_at desc
+order by r.completed_at desc
 limit 3;
 ```
 
@@ -175,6 +176,12 @@ O que precisa ser verdade na execução mais recente:
 
 Se `linhas_de_metrica` for menor que `grupos_ativos`, o deploy não pegou. Volte
 ao passo 5.
+
+Você pode ver **duas execuções para a mesma janela**. Isso é normal e não é erro:
+eventos atrasados do outbox do aparelho mudam o conjunto analisado, e cada
+conjunto vira uma execução própria, preservando o que foi de fato analisado. A
+mais recentemente concluída supera as anteriores — por isso a consulta ordena por
+`completed_at`.
 
 Sobre a confiança nesta primeira semana: ela vai aparecer baixa ou moderada
 porque a série de amostras de saúde começou em 2026-09-03 19:52 UTC e ainda não
