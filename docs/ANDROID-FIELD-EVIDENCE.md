@@ -200,3 +200,105 @@ código Android em operação. Em ordem de preferência:
 
 Trocar o APK é mudança na captura em operação e exige janela combinada,
 verificação de heartbeat depois da troca e rollback preparado.
+
+## Procedência recuperada em 2026-09-03 — D18 resolvido
+
+A divergência registrada acima tem explicação completa. O código Android em
+operação **não se perdeu**: ele vive em outro repositório.
+
+| Item | Valor |
+|---|---|
+| repositório | `quentalgabriel-cloud/radar-sensor-probe` (público) |
+| release | `v0.3.0-connected`, publicada em 2026-08-29 06:04 UTC |
+| branch da onda conectada | `codex/v0.3-connected-wave-1` |
+| artefato | `radar-sensor-probe-v0.3.0-connected.apk`, 48.976 bytes |
+| SHA-256 | `6ab9761080869484e02066dd902e816ff161e416c9950e728a6c3d9a3dcff128` |
+
+O APK baixado da release confere byte a byte com a cópia local, e com o hash
+publicado ao lado dele na própria release.
+
+A análise do dex confirma que é a build em operação: contém
+`radar-sensor-diagnostico-`, `privacy_note`, `probe_contract`, `snapshot_count`,
+`incidents`, `parser_status`, `detail_ref`, `security_patch` e os contadores
+`events_uploaded`, `snapshots_local` e `upload_failures` — exatamente o que o
+banco recebe. Também contém `listener_connected` e
+`last_whatsapp_notification_at`, e **não** contém `notification_access`,
+`whatsapp_installed` nem `network_type`.
+
+### Linhagem
+
+É um projeto Java independente, não o módulo Kotlin deste monorepo:
+
+- `2026-08-27` — commit inicial do probe;
+- `2026-08-29 02:36` — release `v0.2.1-probe`, versionCode 3, só captura local e
+  exportação de diagnóstico;
+- `2026-08-29 06:04` — release `v0.3.0-connected`, que acrescenta ingestão,
+  heartbeat e sincronização.
+
+O `Radar-Sensor-v0.2.1-Publicacao.zip` guardado localmente contém um git bundle
+com o histórico até `v0.2.1-test-evidence`, o que permitiu identificar a origem
+antes mesmo de encontrar o repositório.
+
+Classes da branch conectada: `BackoffPolicy`, `CaptureTestEvaluator`,
+`DiagnosticExporter`, `EventIdentity`, `HealthStore`, `IngestClient`,
+`MainActivity`, `NotificationSnapshotExtractor`, `ProbeDatabase`,
+`RadarNotificationListenerService`, `SensorConfig`, `SnapshotEventParser`,
+`SyncCoordinator`.
+
+### Correção do registro anterior
+
+O módulo `apps/android-sensor` deste monorepo **nunca produziu o APK em
+operação**. São dois programas diferentes com o mesmo `applicationId`. O
+`versionName` `0.3.0-connected` coincide por convenção, não por origem comum, e
+foi isso que gerou a confusão anterior. O SHA-256 registrado em
+`docs/DEPLOYMENTS.md` para o artefato Android é de uma build Gradle deste
+monorepo, de 3 MB, que nunca operou — e não do APK de 48 KB que está no aparelho.
+
+### Consequência para a matriz de campo
+
+A matriz de campo volta a ser possível, mas o alvo é o repositório
+`radar-sensor-probe`, não `apps/android-sensor`. Antes de executá-la é preciso
+decidir o que fazer com o módulo Kotlin deste monorepo: hoje ele é código morto
+que aparenta ser o sensor de produção.
+
+## Exposição da credencial do dispositivo
+
+`SensorConfig.java` lê o segredo de `BuildConfig.RADAR_DEVICE_SECRET`, injetado
+no build. **A fonte está limpa**: o segredo não aparece no código.
+
+O APK publicado, porém, carrega o valor em claro no dex, como qualquer segredo
+embutido em aplicativo Android. Foi verificado que o SHA-256 do valor extraído do
+APK é exatamente o `token_hash` da **única credencial de dispositivo ativa** em
+`public.device_credentials`.
+
+Como o repositório `radar-sensor-probe` é público, o artefato da release é
+baixável por qualquer pessoa. Ou seja: a credencial que o sensor usa hoje em
+produção pode ser extraída por qualquer um que baixe o APK.
+
+### Alcance real
+
+| Capacidade | Com a credencial do dispositivo |
+|---|---|
+| injetar eventos e heartbeats na rede | **sim**, escopado a este dispositivo |
+| ler o Radar | não — o read model exige JWT de usuário e RLS por rede |
+| processar janelas | não — usa `processing_credentials`, credencial separada |
+| alterar classificação ou grupos | não — exige papel operator/owner |
+
+O risco é de **integridade**, não de confidencialidade: alguém poderia poluir o
+sinal operacional com eventos fabricados. Nada do que já foi capturado vaza.
+
+### Decisão pendente
+
+Rotacionar a credencial interrompe a captura até o aparelho receber uma build
+nova, porque o segredo é de build. As opções não são exclusivas:
+
+1. tornar `radar-sensor-probe` privado, ou remover o APK dos assets da release —
+   reduz a exposição futura, não alcança cópias já baixadas;
+2. rotacionar a credencial, gerar build nova e reinstalar no Moto G84, em janela
+   combinada, com verificação de heartbeat depois da troca;
+3. mudar o provisionamento para runtime, de modo que o segredo deixe de existir
+   dentro do artefato — é a correção estrutural, e remove o problema de vez.
+
+Enquanto a decisão não for tomada, vale monitorar `ingest_batches` e
+`normalized_events` por origem e volume incomum. Nenhuma ação foi executada nesta
+sessão: revogar a credencial pararia a captura em operação.

@@ -96,5 +96,7 @@
 | Android | Fila drena sem retenção | VALIDADO EM CAMPO | `outbox_pending` zero no aparelho e no heartbeat |
 | Android | Teste de captura dirigido | VALIDADO EM CAMPO | Iniciado 2026-09-02 18:45:25 UTC, aprovado 19:11:49 UTC |
 | Captura | Tolerância de 35 min entre amostras é adequada | VALIDADO REMOTAMENTE | 28 amostras reais: intervalo médio 3,6 min, máximo 16,7 min, nenhum acima da tolerância |
-| Android | APK em operação corresponde ao código do repositório | **REPROVADO** | Contadores, `listener_connected` e exportação de diagnóstico divergem; ver `docs/ANDROID-FIELD-EVIDENCE.md` |
-| Android | Reboot, Doze, bateria, rede offline e grupos silenciados | NÃO TESTADO | Bloqueado por D18: testar o aparelho hoje é testar código não versionado |
+| Android | APK em operação corresponde ao código do repositório | **REPROVADO, esperado** | O sensor de campo vem de `quentalgabriel-cloud/radar-sensor-probe`, não deste monorepo; `apps/android-sensor` nunca produziu a build de operação |
+| Android | Reboot, Doze, bateria, rede offline e grupos silenciados | NÃO TESTADO | Executar contra o repositório do probe, release `v0.3.0-connected` |
+| Android | Procedência do APK em operação é rastreável | VALIDADO REMOTAMENTE | Release `v0.3.0-connected` de `radar-sensor-probe`; SHA-256 `6ab97610...f128` confere com o hash publicado e com a cópia local |
+| Segurança | Segredo de ingestão não é extraível do artefato distribuído | **REPROVADO** | O APK público carrega a credencial ativa em claro; SHA-256 do valor confere com `device_credentials` |

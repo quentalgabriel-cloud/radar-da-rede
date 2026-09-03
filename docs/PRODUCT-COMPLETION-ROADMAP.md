@@ -102,7 +102,9 @@ Pontuação: `(impacto + risco) × (6 - esforço)`, em escala de 1 a 5. Ela orde
 | D14 | Identidade Android ainda deriva do título; renomear pode criar nova identidade | Android/Dados | 4 | 4 | 3 | 24 | investigar em campo |
 | D15 | Read model possui limites fixos sem paginação ou metadado de truncamento | Escala | 3 | 3 | 3 | 18 | PARCIAL: metadado de truncamento existe; paginação continua pendente |
 | D16 | APK em operação não reporta configuração da captura | Android/Dados | 4 | 3 | 3 | 21 | novo em 2026-09-03: limita a confiança a `moderate` |
-| D18 | O APK em operação não foi gerado pelo código Android deste repositório | Android/Release | 5 | 5 | 4 | 20 | **crítico**, descoberto em 2026-09-03 pelo diagnóstico de campo: contadores do heartbeat e exportação de diagnóstico do aparelho não existem no repositório. Bloqueia a matriz de campo e qualquer troca de APK |
+| D18 | O APK em operação não foi gerado pelo código Android deste repositório | Android/Release | 5 | 5 | 4 | 20 | **RESOLVIDO** no mesmo dia: a fonte está em `quentalgabriel-cloud/radar-sensor-probe`, release `v0.3.0-connected`, com o APK conferindo por SHA-256. O módulo `apps/android-sensor` deste monorepo nunca produziu a build em operação |
+| D19 | A credencial do dispositivo está embutida em claro no APK publicado em repositório público | Segurança | 5 | 5 | 3 | 30 | **crítico**, descoberto em 2026-09-03: qualquer pessoa pode baixar a release e extrair o token ativo de ingestão. Risco de integridade, não de confidencialidade. Rotacionar exige nova build e reinstalação |
+| D20 | `apps/android-sensor` é código morto que aparenta ser o sensor de produção | Android/Estratégia | 3 | 4 | 2 | 28 | novo em 2026-09-03: decidir entre remover, marcar como experimento ou promover a substituto do probe |
 | D17 | `capture_health_samples` cresce sem política de retenção | Dados | 2 | 2 | 2 | 16 | novo em 2026-09-03: revisar em 90 dias ou com vários dispositivos |
 
 ## 5. Sequência de execução
