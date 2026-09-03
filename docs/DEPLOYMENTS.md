@@ -22,7 +22,8 @@
 - **Fonte atual:** laboratório com oito cenários e modo live autenticado pelo Supabase.
 - **Backend atual:** Supabase read model com escopo por associação de rede.
 - **Deployment funcional verificado:** `dpl_7YeqkzjdVnbqgWbfKwRr5rryJfBb` (`READY`), commit `6d31e49`.
-- **Atenção:** o deploy automático do commit documental `a4136f5` falhou ao clonar o repositório; a integração Git/Vercel precisa ser revalidada no próximo push.
+- **Deployment P0:** `dpl_DjjtTiQCQVwdFMFta4QVt8LrL9Rc` (`READY`), commit `dbb68c4`, com classificação administrativa.
+- **Integração Git/Vercel:** revalidada no commit `dbb68c4`; publicação automática concluída.
 
 ## Consolidação agendada
 

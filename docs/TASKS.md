@@ -10,6 +10,7 @@
 - [x] P0 — Aplicar migrations no Supabase dedicado e validar RLS/RPCs remotamente.
 - [x] P0 — Executar backfill shadow idempotente e habilitar a base de classificação administrativa.
 - [x] P0 — Expor classificação, aliases e histórico na interface com enforcement de owner/operator.
+- [x] P0 — Gate técnico encerrado com CI, Android e deploy web aprovados.
 - [ ] Operação contínua — Classificar progressivamente os grupos, sem bloquear os não classificados.
 
 ## Fundação
@@ -58,7 +59,7 @@
 
 ## Ordem de execução
 
-1. Confirmar o deploy web da interface administrativa e iniciar classificação progressiva.
+1. Iniciar classificação progressiva dos grupos pela operação.
 2. Observar o resolvedor shadow e revisar apenas aliases ambíguos, quando surgirem.
 3. Configurar os secrets do workflow e observar uma consolidação remota idempotente.
 4. Validar a janela de 24 horas e iniciar P1 somente após registrar o fechamento P0.

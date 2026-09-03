@@ -2,7 +2,7 @@
 
 ## Resultado
 
-P0 tecnicamente pronta para encerramento após CI e verificação do deploy web deste conjunto. A operação permanece ativa e grupos não classificados continuam processáveis.
+P0 encerrada tecnicamente em 2026-09-03. A operação permanece ativa e grupos não classificados continuam processáveis.
 
 ## Evidência remota
 
@@ -37,8 +37,10 @@ O export não contém todos os campos do heartbeat normalizado (`notification_ac
 | Grupo não classificado opera | aprovado | 124 grupos permanecem no fluxo |
 | Confidence fraca invalida tendência | aprovado | regras sincronizadas e testes |
 | Fallback | aprovado | chave `GROUP_RESOLUTION_SHADOW_ENABLED=false` e fallback por RPC indisponível |
-| Interface administrativa | implementada | Radar Web, sujeita à confirmação do deploy deste commit |
+| Interface administrativa | aprovado | deployment de produção `dpl_DjjtTiQCQVwdFMFta4QVt8LrL9Rc`, READY |
 | Campo | parcial documentado | captura/upload comprovados; Community e condições especiais seguem como observação operacional |
+
+CI geral `33789762633` e Android Sensor `33789764537` concluíram com sucesso no commit `dbb68c4`.
 
 ## Limitações conhecidas que não mudam o contrato P0
 
