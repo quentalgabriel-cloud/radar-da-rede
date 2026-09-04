@@ -29,6 +29,10 @@ const captureCoverageMigration = await readFile(
   resolve(repositoryRoot, "supabase/migrations/20260903210000_capture_coverage_and_run_anchor.sql"),
   "utf8",
 );
+const consolidationMigration = await readFile(
+  resolve(repositoryRoot, "supabase/migrations/20260904170000_group_registry_consolidation.sql"),
+  "utf8",
+);
 const config = await readFile(resolve(repositoryRoot, "supabase/config.toml"), "utf8");
 const handler = await readFile(
   resolve(repositoryRoot, "supabase/functions/_shared/handler.ts"),
@@ -127,7 +131,8 @@ const normalizedSql = (value) => normalizedText(value).trim();
 assert.equal(
   normalizedSql(sql.slice(sql.indexOf(groupRegistryMarker))),
   [groupRegistryMigration, groupRegistryAdvisorIndexesMigration, groupRegistryExplainabilityMigration,
-    groupRegistryUiAccessMigration, groupMetricWindowsMigration, captureCoverageMigration]
+    groupRegistryUiAccessMigration, groupMetricWindowsMigration, captureCoverageMigration,
+    consolidationMigration]
     .map(normalizedSql).join("\n\n"),
   "group registry migration and declarative schema diverged",
 );
