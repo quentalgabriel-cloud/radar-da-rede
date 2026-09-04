@@ -83,3 +83,58 @@ test("o sumário diz o que fazer e não vaza identificador da rede", () => {
   assert.ok(!summary.includes("d1224e68"));
   assert.match(renderOperationalHealthSummary(avaliar()), /sem problemas/);
 });
+
+// --- Guardrail do registry e da entrega de slots (operational_health@2) ------
+
+const saudavelV2 = {
+  ...saudavel,
+  groupsCreatedLast24h: 2,
+  distinctConversationsLast24h: 2,
+  canonicalWindowsLast24h: 6
+};
+const avaliarV2 = (mudancas = {}) =>
+  evaluateOperationalHealth({ ...saudavelV2, ...mudancas }, { now: AGORA });
+
+test("um dia normal depois da canonicalização não gera ruído", () => {
+  assert.equal(avaliarV2().healthy, true);
+});
+
+test("o registry inflando de novo derruba o job com a instrução certa", () => {
+  // Reproduz a ordem de grandeza do defeito real: dezenas de grupos para uma
+  // conversa só.
+  const result = avaliarV2({ groupsCreatedLast24h: 47, distinctConversationsLast24h: 1 });
+  const problema = result.problems.find((item) => item.code === "registry_inflating");
+  assert.equal(problema.evidence.excess, 46);
+  assert.match(problema.action, /canonicaliza/);
+});
+
+test("o guardrail mede crescimento, não o total herdado", () => {
+  // 206 grupos ativos para 8 conversas é o estado atual, herdado, e não pode
+  // manter o alerta vermelho ate a consolidacao acontecer.
+  const result = avaliarV2({ activeGroupCount: 206, metricRowsInLatestRun: 206 });
+  assert.equal(result.healthy, true);
+});
+
+test("uma conversa nova legítima não é confundida com inflação", () => {
+  assert.equal(avaliarV2({ groupsCreatedLast24h: 5, distinctConversationsLast24h: 5 }).healthy, true);
+  assert.equal(avaliarV2({ groupsCreatedLast24h: 7, distinctConversationsLast24h: 5 }).healthy, true);
+  assert.equal(avaliarV2({ groupsCreatedLast24h: 8, distinctConversationsLast24h: 5 }).healthy, false);
+});
+
+test("sub-entrega do agendador aparece, mas atraso de fila não", () => {
+  // Observado em 2026-09-04: duas janelas de seis. Precisa alertar.
+  const subEntrega = avaliarV2({ canonicalWindowsLast24h: 2 });
+  const problema = subEntrega.problems.find((item) => item.code === "scheduler_under_delivering");
+  assert.equal(problema.evidence.delivered, 2);
+  assert.equal(problema.evidence.expected, 6);
+  assert.match(problema.action, /pg_cron/);
+  // Perder uma ou duas por atraso de fila e tolerado.
+  assert.equal(avaliarV2({ canonicalWindowsLast24h: 4 }).healthy, true);
+});
+
+test("o sumário mostra a entrega de slots e o crescimento do registry", () => {
+  const summary = renderOperationalHealthSummary(avaliarV2({ canonicalWindowsLast24h: 2 }));
+  assert.match(summary, /Janelas canônicas em 24 h \| 2 de 6/);
+  assert.match(summary, /Grupos criados em 24 h/);
+  assert.match(summary, /scheduler_under_delivering/);
+});

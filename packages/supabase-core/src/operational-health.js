@@ -7,7 +7,9 @@
 // A decisão vive aqui, separada de qualquer consulta ao banco, para poder ser
 // testada com relógio controlado. Quem lê o banco é o script.
 
-export const OPERATIONAL_HEALTH_VERSION = "operational_health@1";
+import { CONSOLIDATION_LOCAL_HOURS } from "./consolidation-schedule.js";
+
+export const OPERATIONAL_HEALTH_VERSION = "operational_health@2";
 
 // Todos os limites vêm de comportamento medido em 2026-09-03/04, não de
 // arbitragem. A origem de cada número está no comentário ao lado.
@@ -23,8 +25,22 @@ export const DEFAULT_THRESHOLDS = Object.freeze({
   allowMissingMetricRows: 0,
   // Volume diário observado entre 59 e 302 eventos. Cem eventos fora da janela
   // consolidada indicam que a consolidação está ficando para trás.
-  eventsAfterWindowWarning: 100
+  eventsAfterWindowWarning: 100,
+  // Mede crescimento, não a razão absoluta. Enquanto os grupos antigos não são
+  // consolidados, o total fica inflado por herança, e alertar por isso deixaria
+  // o job vermelho por dias até virar ruído ignorado. O que importa é se o
+  // registry volta a criar grupo sem conversa nova: depois da canonicalização,
+  // um dia normal cria no máximo um grupo por conversa vista.
+  allowExtraGroupsPerDay: 2,
+  // Seis slots por dia. O cron do GitHub atrasa e às vezes pula, então tolerar
+  // duas perdas evita alarme por atraso de fila; abaixo disso é sub-entrega
+  // real, e foi o que se observou em 2026-09-04: dois slots de seis.
+  allowMissedSlotsPerDay: 2
 });
+
+// Quantos slots deveriam ter ocorrido nas últimas 24 horas. Como cada horário
+// da agenda ocorre uma vez por dia, o esperado é o tamanho da agenda.
+export const expectedSlotsPerDay = () => CONSOLIDATION_LOCAL_HOURS.length;
 
 const MINUTE = 60_000;
 
@@ -111,8 +127,42 @@ export function evaluateOperationalHealth(snapshot = {}, options = {}) {
     ));
   }
 
+  // O registry criou 199 grupos para uma única conversa antes de a resolução
+  // passar a canonicalizar. Um defeito assim cresce por dias sem ninguém ver;
+  // a detecção não pode depender de alguém abrir a tela.
+  const gruposNovos = Number(snapshot.groupsCreatedLast24h);
+  const conversasVistas = Number(snapshot.distinctConversationsLast24h);
+  if (Number.isFinite(gruposNovos) && Number.isFinite(conversasVistas)) {
+    const excedente = gruposNovos - conversasVistas;
+    if (excedente > thresholds.allowExtraGroupsPerDay) {
+      problems.push(problem(
+        "registry_inflating",
+        `Foram criados ${gruposNovos} grupos em 24 h para ${conversasVistas} conversas vistas; ${excedente} a mais que o esperado.`,
+        "A resolução de grupo pode ter voltado a usar o evento bruto. Confira se process-window ainda canonicaliza antes de resolver.",
+        { groups_created: gruposNovos, conversations_seen: conversasVistas, excess: excedente }
+      ));
+    }
+  }
+
+  const slotsEntregues = Number(snapshot.canonicalWindowsLast24h);
+  if (Number.isFinite(slotsEntregues)) {
+    const esperados = expectedSlotsPerDay();
+    if (slotsEntregues < esperados - thresholds.allowMissedSlotsPerDay) {
+      problems.push(problem(
+        "scheduler_under_delivering",
+        `Foram consolidadas ${slotsEntregues} janelas canônicas em 24 h, de ${esperados} esperadas.`,
+        "O agendador está entregando menos que o previsto. Verifique a fila do GitHub Actions; se persistir, avalie mover o agendamento para pg_cron.",
+        { delivered: slotsEntregues, expected: esperados }
+      ));
+    }
+  }
+
   return report(problems, thresholds, {
     processing_age_minutes: round(processingAge),
+    groups_created_24h: Number.isFinite(gruposNovos) ? gruposNovos : null,
+    conversations_seen_24h: Number.isFinite(conversasVistas) ? conversasVistas : null,
+    canonical_windows_24h: Number.isFinite(slotsEntregues) ? slotsEntregues : null,
+    expected_slots_per_day: expectedSlotsPerDay(),
     heartbeat_age_minutes: round(heartbeatAge),
     active_groups: Number.isFinite(monitored) ? monitored : null,
     metric_rows: Number.isFinite(persisted) ? persisted : null,
@@ -133,6 +183,9 @@ export function renderOperationalHealthSummary(result) {
     `| Grupos ativos | ${display(result.observed.active_groups)} |`,
     `| Linhas de métrica na execução | ${display(result.observed.metric_rows)} |`,
     `| Eventos fora da janela | ${display(result.observed.events_after_window)} |`,
+    `| Grupos criados em 24 h | ${display(result.observed.groups_created_24h)} |`,
+    `| Conversas vistas em 24 h | ${display(result.observed.conversations_seen_24h)} |`,
+    `| Janelas canônicas em 24 h | ${display(result.observed.canonical_windows_24h)} de ${display(result.observed.expected_slots_per_day)} |`,
     ""
   ];
   if (!result.healthy) {
