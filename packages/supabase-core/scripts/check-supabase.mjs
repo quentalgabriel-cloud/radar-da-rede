@@ -282,6 +282,14 @@ assert.ok(
   !operationalHealth.includes("row.conversation_id"),
   "a vigilancia nao pode contar conversa pelo id bruto",
 );
+// A consolidacao de registry arquiva grupo sem apagar; sem filtrar por grupo
+// ativo, toda consolidacao futura reacende este alerta por 24h contra um
+// problema que ja foi corrigido.
+assert.match(
+  operationalHealth,
+  /\.from\("groups"\)\.select\("id",[\s\S]{0,80}\.eq\("network_id", networkId\)\.eq\("status", "active"\)\.gte\("created_at"/,
+  "groupsCreatedLast24h precisa contar apenas grupos ativos",
+);
 // Leitura pura: a vigilancia nao pode alterar o estado que observa.
 for (const mutation of [".insert(", ".update(", ".delete(", ".rpc("]) {
   assert.ok(!operationalHealth.includes(mutation), `a vigilância não pode chamar ${mutation}`);

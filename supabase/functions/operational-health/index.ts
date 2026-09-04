@@ -44,8 +44,11 @@ Deno.serve(async (request) => {
       ? admin.from("normalized_events").select("event_id", { count: "exact", head: true })
         .eq("network_id", networkId).gt("occurred_at", run.ends_at)
       : Promise.resolve({ count: 0, error: null }),
+    // status=active: a consolidação de registry arquiva grupo sem apagar, e o
+    // created_at original permanece. Sem este filtro, toda consolidação futura
+    // acende este alerta por 24h contra um problema que já foi corrigido.
     admin.from("groups").select("id", { count: "exact", head: true })
-      .eq("network_id", networkId).gte("created_at", umDiaAtras),
+      .eq("network_id", networkId).eq("status", "active").gte("created_at", umDiaAtras),
     admin.from("processing_runs").select("ends_at")
       .eq("network_id", networkId).eq("window_kind", "canonical_slot")
       .gte("completed_at", umDiaAtras),
