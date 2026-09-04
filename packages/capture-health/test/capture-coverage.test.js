@@ -141,3 +141,52 @@ test("an invalid window is refused instead of guessed", () => {
   assert.equal(evaluateCaptureCoverage(series(), { startsAt: "nope", endsAt: ENDS_AT }).level, "unavailable");
   assert.equal(evaluateCaptureCoverage(series(), { startsAt: ENDS_AT, endsAt: STARTS_AT }).reason, "invalid_window");
 });
+
+// --- Calibração da tolerância (capture_coverage@2) ---------------------------
+// Estes testes existem para impedir que a calibração vire uma porta aberta.
+
+test("a tolerância calibrada ponteia o adiamento real do Doze", () => {
+  // 41,4 min foi o maior vão medido na primeira noite de operação.
+  const start = Date.parse(STARTS_AT);
+  const comAdiamento = [
+    ...series({ to: start + 6 * 60 * MINUTE }),
+    ...series({ from: start + 6 * 60 * MINUTE + 41.4 * MINUTE })
+  ];
+  const result = evaluateCaptureCoverage(comAdiamento, WINDOW);
+  assert.equal(result.largest_gap_seconds <= result.max_sample_gap_seconds, true);
+  assert.ok(result.coverage_ratio > 0.95, "um vão de Doze não pode derrubar a cobertura");
+});
+
+test("uma parada real continua quebrando a cobertura", () => {
+  // Se a calibração tivesse desligado a verificação, este teste passaria a
+  // reportar cobertura alta para um aparelho que ficou horas fora do ar.
+  const start = Date.parse(STARTS_AT);
+  const comParada = [
+    ...series({ to: start + 4 * 60 * MINUTE }),
+    ...series({ from: start + 10 * 60 * MINUTE })
+  ];
+  const result = evaluateCaptureCoverage(comParada, WINDOW);
+  assert.ok(result.largest_gap_seconds >= 6 * 3600, "a parada de seis horas precisa aparecer");
+  assert.ok(result.coverage_ratio < 0.9);
+  assert.notEqual(result.level, "high");
+});
+
+test("a calibração não consegue destravar high sozinha", () => {
+  // Série perfeitamente contínua, mas sem os campos de configuração: mesmo com
+  // cobertura integral o teto continua moderate. É isto que impede usar a
+  // tolerância para maquiar o gate.
+  const result = evaluateCaptureCoverage(series({
+    overrides: { notification_access: null, whatsapp_installed: null, network_type: null }
+  }), WINDOW);
+  assert.equal(result.coverage_ratio, 1);
+  assert.equal(result.level, "moderate");
+  assert.equal(result.ceiling, "moderate");
+  assert.match(result.ceiling_reason, /notification_access/);
+});
+
+test("com a configuração confirmada, high volta a ser alcançável", () => {
+  const result = evaluateCaptureCoverage(series(), WINDOW);
+  assert.equal(result.level, "high");
+  assert.equal(result.ceiling, undefined);
+  assert.equal(result.version, "capture_coverage@2");
+});

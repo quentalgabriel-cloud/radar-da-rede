@@ -181,4 +181,122 @@ describe("Radar Web no navegador", { skip: temNavegador ? false : "Chromium não
     assert.match(corpo, /Entrar|entrar|Radar/);
     await context.close();
   });
+
+  // O Control Center fica atrás de flag e o laboratório o entrega desligado.
+  // Interceptar a resposta é melhor que abrir uma porta de teste no produto:
+  // exercita a tela real sem mudar o código que vai para produção.
+  const comControlCenter = async (transformar = (m) => m) => {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    // Predicado em vez de glob: o laboratório busca /data/x.json?ts=... e o
+    // padrão precisa ignorar a query string.
+    await page.route((url) => url.pathname.startsWith("/data/") && url.pathname.endsWith(".json"), async (route) => {
+      const response = await route.fetch();
+      const corpo = await response.json().catch(() => null);
+      if (!corpo?.group_control_center) return route.fulfill({ response });
+      const cc = corpo.group_control_center;
+      const agora = Date.parse("2026-09-04T21:00:00.000Z");
+      const janela = (fim) => ({
+        id: `run-${fim}`, window_kind: "canonical_slot",
+        starts_at: new Date(fim - 86_400_000).toISOString(), ends_at: new Date(fim).toISOString()
+      });
+      corpo.group_control_center = transformar({
+        ...cc,
+        enabled: true,
+        available: true,
+        anchor: {
+          current_run_id: "run-atual",
+          current_window_start: new Date(agora - 86_400_000).toISOString(),
+          current_window_end: new Date(agora).toISOString(),
+          comparison_policy: "same_slot_previous_day@1",
+          comparison_run_id: null,
+          comparison_window_start: null,
+          comparison_window_end: null,
+          comparison_unavailable_reason: "capture_confidence_insufficient",
+          windows_overlap: false
+        },
+        consistency: {
+          monitored_group_count: cc.groups?.length ?? 0,
+          persisted_metric_count: Math.max((cc.groups?.length ?? 1) - 1, 0),
+          synthesized_zero_count: 1,
+          unexpected_metric_group_count: 0,
+          consistent: true
+        },
+        groups: (cc.groups ?? []).map((grupo, indice) => ({
+          ...grupo,
+          metric_source: indice === 0 ? "synthesized_zero" : "persisted",
+          event_count: indice === 0 ? 0 : grupo.event_count,
+          trend: {
+            ...grupo.trend, direction: "unavailable",
+            unavailable_reason: "capture_confidence_insufficient"
+          }
+        })),
+        // Uma janela ontem e outra hoje, para o histórico não ficar vazio.
+        runs: [janela(agora), janela(agora - 86_400_000)]
+      });
+      await route.fulfill({ response, json: corpo });
+    });
+    await page.goto(endpoint, { waitUntil: "networkidle" });
+    await page.waitForSelector(".tabbar:not([hidden])");
+    await irPara(page, "groups", "#control-center:not([hidden])");
+    // Esperar a seção não basta: a lista é renderizada depois dela.
+    await page.waitForSelector("#control-group-list .control-card");
+    return { page, context };
+  };
+
+  it("o Control Center mostra a janela analisada e a política de comparação", async () => {
+    const { page, context } = await comControlCenter();
+    const ancora = await page.locator("#control-center-anchor").innerText();
+    assert.match(ancora, /Janela atual/);
+    assert.match(ancora, /same_slot_previous_day@1/);
+    await context.close();
+  });
+
+  it("tendência indisponível explica o motivo em vez de mostrar um traço", async () => {
+    const { page, context } = await comControlCenter();
+    const ancora = await page.locator("#control-center-anchor").innerText();
+    assert.match(ancora, /Sem comparação/);
+    assert.match(ancora, /cobertura da captura não sustenta/);
+    const lista = await page.locator("#control-group-list").textContent();
+    assert.match(lista, /Sem comparação/);
+    await context.close();
+  });
+
+  it("grupo sem atividade avisa que o zero é da execução atual", async () => {
+    const { page, context } = await comControlCenter();
+    const lista = await page.locator("#control-group-list").textContent();
+    assert.match(lista, /Sem atividade nesta execução/);
+    assert.match(lista, /não reaproveita uma medição anterior/);
+    await context.close();
+  });
+
+  it("a vocabulário diz situações no período, nunca abertas", async () => {
+    const { page, context } = await comControlCenter();
+    const lista = await page.locator("#control-group-list").textContent();
+    assert.match(lista, /Situações no período/);
+    assert.ok(!/Situações abertas/.test(lista), "o vocabulário antigo não pode voltar");
+    await context.close();
+  });
+
+  it("filtrar por sem comparação mantém os grupos e por crítica esvazia com explicação", async () => {
+    const { page, context } = await comControlCenter();
+    const total = await page.locator("#control-group-list .control-card").count();
+    assert.ok(total > 0);
+    await page.selectOption("#trend-filter", "unavailable");
+    await page.waitForFunction((n) =>
+      document.querySelectorAll("#control-group-list .control-card").length === n, total);
+    await page.selectOption("#trend-filter", "growing");
+    await page.waitForFunction(() =>
+      document.querySelector("#control-group-list .empty-state") !== null);
+    assert.match(await page.locator("#control-group-list .empty-state").innerText(), /Ajuste busca/);
+    await context.close();
+  });
+
+  it("a execução inconsistente é denunciada na âncora", async () => {
+    const { page, context } = await comControlCenter((cc) => ({
+      ...cc, consistency: { ...cc.consistency, consistent: false, unexpected_metric_group_count: 3 }
+    }));
+    assert.match(await page.locator("#control-center-anchor").innerText(), /inconsistente/);
+    await context.close();
+  });
 });
