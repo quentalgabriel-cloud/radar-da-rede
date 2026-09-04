@@ -99,7 +99,7 @@ Pontuação: `(impacto + risco) × (6 - esforço)`, em escala de 1 a 5. Ela orde
 | D11 | Documentação central contradiz o estado pós-P1 | Estratégia | 4 | 3 | 2 | 28 | CORRIGIDO nesta sessão |
 | D12 | “Situações abertas” são contagens da janela, não casos com ciclo de resolução | Produto | 4 | 3 | 2 | 28 | CORRIGIDO na linguagem; decisão sobre ciclo continua com a coordenação |
 | D13 | Controles de retenção, exclusão, menor privilégio e incidente não estão fechados | Segurança/Dados | 5 | 4 | 3 | 27 | antes da P2 |
-| D14 | Identidade Android ainda deriva do título; renomear pode criar nova identidade | Android/Dados | 4 | 4 | 3 | 24 | investigar em campo |
+| D14 | Identidade de conversa não é estável: o sensor emite um id volátil por notificação | Android/Dados | 5 | 5 | 3 | **30** | **CRÍTICO e confirmado em 2026-09-04**: 199 grupos criados para uma única conversa real. Bloqueia a ativação do Control Center. Ver `docs/GROUP-IDENTITY-FINDING.md` |
 | D15 | Read model possui limites fixos sem paginação ou metadado de truncamento | Escala | 3 | 3 | 3 | 18 | PARCIAL: metadado de truncamento existe; paginação continua pendente |
 | D16 | APK em operação não reporta configuração da captura | Android/Dados | 4 | 3 | 3 | 21 | novo em 2026-09-03: limita a confiança a `moderate` |
 | D18 | O APK em operação não foi gerado pelo código Android deste repositório | Android/Release | 5 | 5 | 4 | 20 | **RESOLVIDO** no mesmo dia: a fonte está em `quentalgabriel-cloud/radar-sensor-probe`, release `v0.3.0-connected`, com o APK conferindo por SHA-256. O módulo `apps/android-sensor` deste monorepo nunca produziu a build em operação |

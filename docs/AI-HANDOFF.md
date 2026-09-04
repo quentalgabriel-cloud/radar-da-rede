@@ -358,7 +358,9 @@ e desligar é o mesmo com `false` — rollback imediato, sem deploy.
 5. decidir a tolerância de cobertura, com a medição já disponível;
 6. ~~E2E de navegador (gate 6)~~ — feito no PR #6: oito testes em Chromium
    real, verificados por mutação, com job próprio no CI;
-7. decidir sobre ligar o Control Center em modo reduzido;
+7. **NÃO ligar o Control Center** até a identidade de grupo ser resolvida — ver
+   `docs/GROUP-IDENTITY-FINDING.md`. Os gates analíticos estão fechados; o que
+   bloqueia é o registry, com 196 grupos para 1 conversa real;
 8. em 05/09, conferir a primeira tendência real e fechar o gate 2.
 
 O prompt da etapa está em `docs/implementation-prompts/P1.1-FECHAMENTO.md`.
@@ -385,6 +387,32 @@ com as duas opções. Se escolher calibrar, o número precisa vir do percentil
 observado e a regra precisa virar `capture_coverage@2`, para que as execuções
 antigas continuem interpretáveis. Não mexa no limite só para destravar a
 tendência.
+
+## Por que o Control Center continua desligado
+
+Não é gate analítico em aberto. Os gates 1, 3, 4 e 5 estão validados em produção
+e o 6 tem E2E cobrindo a própria tela do Control Center.
+
+O bloqueio é a identidade de conversa. O sensor emite `source_conversation_id`
+diferente a cada notificação, então o registry criou **199 grupos para uma única
+conversa real**. A tela mostraria cerca de 196 linhas para o que é uma conversa
+só — afirmaria algo falso sobre a rede.
+
+A vista v0.1 que a equipe usa hoje **está correta**: o read model canonicaliza
+antes de montar as conversas. A duplicação afeta só o registry.
+
+Causa raiz **provada**: o sensor deriva a identidade do título, mas o WhatsApp
+inclui a contagem acumulada nele — `(258 mensagens)`, `(259 mensagens)` — então
+cada notificação gera um hash novo. Recalcular a derivação reproduz 204 de 204
+ids do banco, sem divergência.
+
+A normalização que resolve **já existe** neste repositório
+(`canonicalConversationLabel`) e já é confiada para exibir; falta aplicá-la no
+caminho de resolução de grupo.
+
+Plano completo em `docs/GROUP-IDENTITY-PLAN.md` e prompt de execução em
+`docs/implementation-prompts/P1.2-IDENTIDADE-DE-CONVERSA.md`.
+A primeira etapa não exige tocar no aparelho. Medições em `docs/GROUP-IDENTITY-FINDING.md`.
 
 ## Não reverta sem falar com o dono
 
