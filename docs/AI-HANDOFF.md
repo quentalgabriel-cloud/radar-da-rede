@@ -401,7 +401,17 @@ só — afirmaria algo falso sobre a rede.
 A vista v0.1 que a equipe usa hoje **está correta**: o read model canonicaliza
 antes de montar as conversas. A duplicação afeta só o registry.
 
-Detalhe, medição e três caminhos possíveis em `docs/GROUP-IDENTITY-FINDING.md`.
+Causa raiz **provada**: o sensor deriva a identidade do título, mas o WhatsApp
+inclui a contagem acumulada nele — `(258 mensagens)`, `(259 mensagens)` — então
+cada notificação gera um hash novo. Recalcular a derivação reproduz 204 de 204
+ids do banco, sem divergência.
+
+A normalização que resolve **já existe** neste repositório
+(`canonicalConversationLabel`) e já é confiada para exibir; falta aplicá-la no
+caminho de resolução de grupo.
+
+Plano completo, em cinco etapas por ordem de risco, em `docs/GROUP-IDENTITY-PLAN.md`.
+A primeira etapa não exige tocar no aparelho. Medições em `docs/GROUP-IDENTITY-FINDING.md`.
 
 ## Não reverta sem falar com o dono
 

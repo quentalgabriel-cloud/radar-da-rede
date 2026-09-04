@@ -1,5 +1,11 @@
 # Identidade de grupo — por que o Control Center não foi ligado
 
+> **Atualização de 2026-09-04.** A causa raiz foi provada depois deste
+> levantamento e é diferente do que a seção "Causa raiz" abaixo supôs. O sensor
+> **já deriva a identidade do título**; o que a quebra é o sufixo de contagem
+> do WhatsApp entrar no hash. O plano de correção está em
+> `docs/GROUP-IDENTITY-PLAN.md`. As medições deste documento continuam válidas.
+
 Descoberto em 2026-09-04, durante a verificação pré-ativação. Este documento
 existe porque a ativação foi **deliberadamente adiada**, e a razão precisa estar
 registrada onde o próximo agente ou operador a encontre.
