@@ -1,5 +1,9 @@
 export const CONSOLIDATION_TIME_ZONE = "America/Recife";
-export const CONSOLIDATION_LOCAL_HOURS = Object.freeze([8, 13, 18]);
+// Seis slots diarios em America/Recife. Os tres primeiros horarios operacionais
+// (08:00, 13:00 e 18:00) sao preservados: a politica de comparacao casa cada slot
+// com ele mesmo no dia anterior, entao troca-los orfanaria as execucoes ja
+// produzidas. Os outros tres reduzem o vao noturno de catorze para cinco horas.
+export const CONSOLIDATION_LOCAL_HOURS = Object.freeze([0, 3, 8, 13, 18, 21]);
 export const CONSOLIDATION_WINDOW_HOURS = 24;
 
 const zonedParts = (date, timeZone) => Object.fromEntries(

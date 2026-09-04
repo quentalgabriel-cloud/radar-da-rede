@@ -22,6 +22,9 @@ export const createSupabaseProvider = ({ url, publishableKey, fetchImpl = fetch,
     if (!response.ok) {
       const error = new Error(payload.message ?? payload.error_description ?? payload.error ?? `request_failed_${response.status}`);
       error.status = response.status;
+      // O corpo carrega detalhe acionável, como retry_after_seconds de uma recusa
+      // por limite de frequência. Nunca inclui token: o payload é da resposta.
+      error.body = payload;
       throw error;
     }
     return payload;
@@ -89,6 +92,28 @@ export const createSupabaseProvider = ({ url, publishableKey, fetchImpl = fetch,
     }
   };
 
+  // Consolidação deliberada. O GET do read model deixou de processar na P1.1, e
+  // esta é a operação que devolve à operação a capacidade de forçar uma janela:
+  // restrita a operator/owner pela própria função, idempotente e com intervalo
+  // mínimo. Devolve o motivo em vez de lançar quando é recusa esperada.
+  const refreshLatestWindow = async (networkId, retry = true) => {
+    if (!session?.access_token) throw new Error("authentication_required");
+    try {
+      const result = await request(
+        `/functions/v1/process-latest-window?network_id=${encodeURIComponent(networkId)}`,
+        { method: "POST", accessToken: session.access_token }
+      );
+      return { ...result, ok: true };
+    } catch (error) {
+      if (retry && error.status === 401 && await refresh()) return refreshLatestWindow(networkId, false);
+      if (error.status === 403) return { ok: false, status: "not_authorized" };
+      if (error.status === 429) {
+        return { ok: false, status: "rate_limited", retry_after_seconds: error.body?.retry_after_seconds ?? null };
+      }
+      throw error;
+    }
+  };
+
   const authenticatedRpc = async (name, body) => {
     if (!session?.access_token) throw new Error("authentication_required");
     return request(`/rest/v1/rpc/${name}`, { method: "POST", body, accessToken: session.access_token });
@@ -115,6 +140,7 @@ export const createSupabaseProvider = ({ url, publishableKey, fetchImpl = fetch,
       if (accessToken) await request("/auth/v1/logout", { method: "POST", accessToken }).catch(() => {});
     },
     readModel,
+    refreshLatestWindow,
     classifyGroup: (groupId, changes) => authenticatedRpc("classify_group", {
       p_group_id: groupId, p_changes: changes
     }),

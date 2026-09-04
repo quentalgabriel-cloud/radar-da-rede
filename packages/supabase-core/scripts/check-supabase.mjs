@@ -176,6 +176,20 @@ assert.match(radarReadModel, /selectComparisonRun/);
 assert.match(processLatestWindow, /manual_refresh_not_authorized/);
 assert.match(processLatestWindow, /rate_limited/);
 assert.match(processLatestWindow, /window_kind = "manual_refresh"/);
+// A operacao precisa ter como forcar uma janela entre os slots: o GET deixou de
+// consolidar, entao a UI tem de chamar a operacao deliberada.
+const radarWebProvider = await readFile(
+  resolve(repositoryRoot, "apps/radar-web/public/supabase-provider.js"),
+  "utf8",
+);
+const radarWebApp = await readFile(
+  resolve(repositoryRoot, "apps/radar-web/public/app.js"),
+  "utf8",
+);
+assert.match(radarWebProvider, /process-latest-window/);
+assert.match(radarWebProvider, /refreshLatestWindow/);
+assert.match(radarWebApp, /refreshLatestWindow/);
+assert.match(radarWebApp, /can_manage/);
 assert.match(captureDiagnostic, /withSupabase\(\{ auth: "user" \}/);
 assert.match(captureDiagnostic, /diagnostic_tests/);
 assert.match(processLatestWindow, /canonicalizeConversationEvent/);
@@ -193,11 +207,20 @@ assert.match(groupResolution, /resolve_group_observations/);
 assert.match(processWindow, /resolveGroupObservationsShadow/);
 assert.match(processLatestWindow, /resolveGroupObservationsShadow/);
 assert.match(consolidationSchedule, /America\/Recife/);
-assert.match(consolidationSchedule, /\[8, 13, 18\]/);
+assert.match(consolidationSchedule, /\[0, 3, 8, 13, 18, 21\]/);
 assert.match(consolidationSchedule, /CONSOLIDATION_WINDOW_HOURS = 24/);
 assert.match(consolidationRunner, /RADAR_PROCESSING_SECRET/);
 assert.match(consolidationRunner, /functions\/v1\/process-window/);
-assert.match(consolidationWorkflow, /cron: "0 11,16,21 \* \* \*"/);
+assert.match(consolidationWorkflow, /cron: "0 0,3,6,11,16,21 \* \* \*"/);
+// Os três horários operacionais originais continuam sendo slots. Trocá-los
+// quebraria a comparação com as execuções já produzidas, porque a política casa
+// cada slot com ele mesmo no dia anterior.
+for (const hour of ["11", "16", "21"]) {
+  assert.ok(
+    /cron: "0 ([0-9,]+) \* \* \*"/.exec(consolidationWorkflow)?.[1].split(",").includes(hour),
+    `o slot das ${hour}:00 UTC precisa continuar no cron`,
+  );
+}
 // P1.1: a missing secret must turn the job red, never make it green and skip.
 assert.match(consolidationWorkflow, /check-consolidation-config\.mjs/);
 assert.doesNotMatch(consolidationWorkflow, /configured=true/);
