@@ -23,3 +23,23 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm verify
+
+  e2e:
+    # Job proprio: o navegador pesa e a suite rapida nao pode depender dele.
+    # Rodar em paralelo mantem o retorno de verify em menos de um minuto.
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Install Chromium
+        run: pnpm --filter @radar-rede/radar-web e2e:install
+      - name: Browser end-to-end
+        run: pnpm --filter @radar-rede/radar-web test:e2e

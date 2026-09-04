@@ -6,11 +6,16 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "check": "node --check public/app.js && node --check public/refresh-controller.js && node --check src/server.mjs",
-    "test": "node --test test/*.test.js",
-    "start": "node src/server.mjs"
+    "test": "node --test test/auth-identity.test.js test/refresh-controller.test.js test/supabase-provider.test.js test/web.test.js",
+    "start": "node src/server.mjs",
+    "test:e2e": "node --test test/e2e.test.js",
+    "e2e:install": "playwright install chromium"
   },
   "dependencies": {
     "@radar-rede/radar-view-model": "workspace:*",
     "@radar-rede/testkit": "workspace:*"
+  },
+  "devDependencies": {
+    "playwright": "^1.62.1"
   }
 }

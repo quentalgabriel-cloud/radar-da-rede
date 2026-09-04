@@ -115,3 +115,68 @@ test("Supabase provider sends administrative mutations with the user token", asy
   });
   assert.match(requests[2].url, /\/rest\/v1\/rpc\/review_group_alias$/);
 });
+
+// A consolidação deliberada substituiu o processamento escondido no GET. Se ela
+// não for chamada com o token do usuário e por POST, a operação fica sem forma
+// de forçar uma janela entre os slots agendados.
+const providerComSessao = async (fetchImpl) => {
+  const provider = createSupabaseProvider({
+    url: "https://example.supabase.co",
+    publishableKey: "sb_publishable_test",
+    fetchImpl,
+    storage: createStorage()
+  });
+  await provider.signIn("operator@example.com", "correct-horse-battery-staple");
+  return provider;
+};
+
+const respostaDeLogin = () => Response.json({
+  access_token: "user-jwt", refresh_token: "refresh-token", expires_in: 3600
+});
+
+test("a consolidação manual vai por POST autenticado para process-latest-window", async () => {
+  const requests = [];
+  const provider = await providerComSessao(async (url, options) => {
+    requests.push({ url, options });
+    if (url.includes("grant_type=password")) return respostaDeLogin();
+    return Response.json({ status: "processed", processed: true });
+  });
+  const result = await provider.refreshLatestWindow("11111111-1111-4111-8111-111111111111");
+  assert.equal(result.ok, true);
+  assert.equal(result.processed, true);
+  const chamada = requests.at(-1);
+  assert.match(chamada.url, /\/functions\/v1\/process-latest-window\?network_id=/);
+  assert.equal(chamada.options.method, "POST");
+  assert.equal(chamada.options.headers.authorization, "Bearer user-jwt");
+});
+
+test("viewer sem papel recebe recusa tratada, não exceção", async () => {
+  const provider = await providerComSessao(async (url) => {
+    if (url.includes("grant_type=password")) return respostaDeLogin();
+    return Response.json({ error: "manual_refresh_not_authorized" }, { status: 403 });
+  });
+  const result = await provider.refreshLatestWindow("11111111-1111-4111-8111-111111111111");
+  assert.deepEqual(result, { ok: false, status: "not_authorized" });
+});
+
+test("o limite de frequência devolve quanto falta esperar", async () => {
+  const provider = await providerComSessao(async (url) => {
+    if (url.includes("grant_type=password")) return respostaDeLogin();
+    return Response.json({ status: "rate_limited", retry_after_seconds: 210 }, { status: 429 });
+  });
+  const result = await provider.refreshLatestWindow("11111111-1111-4111-8111-111111111111");
+  assert.equal(result.ok, false);
+  assert.equal(result.status, "rate_limited");
+  assert.equal(result.retry_after_seconds, 210);
+});
+
+test("uma falha real continua sendo exceção, não silêncio", async () => {
+  const provider = await providerComSessao(async (url) => {
+    if (url.includes("grant_type=password")) return respostaDeLogin();
+    return Response.json({ error: "analysis_persist_failed" }, { status: 500 });
+  });
+  await assert.rejects(
+    () => provider.refreshLatestWindow("11111111-1111-4111-8111-111111111111"),
+    /analysis_persist_failed/
+  );
+});

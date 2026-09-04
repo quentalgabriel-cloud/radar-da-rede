@@ -17,3 +17,6 @@ verify_jwt = true
 
 [functions.process-latest-window]
 verify_jwt = true
+
+[functions.operational-health]
+verify_jwt = false

@@ -86,6 +86,14 @@ const consolidationWorkflow = await readFile(
   resolve(repositoryRoot, ".github/workflows/consolidate.yml"),
   "utf8",
 );
+const healthWorkflow = await readFile(
+  resolve(repositoryRoot, ".github/workflows/operational-health.yml"),
+  "utf8",
+);
+const operationalHealth = await readFile(
+  resolve(repositoryRoot, "supabase/functions/operational-health/index.ts"),
+  "utf8",
+);
 
 const tables = [...sql.matchAll(/create table public\.([a-z_]+)/g)].map((match) => match[1]);
 assert.ok(tables.length >= 10, "expected the MVP core tables");
@@ -99,6 +107,7 @@ assert.match(config, /\[functions\.process-window\][\s\S]*?verify_jwt = false/);
 assert.match(config, /\[functions\.radar-read-model\][\s\S]*?verify_jwt = true/);
 assert.match(config, /\[functions\.capture-diagnostic\][\s\S]*?verify_jwt = true/);
 assert.match(config, /\[functions\.process-latest-window\][\s\S]*?verify_jwt = true/);
+assert.match(config, /\[functions\.operational-health\][\s\S]*?verify_jwt = false/);
 assert.match(handler, /SUPABASE_SERVICE_ROLE_KEY/);
 assert.match(handler, /device_scope_mismatch/);
 assert.match(handler, /device_source_mismatch/);
@@ -176,6 +185,25 @@ assert.match(radarReadModel, /selectComparisonRun/);
 assert.match(processLatestWindow, /manual_refresh_not_authorized/);
 assert.match(processLatestWindow, /rate_limited/);
 assert.match(processLatestWindow, /window_kind = "manual_refresh"/);
+// A operacao precisa ter como forcar uma janela entre os slots: o GET deixou de
+// consolidar, entao a UI tem de chamar a operacao deliberada.
+const radarWebProvider = await readFile(
+  resolve(repositoryRoot, "apps/radar-web/public/supabase-provider.js"),
+  "utf8",
+);
+const radarWebApp = await readFile(
+  resolve(repositoryRoot, "apps/radar-web/public/app.js"),
+  "utf8",
+);
+assert.match(radarWebProvider, /process-latest-window/);
+assert.match(radarWebProvider, /refreshLatestWindow/);
+assert.match(radarWebApp, /refreshLatestWindow/);
+assert.match(radarWebApp, /can_manage/);
+// O gate 6 exige E2E de navegador. Se o job sair do CI, o gate deixa de valer.
+const ciWorkflow = await readFile(resolve(repositoryRoot, ".github/workflows/ci.yml"), "utf8");
+assert.match(ciWorkflow, /e2e:/);
+assert.match(ciWorkflow, /e2e:install/);
+assert.match(ciWorkflow, /test:e2e/);
 assert.match(captureDiagnostic, /withSupabase\(\{ auth: "user" \}/);
 assert.match(captureDiagnostic, /diagnostic_tests/);
 assert.match(processLatestWindow, /canonicalizeConversationEvent/);
@@ -193,11 +221,20 @@ assert.match(groupResolution, /resolve_group_observations/);
 assert.match(processWindow, /resolveGroupObservationsShadow/);
 assert.match(processLatestWindow, /resolveGroupObservationsShadow/);
 assert.match(consolidationSchedule, /America\/Recife/);
-assert.match(consolidationSchedule, /\[8, 13, 18\]/);
+assert.match(consolidationSchedule, /\[0, 3, 8, 13, 18, 21\]/);
 assert.match(consolidationSchedule, /CONSOLIDATION_WINDOW_HOURS = 24/);
 assert.match(consolidationRunner, /RADAR_PROCESSING_SECRET/);
 assert.match(consolidationRunner, /functions\/v1\/process-window/);
-assert.match(consolidationWorkflow, /cron: "0 11,16,21 \* \* \*"/);
+assert.match(consolidationWorkflow, /cron: "0 0,3,6,11,16,21 \* \* \*"/);
+// Os três horários operacionais originais continuam sendo slots. Trocá-los
+// quebraria a comparação com as execuções já produzidas, porque a política casa
+// cada slot com ele mesmo no dia anterior.
+for (const hour of ["11", "16", "21"]) {
+  assert.ok(
+    /cron: "0 ([0-9,]+) \* \* \*"/.exec(consolidationWorkflow)?.[1].split(",").includes(hour),
+    `o slot das ${hour}:00 UTC precisa continuar no cron`,
+  );
+}
 // P1.1: a missing secret must turn the job red, never make it green and skip.
 assert.match(consolidationWorkflow, /check-consolidation-config\.mjs/);
 assert.doesNotMatch(consolidationWorkflow, /configured=true/);
@@ -205,6 +242,17 @@ assert.doesNotMatch(consolidationWorkflow, /if: steps\./);
 assert.doesNotMatch(consolidationWorkflow, /::warning::/);
 assert.doesNotMatch(consolidationWorkflow, /SUPABASE_SERVICE_ROLE_KEY/);
 assert.match(consolidationRunner, /GITHUB_STEP_SUMMARY/);
+// A vigilancia precisa ser independente: se dependesse do mesmo caminho, a
+// falha que parasse a consolidacao silenciaria o alerta junto.
+assert.match(healthWorkflow, /schedule/);
+assert.match(healthWorkflow, /check-operational-health.mjs/);
+assert.doesNotMatch(healthWorkflow, /SUPABASE_SERVICE_ROLE_KEY/);
+assert.match(operationalHealth, /authenticateProcessor/);
+assert.match(operationalHealth, /processing_scope_mismatch/);
+// Leitura pura: a vigilancia nao pode alterar o estado que observa.
+for (const mutation of [".insert(", ".update(", ".delete(", ".rpc("]) {
+  assert.ok(!operationalHealth.includes(mutation), `a vigilância não pode chamar ${mutation}`);
+}
 assert.match(consolidationRunner, /process\.exitCode = 1/);
 
 console.log(`Supabase foundation OK: ${tables.length} RLS tables and synced contracts.`);

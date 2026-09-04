@@ -91,3 +91,21 @@
 | Migration | `capture_coverage_and_run_anchor` é compatível com as funções antigas | VALIDADO REMOTAMENTE | `process-window` v5 processou e persistiu depois da aplicação |
 | Migration | `ingest_health_heartbeat` continua funcionando após a alteração | VALIDADO REMOTAMENTE | Execução em transação revertida, sem gravar dados de teste |
 | Radar Web | E2E de filtros, dialog, foco, ESC, mobile e reduced motion | NÃO TESTADO | Pendência da P1.1 |
+| Android | Continuidade do listener por vários dias | VALIDADO EM CAMPO | Diagnóstico de 2026-09-03: conectado desde 2026-08-29 14:30 UTC, sem nenhuma desconexão registrada |
+| Android | Envio sem perda nem duplicação | VALIDADO EM CAMPO | Contador do aparelho (1.080 eventos enviados, 0 falhas) confere exatamente com o banco |
+| Android | Fila drena sem retenção | VALIDADO EM CAMPO | `outbox_pending` zero no aparelho e no heartbeat |
+| Android | Teste de captura dirigido | VALIDADO EM CAMPO | Iniciado 2026-09-02 18:45:25 UTC, aprovado 19:11:49 UTC |
+| Captura | Tolerância de 35 min entre amostras é adequada | VALIDADO REMOTAMENTE | 28 amostras reais: intervalo médio 3,6 min, máximo 16,7 min, nenhum acima da tolerância |
+| Android | APK em operação corresponde ao código do repositório | **REPROVADO, esperado** | O sensor de campo vem de `quentalgabriel-cloud/radar-sensor-probe`, não deste monorepo; `apps/android-sensor` nunca produziu a build de operação |
+| Android | Reboot, Doze, bateria, rede offline e grupos silenciados | NÃO TESTADO | Executar contra o repositório do probe, release `v0.3.0-connected` |
+| Android | Procedência do APK em operação é rastreável | VALIDADO REMOTAMENTE | Release `v0.3.0-connected` de `radar-sensor-probe`; SHA-256 `6ab97610...f128` confere com o hash publicado e com a cópia local |
+| Segurança | Segredo de ingestão não é extraível do artefato distribuído | **REPROVADO** | O APK público carrega a credencial ativa em claro; SHA-256 do valor confere com `device_credentials` |
+| Radar Web | Carrega sem erro de página e com marcos de acessibilidade | TESTADO LOCALMENTE | `apps/radar-web/test/e2e.test.js` em Chromium real |
+| Radar Web | Busca filtra e o estado vazio explica em vez de sumir | TESTADO LOCALMENTE | idem; verificado por mutação — quebrar a mensagem reprova |
+| Radar Web | Filtro de severidade nunca deixa a lista em branco sem explicação | TESTADO LOCALMENTE | idem |
+| Radar Web | Trocar de cenário troca os dados sem recarregar | TESTADO LOCALMENTE | idem |
+| Radar Web | Dialog abre, prende o foco e fecha no ESC | TESTADO LOCALMENTE | idem |
+| Radar Web | Sem rolagem horizontal em viewport de smartphone | TESTADO LOCALMENTE | idem; verificado por mutação — `min-width` excessivo reprova |
+| Radar Web | Reduced motion preserva o conteúdo | TESTADO LOCALMENTE | idem |
+| Radar Web | Modo live pede autenticação e não vaza o read model sem sessão | TESTADO LOCALMENTE | idem |
+| Radar Web | E2E contra Supabase real com sessão de usuário | NÃO TESTADO | Exige conta de teste; o E2E atual cobre o laboratório e o gate de autenticação |

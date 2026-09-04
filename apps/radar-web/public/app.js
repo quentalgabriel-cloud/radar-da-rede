@@ -9,6 +9,7 @@ const state = {
   mode: "lab",
   provider: null,
   refreshController: null,
+  lastConsolidation: "",
   query: "",
   scenario: null,
   severity: "all",
@@ -28,6 +29,19 @@ const formatTime = (value) => value
 const formatClock = (value) => value
   ? new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Recife" }).format(new Date(value))
   : null;
+
+// "consolidado até 18:00" era ambíguo de madrugada: podia ser hoje ou ontem.
+// A idade relativa diz a verdade sem depender de o leitor saber a data.
+const describeAge = (value) => {
+  const at = Date.parse(value ?? "");
+  if (!Number.isFinite(at)) return "em momento não informado";
+  const minutos = Math.max(0, Math.round((Date.now() - at) / 60_000));
+  if (minutos < 2) return "agora há pouco";
+  if (minutos < 60) return `há ${minutos} min`;
+  const horas = Math.floor(minutos / 60);
+  if (horas < 24) return `há ${horas}h${String(minutos % 60).padStart(2, "0")} (${formatClock(value)})`;
+  return `há mais de um dia (${formatClock(value)})`;
+};
 
 const escapeHtml = (value) => String(value ?? "").replace(/[&<>'"]/g, (character) => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", "\"": "&quot;"
@@ -504,8 +518,12 @@ const updateRefreshStatus = ({ state: refreshState, reason, lastReadAt, consolid
     return;
   }
   const readLabel = `Consultado às ${formatClock(lastReadAt)}`;
-  const consolidationLabel = consolidatedAt ? ` · consolidado até ${formatClock(consolidatedAt)}` : "";
-  status.textContent = `${readLabel}${consolidationLabel}`;
+  const consolidationLabel = consolidatedAt ? ` · consolidado ${describeAge(consolidatedAt)}` : "";
+  const pending = state.data?.freshness?.events_after_window ?? 0;
+  const pendingLabel = pending > 0
+    ? ` · ${plural(pending, "evento ainda fora da janela", "eventos ainda fora da janela")}`
+    : "";
+  status.textContent = `${readLabel}${consolidationLabel}${state.lastConsolidation ?? ""}${pendingLabel}`;
 };
 
 state.refreshController = createRadarRefreshController({
@@ -631,8 +649,43 @@ document.querySelector("#registry-list").addEventListener("click", async (event)
     button.disabled = false;
   }
 });
-document.querySelector("#refresh-button").addEventListener("click", () => {
-  refreshRadar("manual").catch(() => {});
+// O GET do read model deixou de consolidar na P1.1. Sem isto, a operação não tem
+// como forçar uma janela entre os slots agendados. A consolidação só é tentada
+// no modo live e por quem tem papel para isso; qualquer recusa vira texto, e a
+// releitura acontece de todo jeito.
+const consolidateBeforeRead = async () => {
+  if (state.mode !== "live" || !state.provider?.refreshLatestWindow) return null;
+  if (state.data?.group_registry?.can_manage !== true) return null;
+  try {
+    return await state.provider.refreshLatestWindow(state.config.live.network_id);
+  } catch (error) {
+    return { ok: false, status: "failed", message: error.message };
+  }
+};
+
+const consolidationNotice = (result) => {
+  if (!result) return "";
+  if (result.ok && result.processed === true) return " · consolidação executada";
+  if (result.ok && result.status === "up_to_date") return " · já estava atualizado";
+  if (result.ok && result.status === "no_events") return " · sem eventos novos";
+  if (result.status === "rate_limited") {
+    const espera = Number(result.retry_after_seconds);
+    return Number.isFinite(espera)
+      ? ` · nova consolidação liberada em ${Math.ceil(espera / 60)} min`
+      : " · consolidação em intervalo mínimo";
+  }
+  if (result.status === "not_authorized") return "";
+  return " · não foi possível consolidar agora";
+};
+
+document.querySelector("#refresh-button").addEventListener("click", async () => {
+  const button = document.querySelector("#refresh-button");
+  const status = document.querySelector("#refresh-status");
+  button.disabled = true;
+  status.textContent = "Consolidando…";
+  const result = await consolidateBeforeRead();
+  state.lastConsolidation = consolidationNotice(result);
+  refreshRadar("manual").catch(() => {}).finally(() => { button.disabled = false; });
 });
 for (const [selector, key] of [["#condition-filter", "groupCondition"], ["#trend-filter", "groupTrend"], ["#group-status-filter", "groupStatus"], ["#origin-filter", "groupOrigin"], ["#context-filter", "groupContext"], ["#group-sort", "groupSort"]]) {
   document.querySelector(selector).addEventListener("change", (event) => {
