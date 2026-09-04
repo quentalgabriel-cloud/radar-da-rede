@@ -224,6 +224,22 @@ assert.match(captureHealth, /capture_coverage@2/);
 assert.match(captureHealth, /configuration_not_reported/);
 assert.match(groupResolution, /resolve_group_observations/);
 assert.match(processWindow, /resolveGroupObservationsShadow/);
+// A resolucao de grupo nao pode voltar a usar o evento bruto: o titulo carrega
+// a contagem acumulada e cada notificacao viraria um grupo novo.
+assert.match(processWindow, /canonicalizeConversationEvent/);
+assert.ok(
+  processWindow.includes("resolveGroupObservationsShadow(admin, window.network_id, canonicalEvents)"),
+  "process-window precisa resolver grupo sobre eventos canonicalizados",
+);
+assert.ok(
+  processLatestWindow.includes("resolveGroupObservationsShadow(admin, networkId, analysisEvents)"),
+  "process-latest-window precisa resolver grupo sobre eventos canonicalizados",
+);
+// O singular do português muda o radical: "mensagem", não "mensagens".
+assert.ok(
+  canonicalConversations.includes("mensage(?:m|ns)"),
+  "a normalização precisa remover o sufixo de contagem também no singular",
+);
 assert.match(processLatestWindow, /resolveGroupObservationsShadow/);
 assert.match(consolidationSchedule, /America\/Recife/);
 assert.match(consolidationSchedule, /\[0, 3, 8, 13, 18, 21\]/);

@@ -85,11 +85,13 @@ const authenticatedHandler = withSupabase({ auth: "user" }, async (request, cont
   if ((events?.length ?? 0) > MAX_EVENTS) return json(422, { error: "window_too_large" });
 
   const endsAt = latestEvent.occurred_at;
-  const groupResolution = await resolveGroupObservationsShadow(admin, networkId, events ?? []);
+  // Mesma canonicalização do caminho agendado: a resolução de grupo não pode
+  // depender da contagem acumulada que o WhatsApp coloca no título.
+  const analysisEvents = (events ?? []).map(canonicalizeConversationEvent);
+  const groupResolution = await resolveGroupObservationsShadow(admin, networkId, analysisEvents);
   const captureConfidence = await loadCaptureCoverage(admin, networkId, startsAt, endsAt);
   const monitoredGroups = await loadMonitoredGroupIds(admin, networkId);
   if (monitoredGroups.error) return json(500, { error: "monitored_group_query_failed" });
-  const analysisEvents = (events ?? []).map(canonicalizeConversationEvent);
   const analysis = analyzeEvents(analysisEvents);
   const payload = await buildAnalysisPayload({
     networkId,
@@ -97,7 +99,7 @@ const authenticatedHandler = withSupabase({ auth: "user" }, async (request, cont
     endsAt,
     events: analysisEvents,
     analysis,
-    groupLinks: buildEventGroupLinks(events ?? [], groupResolution.links),
+    groupLinks: buildEventGroupLinks(analysisEvents, groupResolution.links),
     captureConfidence,
     monitoredGroupIds: monitoredGroups.ids
   });
