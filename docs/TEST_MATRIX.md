@@ -109,3 +109,5 @@
 | Radar Web | Reduced motion preserva o conteúdo | TESTADO LOCALMENTE | idem |
 | Radar Web | Modo live pede autenticação e não vaza o read model sem sessão | TESTADO LOCALMENTE | idem |
 | Radar Web | E2E contra Supabase real com sessão de usuário | NÃO TESTADO | Exige conta de teste; o E2E atual cobre o laboratório e o gate de autenticação |
+| Group Registry | Identidade de conversa é estável entre notificações | **REPROVADO** | 199 grupos criados para uma única conversa real; `source_conversation_id` muda a cada notificação. Ver `docs/GROUP-IDENTITY-FINDING.md` |
+| Control Center | Contagem de grupos reflete a rede real | **REPROVADO** | 196 grupos ativos para 7 conversas canônicas, das quais 4 são de teste |
