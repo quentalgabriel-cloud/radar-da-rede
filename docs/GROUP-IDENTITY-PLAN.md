@@ -147,3 +147,53 @@ Com identidade estável, a tela passa a mostrar a rede real. Antes disso, não.
 - não excluir grupos antes da conferência;
 - não somar métricas à mão quando reprocessar é possível;
 - não ligar o Control Center antes da etapa 3.
+
+---
+
+## Etapa 1 — concluída e validada remotamente em 2026-09-04
+
+Implantada em `process-window` e `process-latest-window` a partir de `main`
+(`8d9a4d3`), pela CLI, sem tocar no aparelho.
+
+Execução de verificação `74656da8-ba9b-4370-b691-0dbe1981a66b`, janela
+`2026-09-03T16:00Z → 2026-09-04T16:00Z`:
+
+| Critério | Esperado | Observado |
+|---|---|---|
+| conversas reais na janela | — | 2 |
+| grupos criados | um por conversa | **2** |
+| aliases canônicos (`label:…`) | 2 | **2** |
+| grupos com atividade na janela | 2 | **2** |
+| aliases voláteis (`wa_…`) remanescentes | inertes | 201 |
+
+Segunda execução logo em seguida: **nenhum grupo novo**, total estável em 206,
+mesmo `processing_run_id` devolvido. O crescimento parou.
+
+Antes desta mudança, uma janela com essa mesma conversa criava um grupo por
+notificação. Os 201 aliases voláteis permanecem intactos e sem uso, aguardando a
+etapa 3. Nenhum evento foi alterado: 1.475 antes e depois.
+
+**Estado das etapas:** 1 concluída. 2 e 3 pendentes. O Control Center continua
+desligado.
+
+## Achado paralelo — o cron do GitHub não entrega os slots
+
+Medido em 2026-09-04. Entre 00:00 e 17:58 UTC, cinco slots eram esperados
+(00, 03, 06, 11 e 16). Ocorreram **duas** execuções agendadas, às 07:46 e 14:50,
+ambas com atraso de horas.
+
+A correção de seis slots está no código e no `main`, mas o GitHub Actions não a
+honra: atrasa e pula agendamentos. É comportamento conhecido de cron em
+repositório público, e significa que a frescura real para a equipe é pior que a
+projetada.
+
+A vigilância operacional **não pega isso**: ela mede "consolidação atrasada"
+contra seis horas, e um sub-fornecimento crônico fica abaixo desse limite. É a
+mesma classe de falha silenciosa que ela existe para eliminar.
+
+Duas coisas a decidir, ambas fora do escopo da etapa 1:
+
+1. acrescentar à vigilância a razão entre slots entregues e esperados no dia;
+2. avaliar `pg_cron` dentro do Supabase como agendador, que não depende da fila
+   do GitHub. É mudança de infraestrutura e precisa de decisão explícita, com
+   atenção a onde a credencial de processamento passaria a viver.

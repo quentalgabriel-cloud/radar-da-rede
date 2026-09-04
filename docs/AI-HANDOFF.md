@@ -410,6 +410,15 @@ A normalização que resolve **já existe** neste repositório
 (`canonicalConversationLabel`) e já é confiada para exibir; falta aplicá-la no
 caminho de resolução de grupo.
 
+**Etapa 1 concluída e validada remotamente em 2026-09-04**: a resolução de grupo
+passou a canonicalizar antes de resolver, e o crescimento parou — uma janela com
+duas conversas reais criou dois grupos, e a execução seguinte criou zero. Os 201
+grupos voláteis antigos seguem inertes até a etapa 3.
+
+**Atenção, achado novo:** o cron do GitHub entregou 2 de 5 slots esperados em
+2026-09-04, com atraso de horas. A vigilância não pega isso, porque mede atraso
+contra seis horas e não slots entregues versus esperados. Detalhe no plano.
+
 Plano completo em `docs/GROUP-IDENTITY-PLAN.md` e prompt de execução em
 `docs/implementation-prompts/P1.2-IDENTIDADE-DE-CONVERSA.md`.
 A primeira etapa não exige tocar no aparelho. Medições em `docs/GROUP-IDENTITY-FINDING.md`.
