@@ -29,7 +29,8 @@ Deno.serve(async (request) => {
     .maybeSingle();
   if (runError) return failure("run_query_failed", runError.code);
 
-  const [heartbeat, groups, metrics, pending] = await Promise.all([
+  const umDiaAtras = new Date(Date.now() - 24 * 60 * 60_000).toISOString();
+  const [heartbeat, groups, metrics, pending, gruposNovos, janelas, conversas] = await Promise.all([
     admin.from("adapter_health").select("observed_at")
       .eq("network_id", networkId).order("observed_at", { ascending: false }).limit(1).maybeSingle(),
     admin.from("groups").select("id", { count: "exact", head: true })
@@ -41,9 +42,17 @@ Deno.serve(async (request) => {
     run
       ? admin.from("normalized_events").select("event_id", { count: "exact", head: true })
         .eq("network_id", networkId).gt("occurred_at", run.ends_at)
-      : Promise.resolve({ count: 0, error: null })
+      : Promise.resolve({ count: 0, error: null }),
+    admin.from("groups").select("id", { count: "exact", head: true })
+      .eq("network_id", networkId).gte("created_at", umDiaAtras),
+    admin.from("processing_runs").select("ends_at")
+      .eq("network_id", networkId).eq("window_kind", "canonical_slot")
+      .gte("completed_at", umDiaAtras),
+    admin.from("normalized_events").select("conversation_id")
+      .eq("network_id", networkId).gte("occurred_at", umDiaAtras).limit(5_000)
   ]);
-  const failed = [heartbeat, groups, metrics, pending].find((result) => result.error);
+  const failed = [heartbeat, groups, metrics, pending, gruposNovos, janelas, conversas]
+    .find((result) => result.error);
   if (failed?.error) return failure("health_query_failed", failed.error.code);
 
   // A resposta carrega contagens e instantes. Nunca conteúdo, rótulo de grupo
@@ -54,7 +63,12 @@ Deno.serve(async (request) => {
     lastHeartbeatAt: heartbeat.data?.observed_at ?? null,
     activeGroupCount: groups.count ?? 0,
     metricRowsInLatestRun: metrics.count ?? 0,
-    eventsAfterWindow: pending.count ?? 0
+    eventsAfterWindow: pending.count ?? 0,
+    groupsCreatedLast24h: gruposNovos.count ?? 0,
+    // Janelas distintas, não execuções: reprocessar a mesma janela não pode
+    // parecer entrega de slot.
+    canonicalWindowsLast24h: new Set((janelas.data ?? []).map((row) => row.ends_at)).size,
+    distinctConversationsLast24h: new Set((conversas.data ?? []).map((row) => row.conversation_id)).size
   });
 });
 
