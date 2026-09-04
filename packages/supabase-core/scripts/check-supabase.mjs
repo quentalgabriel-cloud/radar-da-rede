@@ -270,6 +270,13 @@ assert.match(healthWorkflow, /check-operational-health.mjs/);
 assert.doesNotMatch(healthWorkflow, /SUPABASE_SERVICE_ROLE_KEY/);
 assert.match(operationalHealth, /authenticateProcessor/);
 assert.match(operationalHealth, /processing_scope_mismatch/);
+// O guardrail precisa contar conversa canonica, nao o id bruto: contar o id
+// volatil faria comparar inflado contra inflado e esconderia a inflacao.
+assert.match(operationalHealth, /canonicalConversationLabel/);
+assert.ok(
+  !operationalHealth.includes("row.conversation_id"),
+  "a vigilancia nao pode contar conversa pelo id bruto",
+);
 // Leitura pura: a vigilancia nao pode alterar o estado que observa.
 for (const mutation of [".insert(", ".update(", ".delete(", ".rpc("]) {
   assert.ok(!operationalHealth.includes(mutation), `a vigilância não pode chamar ${mutation}`);
