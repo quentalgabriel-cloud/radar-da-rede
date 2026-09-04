@@ -348,15 +348,42 @@ Antes de ligar, feche os dois urgentes acima e rode o E2E. Ligar é
 `update public.networks set group_control_center_enabled = true where id = 'd1224e68-c51f-4b31-a7e6-7b91f1a65357';`
 e desligar é o mesmo com `false` — rollback imediato, sem deploy.
 
-## Ordem sugerida para a próxima sessão
+## Ordem sugerida para a próxima sessão (atualizada em 2026-09-04)
 
-1. medir a cadência noturna;
-2. URGENTE 1, botão de atualizar;
-3. URGENTE 2, seis slots por dia;
-4. E2E de navegador (gate 6);
-5. decidir sobre ligar o Control Center em modo reduzido;
-6. SLO e alertas (D06, único débito "imediato" ainda aberto);
-7. em 05/09, conferir a primeira tendência real e fechar o gate 2.
+1. ~~medir a cadência noturna~~ — feito, resultado abaixo;
+2. ~~URGENTE 1, botão de atualizar~~ — feito no PR #6;
+3. ~~URGENTE 2, seis slots por dia~~ — feito no PR #6;
+4. ~~SLO e alertas (D06)~~ — feito no PR #6; falta **implantar a Edge Function
+   `operational-health`**, senão o workflow novo falha de forma visível;
+5. decidir a tolerância de cobertura, com a medição já disponível;
+6. E2E de navegador (gate 6);
+7. decidir sobre ligar o Control Center em modo reduzido;
+8. em 05/09, conferir a primeira tendência real e fechar o gate 2.
+
+O prompt da etapa está em `docs/implementation-prompts/P1.1-FECHAMENTO.md`.
+
+### Resultado da medição noturna
+
+| Evidência | Valor |
+|---|---:|
+| intervalo médio diurno | 3,6 min |
+| maior intervalo diurno | 16,7 min |
+| maior intervalo noturno | **41,4 min** |
+| eficiência do bridging a 35 min | **~79,5%** |
+
+Dois intervalos passaram dos 35 minutos de tolerância. A cobertura estaciona
+perto de 80%, então o nível `high`, que exige 90%, fica inalcançável enquanto o
+sensor depender de `PeriodicWorkRequest`.
+
+A causa não é perda de captura: o diagnóstico do aparelho mostra listener
+conectado sem interrupção desde 29/08 e os eventos continuaram chegando. São
+adiamentos do WorkManager pelo Doze.
+
+**A tolerância não foi alterada.** A decisão está descrita no prompt da etapa,
+com as duas opções. Se escolher calibrar, o número precisa vir do percentil
+observado e a regra precisa virar `capture_coverage@2`, para que as execuções
+antigas continuem interpretáveis. Não mexa no limite só para destravar a
+tendência.
 
 ## Não reverta sem falar com o dono
 
