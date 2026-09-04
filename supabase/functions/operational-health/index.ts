@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2.112.4";
+import { canonicalConversationLabel } from "../_shared/canonical-conversations.js";
 import { authenticateProcessor } from "../_shared/processing-auth.ts";
 
 // Leitura somente. Existe para que a vigilância agendada consiga observar o
@@ -48,7 +49,9 @@ Deno.serve(async (request) => {
     admin.from("processing_runs").select("ends_at")
       .eq("network_id", networkId).eq("window_kind", "canonical_slot")
       .gte("completed_at", umDiaAtras),
-    admin.from("normalized_events").select("conversation_id")
+    // O rótulo, não o conversation_id: o id bruto é o volátil, e contá-lo faria
+    // o guardrail comparar inflado contra inflado.
+    admin.from("normalized_events").select("conversation_label")
       .eq("network_id", networkId).gte("occurred_at", umDiaAtras).limit(5_000)
   ]);
   const failed = [heartbeat, groups, metrics, pending, gruposNovos, janelas, conversas]
@@ -68,7 +71,11 @@ Deno.serve(async (request) => {
     // Janelas distintas, não execuções: reprocessar a mesma janela não pode
     // parecer entrega de slot.
     canonicalWindowsLast24h: new Set((janelas.data ?? []).map((row) => row.ends_at)).size,
-    distinctConversationsLast24h: new Set((conversas.data ?? []).map((row) => row.conversation_id)).size
+    distinctConversationsLast24h: new Set(
+      (conversas.data ?? [])
+        .map((row) => canonicalConversationLabel(row.conversation_label).toLocaleLowerCase("pt-BR"))
+        .filter(Boolean)
+    ).size
   });
 });
 
