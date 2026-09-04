@@ -206,3 +206,16 @@ Os status usados são `ACEITA`, `PROVISÓRIA`, `HIPÓTESE` e `ESTACIONADA`.
 - **Consequência:** o resultado passa a expor `ceiling` e `ceiling_reason` quando o nível é limitado por falta de evidência de configuração, para que o teto não pareça defeito silencioso.
 - **Caminho para `high`:** o sensor precisa reportar `notification_access`, `whatsapp_installed` e `network_type`. Trabalho no repositório `radar-sensor-probe`, não neste.
 - **Reabrir se:** o comportamento medido do aparelho mudar, o sensor passar a reportar configuração, ou surgir um adaptador com cadência diferente.
+
+## D-023 — Registry de grupos consolidado por reconstrução determinística, não por semelhança
+
+- **Status:** ACEITA
+- **Data:** 2026-09-04
+- **Decisão:** aplicar `private.consolidate_group_registry` em produção para a rede piloto, fundindo os grupos criados pela identidade volátil de conversa em um grupo por rótulo canônico.
+- **Evidência:** a derivação do id de conversa (`wa_` + sha256 do título bruto) é reproduzível: para os 206 aliases existentes, recalcular `sha256(conversation_label)` reproduz o `source_conversation_id` em todos os casos elegíveis. Isso não é backfill por semelhança de rótulo, que `AGENTS.md` proíbe — é reconstrução de uma função determinística, com prova por linha, e a função recusa qualquer alias sem essa prova.
+- **Resultado aplicado:** 206 grupos ativos → 8. 198 fusões registradas em `group_merge_map` com evidência. Recusados: os 3 grupos de origem `fake` (sem título real para reprovar a derivação) e 1 grupo legítimo sem duplicata.
+- **Salvaguarda estrutural:** a canonicalização não foi reimplementada em SQL. A função consome um mapa (`observed_label → canonical_label/key`) calculado com `canonicalConversationLabel`, a mesma usada para resolver grupo e para exibir. Duas implementações da mesma regra divergiriam com o tempo; divergir na consolidação fundiria conversas distintas. O check do CI (`check-supabase.mjs`) proíbe a regra em SQL.
+- **Reprocessamento:** as 8 janelas canônicas distintas foram reprocessadas pelo caminho de produção (`process-window`), não somadas à mão. Todas retornaram `group_resolution.created:0` e `monitored_group_count == metric_row_count == 8`.
+- **Efeito colateral encontrado e corrigido:** a consolidação arquiva grupo (`status='archived'`) em vez de excluir. O guardrail de `operational-health` contava `created_at` de qualquer grupo sem filtrar por `status`, o que reacenderia `registry_inflating` por 24h a cada consolidação futura contra um problema já corrigido. Corrigido no mesmo PR (#13) e confirmado contra produção: excedente caiu de 53 para 0.
+- **Limite que esta decisão não resolve:** duas conversas realmente homônimas seriam fundidas por engano — identidade por título tem esse teto (D14). Só o `shortcutId`/`getLocusId()` da etapa 4, no sensor, elimina esse limite.
+- **Reabrir se:** aparecer um alias cuja derivação não reproduza o hash e a consolidação precisar rodar de novo; ou a etapa 4 mudar a fonte de identidade, tornando esta função obsoleta para novos dados (ela continua válida como ferramenta de correção pontual).
