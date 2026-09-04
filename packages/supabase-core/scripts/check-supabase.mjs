@@ -86,6 +86,14 @@ const consolidationWorkflow = await readFile(
   resolve(repositoryRoot, ".github/workflows/consolidate.yml"),
   "utf8",
 );
+const healthWorkflow = await readFile(
+  resolve(repositoryRoot, ".github/workflows/operational-health.yml"),
+  "utf8",
+);
+const operationalHealth = await readFile(
+  resolve(repositoryRoot, "supabase/functions/operational-health/index.ts"),
+  "utf8",
+);
 
 const tables = [...sql.matchAll(/create table public\.([a-z_]+)/g)].map((match) => match[1]);
 assert.ok(tables.length >= 10, "expected the MVP core tables");
@@ -99,6 +107,7 @@ assert.match(config, /\[functions\.process-window\][\s\S]*?verify_jwt = false/);
 assert.match(config, /\[functions\.radar-read-model\][\s\S]*?verify_jwt = true/);
 assert.match(config, /\[functions\.capture-diagnostic\][\s\S]*?verify_jwt = true/);
 assert.match(config, /\[functions\.process-latest-window\][\s\S]*?verify_jwt = true/);
+assert.match(config, /\[functions\.operational-health\][\s\S]*?verify_jwt = false/);
 assert.match(handler, /SUPABASE_SERVICE_ROLE_KEY/);
 assert.match(handler, /device_scope_mismatch/);
 assert.match(handler, /device_source_mismatch/);
@@ -228,6 +237,17 @@ assert.doesNotMatch(consolidationWorkflow, /if: steps\./);
 assert.doesNotMatch(consolidationWorkflow, /::warning::/);
 assert.doesNotMatch(consolidationWorkflow, /SUPABASE_SERVICE_ROLE_KEY/);
 assert.match(consolidationRunner, /GITHUB_STEP_SUMMARY/);
+// A vigilancia precisa ser independente: se dependesse do mesmo caminho, a
+// falha que parasse a consolidacao silenciaria o alerta junto.
+assert.match(healthWorkflow, /schedule/);
+assert.match(healthWorkflow, /check-operational-health.mjs/);
+assert.doesNotMatch(healthWorkflow, /SUPABASE_SERVICE_ROLE_KEY/);
+assert.match(operationalHealth, /authenticateProcessor/);
+assert.match(operationalHealth, /processing_scope_mismatch/);
+// Leitura pura: a vigilancia nao pode alterar o estado que observa.
+for (const mutation of [".insert(", ".update(", ".delete(", ".rpc("]) {
+  assert.ok(!operationalHealth.includes(mutation), `a vigilância não pode chamar ${mutation}`);
+}
 assert.match(consolidationRunner, /process\.exitCode = 1/);
 
 console.log(`Supabase foundation OK: ${tables.length} RLS tables and synced contracts.`);

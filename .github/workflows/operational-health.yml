@@ -1,0 +1,37 @@
+name: Radar Operational Health
+
+on:
+  schedule:
+    # Entre os slots de consolidação, para que uma parada apareça em menos de
+    # duas horas em vez de esperar alguém estranhar o dado.
+    - cron: "30 1,5,9,13,17,19,22 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: radar-operational-health
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Require consolidation configuration
+        env:
+          RADAR_SUPABASE_URL: ${{ secrets.RADAR_SUPABASE_URL }}
+          RADAR_NETWORK_ID: ${{ secrets.RADAR_NETWORK_ID }}
+          RADAR_PROCESSING_SECRET: ${{ secrets.RADAR_PROCESSING_SECRET }}
+        run: node packages/supabase-core/scripts/check-consolidation-config.mjs
+      - name: Check Radar operational health
+        env:
+          RADAR_SUPABASE_URL: ${{ secrets.RADAR_SUPABASE_URL }}
+          RADAR_NETWORK_ID: ${{ secrets.RADAR_NETWORK_ID }}
+          RADAR_PROCESSING_SECRET: ${{ secrets.RADAR_PROCESSING_SECRET }}
+        run: node packages/supabase-core/scripts/check-operational-health.mjs
