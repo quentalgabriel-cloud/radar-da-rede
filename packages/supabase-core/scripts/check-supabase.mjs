@@ -199,6 +199,11 @@ assert.match(radarWebProvider, /process-latest-window/);
 assert.match(radarWebProvider, /refreshLatestWindow/);
 assert.match(radarWebApp, /refreshLatestWindow/);
 assert.match(radarWebApp, /can_manage/);
+// O gate 6 exige E2E de navegador. Se o job sair do CI, o gate deixa de valer.
+const ciWorkflow = await readFile(resolve(repositoryRoot, ".github/workflows/ci.yml"), "utf8");
+assert.match(ciWorkflow, /e2e:/);
+assert.match(ciWorkflow, /e2e:install/);
+assert.match(ciWorkflow, /test:e2e/);
 assert.match(captureDiagnostic, /withSupabase\(\{ auth: "user" \}/);
 assert.match(captureDiagnostic, /diagnostic_tests/);
 assert.match(processLatestWindow, /canonicalizeConversationEvent/);

@@ -100,3 +100,12 @@
 | Android | Reboot, Doze, bateria, rede offline e grupos silenciados | NÃO TESTADO | Executar contra o repositório do probe, release `v0.3.0-connected` |
 | Android | Procedência do APK em operação é rastreável | VALIDADO REMOTAMENTE | Release `v0.3.0-connected` de `radar-sensor-probe`; SHA-256 `6ab97610...f128` confere com o hash publicado e com a cópia local |
 | Segurança | Segredo de ingestão não é extraível do artefato distribuído | **REPROVADO** | O APK público carrega a credencial ativa em claro; SHA-256 do valor confere com `device_credentials` |
+| Radar Web | Carrega sem erro de página e com marcos de acessibilidade | TESTADO LOCALMENTE | `apps/radar-web/test/e2e.test.js` em Chromium real |
+| Radar Web | Busca filtra e o estado vazio explica em vez de sumir | TESTADO LOCALMENTE | idem; verificado por mutação — quebrar a mensagem reprova |
+| Radar Web | Filtro de severidade nunca deixa a lista em branco sem explicação | TESTADO LOCALMENTE | idem |
+| Radar Web | Trocar de cenário troca os dados sem recarregar | TESTADO LOCALMENTE | idem |
+| Radar Web | Dialog abre, prende o foco e fecha no ESC | TESTADO LOCALMENTE | idem |
+| Radar Web | Sem rolagem horizontal em viewport de smartphone | TESTADO LOCALMENTE | idem; verificado por mutação — `min-width` excessivo reprova |
+| Radar Web | Reduced motion preserva o conteúdo | TESTADO LOCALMENTE | idem |
+| Radar Web | Modo live pede autenticação e não vaza o read model sem sessão | TESTADO LOCALMENTE | idem |
+| Radar Web | E2E contra Supabase real com sessão de usuário | NÃO TESTADO | Exige conta de teste; o E2E atual cobre o laboratório e o gate de autenticação |
