@@ -1,5 +1,8 @@
 const invisibleCharacters = /[\u200b-\u200f\ufeff]/g;
-const cumulativeCountSuffix = /\s*\(\d+\s+mensagens?\)\s*$/i;
+// `mensagens?` casava "mensagens" e "mensagen", mas não "mensagem": em
+// português o radical muda no singular. Um grupo com exatamente uma mensagem
+// pendente escapava da normalização e virava uma identidade própria.
+const cumulativeCountSuffix = /\s*\(\d+\s+mensage(?:m|ns)\)\s*$/i;
 
 export const canonicalConversationLabel = (value) => {
   if (typeof value !== "string") return "";

@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2.112.4";
 import { buildAnalysisPayload, validateProcessWindow } from "../_shared/analysis-payload.js";
+import { canonicalizeConversationEvent } from "../_shared/canonical-conversations.js";
 import { analyzeEvents } from "../_shared/intelligence.js";
 import { resolveGroupObservationsShadow } from "../_shared/group-resolution.js";
 import { buildEventGroupLinks, loadCaptureCoverage, loadMonitoredGroupIds, persistAnalysisWithMetrics } from "../_shared/group-metrics.js";
@@ -43,21 +44,26 @@ Deno.serve(async (request) => {
   }
   if ((events?.length ?? 0) > MAX_EVENTS) return json(422, { error: "window_too_large" });
 
-  const groupResolution = await resolveGroupObservationsShadow(admin, window.network_id, events ?? []);
+  // O título do WhatsApp carrega a contagem acumulada e um caractere invisível,
+  // e o sensor deriva a identidade da conversa desse título. Sem canonicalizar
+  // antes de resolver, cada notificação vira um grupo novo: foi assim que 199
+  // grupos nasceram de uma única conversa. O evento bruto permanece no banco.
+  const canonicalEvents = (events ?? []).map(canonicalizeConversationEvent);
+  const groupResolution = await resolveGroupObservationsShadow(admin, window.network_id, canonicalEvents);
   const captureConfidence = await loadCaptureCoverage(admin, window.network_id, window.starts_at, window.ends_at);
   const monitoredGroups = await loadMonitoredGroupIds(admin, window.network_id);
   if (monitoredGroups.error) {
     console.error("monitored_group_query_failed", { code: monitoredGroups.error.code });
     return json(500, { error: "processing_failed" });
   }
-  const analysis = analyzeEvents(events ?? []);
+  const analysis = analyzeEvents(canonicalEvents);
   const payload = await buildAnalysisPayload({
     networkId: window.network_id,
     startsAt: window.starts_at,
     endsAt: window.ends_at,
-    events: events ?? [],
+    events: canonicalEvents,
     analysis,
-    groupLinks: buildEventGroupLinks(events ?? [], groupResolution.links),
+    groupLinks: buildEventGroupLinks(canonicalEvents, groupResolution.links),
     captureConfidence,
     monitoredGroupIds: monitoredGroups.ids
   });
