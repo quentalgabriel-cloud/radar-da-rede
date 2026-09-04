@@ -410,7 +410,8 @@ A normalização que resolve **já existe** neste repositório
 (`canonicalConversationLabel`) e já é confiada para exibir; falta aplicá-la no
 caminho de resolução de grupo.
 
-Plano completo, em cinco etapas por ordem de risco, em `docs/GROUP-IDENTITY-PLAN.md`.
+Plano completo em `docs/GROUP-IDENTITY-PLAN.md` e prompt de execução em
+`docs/implementation-prompts/P1.2-IDENTIDADE-DE-CONVERSA.md`.
 A primeira etapa não exige tocar no aparelho. Medições em `docs/GROUP-IDENTITY-FINDING.md`.
 
 ## Não reverta sem falar com o dono
