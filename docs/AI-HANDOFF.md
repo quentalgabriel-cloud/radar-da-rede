@@ -356,7 +356,8 @@ e desligar é o mesmo com `false` — rollback imediato, sem deploy.
 4. ~~SLO e alertas (D06)~~ — feito no PR #6; falta **implantar a Edge Function
    `operational-health`**, senão o workflow novo falha de forma visível;
 5. decidir a tolerância de cobertura, com a medição já disponível;
-6. E2E de navegador (gate 6);
+6. ~~E2E de navegador (gate 6)~~ — feito no PR #6: oito testes em Chromium
+   real, verificados por mutação, com job próprio no CI;
 7. decidir sobre ligar o Control Center em modo reduzido;
 8. em 05/09, conferir a primeira tendência real e fechar o gate 2.
 
