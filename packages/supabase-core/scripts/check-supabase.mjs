@@ -217,6 +217,11 @@ assert.match(canonicalConversations, /cumulativeCountSuffix/);
 assert.match(captureHealth, /evaluateCaptureHealth/);
 assert.match(captureHealth, /evaluateCaptureConfidence/);
 assert.match(captureHealth, /evaluateCaptureCoverage/);
+// A regra de cobertura e versionada: mudar o comportamento sem trocar a versao
+// tornaria as execucoes antigas ininterpretaveis.
+assert.match(captureHealth, /capture_coverage@2/);
+// Salvaguarda: high nunca pode depender so da tolerancia.
+assert.match(captureHealth, /configuration_not_reported/);
 assert.match(groupResolution, /resolve_group_observations/);
 assert.match(processWindow, /resolveGroupObservationsShadow/);
 assert.match(processLatestWindow, /resolveGroupObservationsShadow/);

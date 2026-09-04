@@ -172,11 +172,27 @@ const result = (state, label, summary, detail) => ({
 // Coverage is measured from append-only samples: two consecutive samples closer
 // than the tolerated gap are evidence that capture was alive between them.
 
-export const CAPTURE_COVERAGE_VERSION = "capture_coverage@1";
+export const CAPTURE_COVERAGE_VERSION = "capture_coverage@2";
 
-// The Android sensor reports every 15 minutes; 35 minutes is the same tolerance
-// already used to decide that a device stopped reporting.
-export const DEFAULT_MAX_SAMPLE_GAP_MS = 35 * MINUTE;
+// Tolerância de ponte entre amostras, calibrada com a primeira noite real de
+// operação (2026-09-03/04) em vez de arbitrada.
+//
+// O sensor pede heartbeat a cada 15 min por PeriodicWorkRequest, e o Doze do
+// Android adia esse disparo. Medido: 3,6 min de intervalo médio diurno, 16,7 min
+// de máximo diurno e 41,4 min de máximo noturno. Varrendo a tolerância sobre as
+// amostras reais, 35 min deixava dois vãos sem ponte e 40 min deixava um;
+// 45 min ponteia todos, e 50, 60 ou 90 não acrescentam nada. É o joelho da
+// curva, não um número escolhido para a métrica melhorar.
+//
+// Os vãos são adiamento do agendador, não perda de captura: o diagnóstico do
+// aparelho mostra listener conectado sem interrupção desde 2026-08-29 e os
+// eventos continuaram chegando durante eles.
+//
+// Salvaguarda que torna esta calibração incapaz de inflar o resultado: `high`
+// exige também configuração de captura confirmada pelo adaptador, que o sensor
+// atual não reporta. Subir a tolerância portanto **não** destrava `high`; ela só
+// impede um `low` falso, que suprimiria tendência legítima em período silencioso.
+export const DEFAULT_MAX_SAMPLE_GAP_MS = 45 * MINUTE;
 
 const HIGH_COVERAGE_RATIO = 0.9;
 const MODERATE_COVERAGE_RATIO = 0.6;
@@ -266,9 +282,14 @@ export const evaluateCaptureCoverage = (samples, options = {}) => {
     level = "low";
     reason = "capture_incident_in_window";
   }
+  // Sem confirmação de que a captura está configurada, o teto é `moderate`,
+  // por mais contínua que a série seja. O campo abaixo diz o que falta para
+  // `high`, para que o teto não pareça um defeito silencioso.
   if (facts.configuration !== "confirmed" && level === "high") {
-    level = "moderate";
-    reason = "configuration_not_reported";
+    return coverageResult("moderate", "configuration_not_reported", facts, {
+      ceiling: "moderate",
+      ceiling_reason: "o adaptador não reporta notification_access e whatsapp_installed"
+    });
   }
   return coverageResult(level, reason, facts);
 };
@@ -304,9 +325,10 @@ const largestUncovered = (merged, startsAt, endsAt) => {
   return Math.max(largest, endsAt - cursor);
 };
 
-const coverageResult = (level, reason, facts) => ({
+const coverageResult = (level, reason, facts, extra = {}) => ({
   level,
   reason,
+  ...extra,
   trend_valid: level === "high" || level === "moderate",
   version: CAPTURE_COVERAGE_VERSION,
   coverage_ratio: facts.windowMs > 0 ? Math.round((facts.coveredMs / facts.windowMs) * 10_000) / 10_000 : 0,

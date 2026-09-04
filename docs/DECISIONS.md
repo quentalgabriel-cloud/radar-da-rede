@@ -193,3 +193,16 @@ Os status usados são `ACEITA`, `PROVISÓRIA`, `HIPÓTESE` e `ESTACIONADA`.
 - **Justificativa da aceitação:** o dispositivo está sob controle físico da operação, a rede é piloto e a rotação exige nova build e reinstalação, o que interromperia a captura em operação. O custo de mitigar agora supera o risco no estágio atual.
 - **Consequência:** a integridade do sinal passa a depender de detecção, não de prevenção. Qualquer anomalia de volume ou origem deve ser tratada como possível injeção até prova em contrário.
 - **Reabrir se:** a rede sair do piloto e passar a sustentar decisão operacional real; aparecerem eventos de origem ou volume não explicados pelo aparelho; o repositório precisar receber colaboradores externos; ou a próxima build do sensor for produzida por qualquer motivo — nesse caso, aproveitar para trocar o provisionamento para runtime e rotacionar junto.
+
+## D-022 — Tolerância de cobertura calibrada em 45 minutos
+
+- **Status:** ACEITA
+- **Data:** 2026-09-04
+- **Decisão:** `capture_coverage` passa à versão `@2` e a tolerância de ponte entre amostras sobe de 35 para 45 minutos.
+- **Evidência:** primeira noite real de operação. Intervalo médio diurno de 3,6 min, máximo diurno de 16,7 min e máximo noturno de 41,4 min. Varrendo a tolerância sobre as amostras reais: 35 min deixa dois vãos sem ponte, 40 min deixa um, e 45 min ponteia todos. Cinquenta, sessenta e noventa minutos não acrescentam nada — 45 é o joelho da curva.
+- **Causa dos vãos:** adiamento do `PeriodicWorkRequest` pelo Doze do Android, não perda de captura. O diagnóstico do aparelho mostra listener conectado sem interrupção desde 2026-08-29, e os eventos continuaram chegando durante os vãos.
+- **Por que não é maquiar o gate:** `high` exige, além da cobertura, configuração de captura confirmada pelo adaptador. O sensor em operação não reporta `notification_access` nem `whatsapp_installed`, então o teto permanece `moderate` independentemente da tolerância. A calibração é incapaz de destravar `high` sozinha, e há teste fixando exatamente isso.
+- **O que ela corrige de fato:** com 35 minutos, um período mais silencioso poderia derrubar a cobertura abaixo de 60% e produzir um `low` falso, suprimindo tendência legítima. A calibração elimina esse falso negativo sem afrouxar a detecção de parada real — uma parada de seis horas continua quebrando a cobertura, também com teste.
+- **Consequência:** o resultado passa a expor `ceiling` e `ceiling_reason` quando o nível é limitado por falta de evidência de configuração, para que o teto não pareça defeito silencioso.
+- **Caminho para `high`:** o sensor precisa reportar `notification_access`, `whatsapp_installed` e `network_type`. Trabalho no repositório `radar-sensor-probe`, não neste.
+- **Reabrir se:** o comportamento medido do aparelho mudar, o sensor passar a reportar configuração, ou surgir um adaptador com cadência diferente.
