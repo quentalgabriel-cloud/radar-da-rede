@@ -1,10 +1,9 @@
 # Handoff para continuidade por qualquer LLM
 
-- Atualizado em: 2026-09-03, fim da sessão (P1.1, parte 1)
-- **Comece pela seção final, "ENCERRAMENTO DA SESSÃO"** — ela reordena a prioridade por causa do uso da equipe em 2026-09-04
-- Branch: `main`
-- Base auditada: commit `86c66fb`
-- Trabalho desta sessão: PR [#1](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/1), commits `838fb81`..`b65cdb1`, mesclado em `main` pelo merge `8e90141` em 2026-09-03
+- Atualizado em: 2026-09-04, fim da sessão (P1.1, etapas 1–3 do registry de grupos)
+- **Comece pela seção final, "ENCERRAMENTO DA SESSÃO DE 2026-09-04"** — o corpo do documento acima ainda descreve estado pré-consolidação em vários pontos; a seção final tem a versão corrente
+- Branch: `main`, no commit `b93a879`
+- Trabalho desta sessão: PRs [#11](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/11), [#12](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/12) e [#13](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/13), mesclados em `main`
 - Projeto Supabase: `pluruijhqnueayrlkthx`
 - Rede piloto: `d1224e68-c51f-4b31-a7e6-7b91f1a65357`
 - Produção web: `https://radar-da-rede.vercel.app`
@@ -13,17 +12,18 @@
 
 A fase corrente continua sendo **P1.1**. Não avance para P2.
 
-A consolidação voltou a produzir janela real: existe credencial ativa, uma
-execução canônica remota e replay idempotente comprovado. As três correções
-analíticas centrais (âncora de execução, política de comparação e cobertura de
-captura), a separação entre leitura e processamento, a paridade synthetic/live e
-a correção de vocabulário estão **implementadas e testadas localmente**.
+**Este parágrafo e a tabela abaixo descrevem o estado em 2026-09-03 e estão
+superados em pontos específicos — leia "ENCERRAMENTO DA SESSÃO DE 2026-09-04"
+antes de agir.** Resumo do que mudou: as Edge Functions já estão implantadas
+(não são mais "as antigas"); o registry de grupos, que tinha 206 grupos para
+poucas conversas reais, foi consolidado para 8; e a vigilância operacional
+(`operational-health`) passou a existir e a rodar limpa. O Control Center
+continua desligado, agora por decisão de coordenação/timing, não mais pelo
+registry inflado.
 
-Elas **ainda não valem em produção**, porque as Edge Functions implantadas
-continuam sendo as antigas. O Control Center permanece desligado
-(`group_control_center_enabled = false`).
-
-Relatório completo desta sessão: `docs/P1.1-EXECUTION-REPORT.md`.
+Relatório completo da sessão de 2026-09-03: `docs/P1.1-EXECUTION-REPORT.md`.
+Relatório desta sessão (2026-09-04): seção "ENCERRAMENTO" ao final deste
+arquivo e `docs/GROUP-IDENTITY-PLAN.md`.
 
 ## Evidência remota mais recente
 
@@ -231,188 +231,145 @@ cobertura. Não ajustar a tolerância apenas para melhorar a métrica.
 
 ---
 
-# ENCERRAMENTO DA SESSÃO DE 2026-09-03 — LEIA ISTO PRIMEIRO
+# ENCERRAMENTO DA SESSÃO DE 2026-09-04 — LEIA ISTO PRIMEIRO
 
-## Contexto que muda a prioridade
+## O que esta sessão fez
 
-A equipe começa a usar o sistema em 2026-09-04 (sexta) e trabalha **o dia todo,
-inclusive fim de semana**. Isso reordena o que importa: antes de qualquer gate,
-resolva os dois itens de OPERAÇÃO abaixo. Eles são regressões introduzidas pela
-própria P1.1 e ainda não corrigidas.
+Executou `docs/GROUP-IDENTITY-PLAN.md`, etapas 1 a 3, na ordem prescrita. Cada
+etapa só começou depois que a anterior estava mesclada e implantada.
 
-## URGENTE 1 — a equipe perdeu o botão de atualizar
+### Etapa 1 — estancar (PR [#11](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/11))
 
-Antes da P1.1, **toda abertura da página reconsolidava**, porque o GET do read
-model processava. Isso foi removido, corretamente. Mas a UI **não** foi ligada ao
-substituto.
+`process-window` e `process-latest-window` passaram a canonicalizar o evento
+(`canonicalizeConversationEvent`) **antes** de resolver grupo, não só na
+análise. **VALIDADO REMOTAMENTE**: reprocessamento contra produção confirmou
+zero grupo novo a partir de eventos já vistos.
 
-`process-latest-window` já existe, já está implantada em v7, já exige papel
-operator/owner e já tem limite de cinco minutos. Falta apenas o front chamá-la.
+### Etapa 2 — proteger (PRs [#11](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/11) e [#12](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/12))
 
-- `apps/radar-web/public/supabase-provider.js` tem `readModel(networkId)`; falta
-  um `refreshLatestWindow(networkId)` que faça `POST /functions/v1/process-latest-window?network_id=…`
-  com o token do usuário;
-- `apps/radar-web/public/refresh-controller.js` tem `refresh(reason)`; o botão
-  manual deve, para operator/owner, chamar a consolidação antes de reler;
-- tratar `429 rate_limited` mostrando `retry_after_seconds`, e `403
-  manual_refresh_not_authorized` escondendo a ação para quem é viewer.
+Edge Function `operational-health` nova (leitura pura, sem `SUPABASE_SERVICE_ROLE_KEY`
+no workflow) mede `groupsCreatedLast24h` contra `distinctConversationsLast24h`.
+Rodar contra produção expôs um defeito autoral: a primeira versão contava
+`conversation_id` bruto (o id volátil) como "conversa", comparando inflado
+contra inflado. Corrigido no #12 para canonicalizar o rótulo antes de contar.
+**VALIDADO REMOTAMENTE.**
 
-Sem isso, no sábado a equipe vê dado de até cinco horas atrás sem poder forçar
-atualização.
+### Etapa 3 — consolidar (PR [#13](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/13))
 
-## URGENTE 2 — só três consolidações por dia, com 14 horas de vão
+Nova função `private.consolidate_group_registry`, com ensaio (`p_apply` ausente)
+antes de aplicar. Ver decisão completa em D-023 em `docs/DECISIONS.md`.
 
-Hoje: `0 11,16,21 * * *` UTC, ou seja 08:00, 13:00 e 18:00 de Recife. Entre
-18:00 e 08:00 não há consolidação nenhuma.
+Aplicada em produção: **206 grupos ativos → 8.** 198 fusões registradas em
+`group_merge_map` com prova por linha. As 8 janelas canônicas foram
+reprocessadas pelo caminho de produção — nenhuma métrica foi somada à mão.
 
-Mudança recomendada em `.github/workflows/consolidate.yml`:
-
-```yaml
-- cron: "0 0,3,6,11,16,21 * * *"
-```
-
-Seis slots por dia, vão máximo de cinco horas, e **preserva os três horários
-atuais**. Isso importa: a política `same_slot_previous_day@1` compara cada slot
-com ele mesmo no dia anterior, então trocar os horários existentes órfãos as
-execuções já produzidas e adiaria ainda mais a primeira tendência.
-
-`packages/supabase-core/src/consolidation-schedule.js` tem
-`CONSOLIDATION_LOCAL_HOURS = [8, 13, 18]` e precisa mudar junto, senão a janela
-canônica calculada não bate com o horário do cron. Há teste cobrindo isso.
+Rodar a vigilância depois da consolidação expôs um segundo defeito: o guardrail
+contava `created_at` de grupo arquivado como se fosse novo, porque a
+consolidação passou a arquivar em vez de excluir. Corrigido no mesmo PR e
+confirmado contra produção: vigilância foi de `registry_inflating` (excedente
+53) para **sem problemas**. **VALIDADO REMOTAMENTE**, com a vigilância como
+prova, não com leitura pontual.
 
 ## Estado real, com nível de evidência
 
-| Gate | Estado |
+| Gate / etapa | Estado |
 |---|---|
-| 1. scheduler executa e falha visivelmente | **VALIDADO REMOTAMENTE**, nos dois caminhos |
-| 2. duas janelas comparáveis | **mecanismo fechado**; tendência só a partir de ~05/09 |
-| 3. zeros presos à execução atual | **VALIDADO REMOTAMENTE**: 152 de 152 grupos |
-| 4. confidence mede cobertura | **VALIDADO REMOTAMENTE**: `capture_coverage@1` |
-| 5. read model somente leitura | **VALIDADO REMOTAMENTE**, conferido byte a byte |
-| 6. paridade, E2E, campo | paridade feita; **E2E e campo pendentes** |
-| 7. vocabulário com a coordenação | pendente — o uso de sexta é o insumo |
-| 8. rollback | cadeia de RPC testada localmente; remoto pendente |
+| Etapa 1 (estancar) | **VALIDADO REMOTAMENTE** |
+| Etapa 2 (guardrail) | **VALIDADO REMOTAMENTE** — vigilância limpa após duas correções próprias |
+| Etapa 3 (consolidar) | **VALIDADO REMOTAMENTE** — aplicada, reprocessada, conferida linha a linha |
+| Etapa 4 (sensor: canonicalizar na origem, `shortcutId`, config no heartbeat) | **PENDENTE** — não iniciada; repositório é outro (`radar-sensor-probe`) |
+| Etapa 5 (ligar Control Center) | **PENDENTE** — tecnicamente destravada pela etapa 3, mas ver "Sobre ligar" abaixo |
+| Gates 1/3/4/5 do P1.1 (scheduler, âncora, cobertura, read model puro) | **VALIDADO REMOTAMENTE**, herdado de sessões anteriores, sem regressão nesta |
+| Gate 2 (duas janelas comparáveis, tendência real) | mecanismo fechado; primeira tendência esperada a partir de 2026-09-05 — **ainda não conferida nesta sessão** |
+| Gate "campo" (equipe usando, E2E de campo) | **PENDENTE** — nada nesta sessão substitui uso real |
 
-Implantado: `process-window` v6, `process-latest-window` v7, `radar-read-model`
-v13. Migrations aplicadas: 12. `main` em `3fb0300`; o PR #5 traz a documentação
-desta sessão e ainda não foi mesclado.
+## Evidência remota mais recente (2026-09-04, ~19:45 UTC)
 
-## Por que a tendência não pode aparecer antes de ~05/09
-
-A regra exige confiança `moderate` ou `high` nas **duas** janelas. A série
-append-only de amostras começou em 2026-09-03 19:52 UTC, então toda janela que
-termina antes disso é `unavailable` por `no_capture_samples`.
-
-**Alternativa investigada e descartada, com número.** Tentei usar
-`ingest_batches.sent_at` como prova adicional de vivacidade, já que é append-only
-e existe desde 27/08. Não funciona: os lotes só chegam quando há mensagem.
-
-| Janela | Lotes | Maior intervalo |
-|---|---:|---:|
-| atual `02T21→03T21` | 32 | 9h29 |
-| comparadora `01T21→02T21` | 10 | 16h22 |
-
-As madrugadas ficam sem evidência nenhuma. Não temos como provar que a captura
-esteve viva nesses períodos. **Não force esse caminho** — inflar cobertura para
-liberar a tendência seria mascarar exatamente a falha que a P1.1 existe para
-tornar visível.
-
-Caminho legítimo para o futuro: o aparelho já rastreia `listener_connected_at` e
-declara conexão contínua desde 2026-08-29. Se uma próxima build do sensor passar
-esse campo no heartbeat, a cobertura pode usá-lo como evidência forte de
-continuidade. Isso é trabalho no repositório do probe.
-
-## Primeira verificação da manhã, antes de tudo
-
-Medir a cadência noturna. Às 22:01 UTC o intervalo desde a última amostra era de
-**33,2 minutos**, contra 3,6 de média diurna, e o limite de `capture_coverage@1`
-é 35. A consulta por hora está na seção 12 de `docs/P1.1-EXECUTION-REPORT.md`.
-
-Se algum intervalo noturno passar de 35 minutos, decida entre ajustar a
-tolerância **com justificativa medida** ou tratar a lacuna como perda real de
-cobertura. Não mexa no limite só para a métrica melhorar.
-
-## Sobre ligar o Control Center na sexta
-
-Não foi ligado nesta sessão; `group_control_center_enabled` continua `false`.
-
-A recomendação é ligar em **modo reduzido** para a rede piloto, porque o valor
-não está só na tendência. Com dado real ancorado na execução atual, a tela já
-entrega: quais dos 152 grupos estão ativos ou silenciosos na janela, condição,
-situações no período, contexto, filtros, ordenação, busca, sparkline sobre as
-quatro execuções canônicas reais e confiança da captura com motivo textual. A
-coluna de tendência diz honestamente por que não há comparação, e em ~05/09 as
-tendências acendem sozinhas, sem novo deploy.
-
-Antes de ligar, feche os dois urgentes acima e rode o E2E. Ligar é
-`update public.networks set group_control_center_enabled = true where id = 'd1224e68-c51f-4b31-a7e6-7b91f1a65357';`
-e desligar é o mesmo com `false` — rollback imediato, sem deploy.
-
-## Ordem sugerida para a próxima sessão (atualizada em 2026-09-04)
-
-1. ~~medir a cadência noturna~~ — feito, resultado abaixo;
-2. ~~URGENTE 1, botão de atualizar~~ — feito no PR #6;
-3. ~~URGENTE 2, seis slots por dia~~ — feito no PR #6;
-4. ~~SLO e alertas (D06)~~ — feito no PR #6; falta **implantar a Edge Function
-   `operational-health`**, senão o workflow novo falha de forma visível;
-5. decidir a tolerância de cobertura, com a medição já disponível;
-6. ~~E2E de navegador (gate 6)~~ — feito no PR #6: oito testes em Chromium
-   real, verificados por mutação, com job próprio no CI;
-7. **NÃO ligar o Control Center** até a identidade de grupo ser resolvida — ver
-   `docs/GROUP-IDENTITY-FINDING.md`. Os gates analíticos estão fechados; o que
-   bloqueia é o registry, com 196 grupos para 1 conversa real;
-8. em 05/09, conferir a primeira tendência real e fechar o gate 2.
-
-O prompt da etapa está em `docs/implementation-prompts/P1.1-FECHAMENTO.md`.
-
-### Resultado da medição noturna
-
-| Evidência | Valor |
+| Item | Valor |
 |---|---:|
-| intervalo médio diurno | 3,6 min |
-| maior intervalo diurno | 16,7 min |
-| maior intervalo noturno | **41,4 min** |
-| eficiência do bridging a 35 min | **~79,5%** |
+| eventos (`normalized_events`) | 1.510 |
+| batches | 246 |
+| grupos ativos | **8** (eram 206 no início da sessão) |
+| grupos arquivados | 198 |
+| linhas de métrica (`group_metric_windows`) | 122 |
+| execuções (`processing_runs`) | 26 (18 `canonical_slot`) |
+| credenciais de processamento ativas | 1 |
+| amostras em `capture_health_samples` | 149 |
+| último heartbeat | 2026-09-04 19:34:03 UTC |
+| último evento | 2026-09-04 19:34:00 UTC |
+| último processamento | 2026-09-04 19:43:08 UTC |
+| `group_control_center_enabled` | `false` |
 
-Dois intervalos passaram dos 35 minutos de tolerância. A cobertura estaciona
-perto de 80%, então o nível `high`, que exige 90%, fica inalcançável enquanto o
-sensor depender de `PeriodicWorkRequest`.
+Funções implantadas: `process-window` v8, `process-latest-window` v9,
+`radar-read-model` v13 (sem mudança nesta sessão), `operational-health` v4
+(nova nesta sessão, com duas correções). `ingest-events` v2, `ingest-health` v2
+sem mudança.
 
-A causa não é perda de captura: o diagnóstico do aparelho mostra listener
-conectado sem interrupção desde 29/08 e os eventos continuaram chegando. São
-adiamentos do WorkManager pelo Doze.
+`pnpm verify`: 156 testes, todos verdes, checks e builds dos 12 pacotes.
 
-**A tolerância não foi alterada.** A decisão está descrita no prompt da etapa,
-com as duas opções. Se escolher calibrar, o número precisa vir do percentil
-observado e a regra precisa virar `capture_coverage@2`, para que as execuções
-antigas continuem interpretáveis. Não mexa no limite só para destravar a
-tendência.
+## Pull requests
 
-## Por que o Control Center continua desligado
+Mesclados nesta sessão: [#11](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/11), [#12](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/12), [#13](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/13).
 
-Não é gate analítico em aberto. Os gates 1, 3, 4 e 5 estão validados em produção
-e o 6 tem E2E cobrindo a própria tela do Control Center.
+**Ainda abertos, de sessões anteriores, aguardando decisão do dono:**
+- [#5](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/5) — documentação de fechamento de 2026-09-03. Conteúdo majoritariamente superado por este handoff; revisar se ainda vale mesclar ou fechar sem mesclar.
+- [#10](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/10) — etapa 1 validada e nota sobre o cron do GitHub entregar só 2 de 6 slots. A decisão de mover para `pg_cron` continua em aberto (ver abaixo).
 
-O bloqueio é a identidade de conversa. O sensor emite `source_conversation_id`
-diferente a cada notificação, então o registry criou **199 grupos para uma única
-conversa real**. A tela mostraria cerca de 196 linhas para o que é uma conversa
-só — afirmaria algo falso sobre a rede.
+## Bloqueios que não podem ser ignorados
 
-A vista v0.1 que a equipe usa hoje **está correta**: o read model canonicaliza
-antes de montar as conversas. A duplicação afeta só o registry.
+1. **Decisão de scheduler pendente**: o cron do GitHub Actions entregou 2 de 6
+   slots em pelo menos um dia observado. A vigilância (`scheduler_under_delivering`)
+   mede isso, mas não conserta. Mover para `pg_cron` dentro do Supabase
+   resolveria a entrega, e a decisão pendente é sobre onde a credencial de
+   processamento passaria a viver — ver PR #10.
+2. **Etapa 4 (sensor) não começou.** O repositório de produção é
+   `quentalgabriel-cloud/radar-sensor-probe`, não este monorepo. Até lá, toda
+   conversa nova continua nascendo com id volátil — a etapa 3 corrige o
+   passado, não impede reincidência na origem. A etapa 1 (canonicalizar antes
+   de resolver) já impede a reincidência **no registry**, mas o sensor
+   continuará gerando um hash novo por notificação até a etapa 4.
+3. **Credencial do dispositivo em claro no APK** — risco aceito (D-021), não
+   revisado nesta sessão. Não rotacionar nem tornar o repositório privado sem
+   falar com o dono.
+4. **Vocabulário/horizonte da tela não foi validado com a coordenação** — a
+   equipe começou a usar o sistema em 2026-09-04 (sexta), mas não há registro
+   nesta sessão de feedback deles sobre nomenclatura ou período padrão.
 
-Causa raiz **provada**: o sensor deriva a identidade do título, mas o WhatsApp
-inclui a contagem acumulada nele — `(258 mensagens)`, `(259 mensagens)` — então
-cada notificação gera um hash novo. Recalcular a derivação reproduz 204 de 204
-ids do banco, sem divergência.
+## Sobre ligar o Control Center agora
 
-A normalização que resolve **já existe** neste repositório
-(`canonicalConversationLabel`) e já é confiada para exibir; falta aplicá-la no
-caminho de resolução de grupo.
+Não foi ligado nesta sessão. Antes da etapa 3, o motivo era o registry mostrar
+~196 linhas para uma conversa real — isso está resolvido.
 
-Plano completo em `docs/GROUP-IDENTITY-PLAN.md` e prompt de execução em
-`docs/implementation-prompts/P1.2-IDENTIDADE-DE-CONVERSA.md`.
-A primeira etapa não exige tocar no aparelho. Medições em `docs/GROUP-IDENTITY-FINDING.md`.
+O que falta agora é mais simples: confirmar que a equipe, usando o sistema
+desde ontem, não tem objeção de vocabulário pendente, e que a etapa 4 do sensor
+(ou pelo menos um plano para ela) não vai reabrir a mesma inflação em poucos
+dias. Ligar sem a etapa 4 significa que o registry vai recomeçar a crescer a
+cada notificação nova — devagar, porque a etapa 1 barrou o caminho do
+registry, mas o sensor ainda emite um id novo por notificação, então cada
+conversa ainda gera *algum* volume de aliases (não de grupos, porque a etapa 1
+resolve para o grupo certo) até a etapa 4 estabilizar a origem.
+
+Ligar continua sendo:
+```sql
+update public.networks set group_control_center_enabled = true
+where id = 'd1224e68-c51f-4b31-a7e6-7b91f1a65357';
+```
+Desligar é o mesmo com `false` — rollback imediato, sem deploy.
+
+## Próxima ação exata
+
+1. Decidir o scheduler (`pg_cron` vs. manter GitHub Actions) — PR #10 traz o
+   diagnóstico.
+2. Iniciar a etapa 4 no repositório `radar-sensor-probe`: canonicalizar antes
+   do hash, reportar `notification_access`/`whatsapp_installed`/`network_type`,
+   avaliar `getShortcutId()`. Ver `docs/GROUP-IDENTITY-PLAN.md`, seção 4.
+3. Com a coordenação, confirmar vocabulário e decidir ligar o Control Center
+   (etapa 5) para a rede piloto.
+4. Em 2026-09-05, conferir a primeira tendência real (gate 2) — nada a fazer
+   até lá além de não mexer na tolerância de cobertura.
+5. Revisar os PRs #5 e #10 abertos: mesclar, atualizar ou fechar.
+
+---
 
 ## Não reverta sem falar com o dono
 
