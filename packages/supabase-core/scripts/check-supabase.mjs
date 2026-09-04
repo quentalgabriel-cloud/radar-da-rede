@@ -29,6 +29,10 @@ const captureCoverageMigration = await readFile(
   resolve(repositoryRoot, "supabase/migrations/20260903210000_capture_coverage_and_run_anchor.sql"),
   "utf8",
 );
+const consolidationMigration = await readFile(
+  resolve(repositoryRoot, "supabase/migrations/20260904170000_group_registry_consolidation.sql"),
+  "utf8",
+);
 const config = await readFile(resolve(repositoryRoot, "supabase/config.toml"), "utf8");
 const handler = await readFile(
   resolve(repositoryRoot, "supabase/functions/_shared/handler.ts"),
@@ -127,7 +131,8 @@ const normalizedSql = (value) => normalizedText(value).trim();
 assert.equal(
   normalizedSql(sql.slice(sql.indexOf(groupRegistryMarker))),
   [groupRegistryMigration, groupRegistryAdvisorIndexesMigration, groupRegistryExplainabilityMigration,
-    groupRegistryUiAccessMigration, groupMetricWindowsMigration, captureCoverageMigration]
+    groupRegistryUiAccessMigration, groupMetricWindowsMigration, captureCoverageMigration,
+    consolidationMigration]
     .map(normalizedSql).join("\n\n"),
   "group registry migration and declarative schema diverged",
 );
@@ -276,6 +281,14 @@ assert.match(operationalHealth, /canonicalConversationLabel/);
 assert.ok(
   !operationalHealth.includes("row.conversation_id"),
   "a vigilancia nao pode contar conversa pelo id bruto",
+);
+// A consolidacao de registry arquiva grupo sem apagar; sem filtrar por grupo
+// ativo, toda consolidacao futura reacende este alerta por 24h contra um
+// problema que ja foi corrigido.
+assert.match(
+  operationalHealth,
+  /\.from\("groups"\)\.select\("id",[\s\S]{0,80}\.eq\("network_id", networkId\)\.eq\("status", "active"\)\.gte\("created_at"/,
+  "groupsCreatedLast24h precisa contar apenas grupos ativos",
 );
 // Leitura pura: a vigilancia nao pode alterar o estado que observa.
 for (const mutation of [".insert(", ".update(", ".delete(", ".rpc("]) {
