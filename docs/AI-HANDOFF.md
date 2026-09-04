@@ -1,6 +1,7 @@
 # Handoff para continuidade por qualquer LLM
 
-- Atualizado em: 2026-09-03 (sessão P1.1, parte 1)
+- Atualizado em: 2026-09-03, fim da sessão (P1.1, parte 1)
+- **Comece pela seção final, "ENCERRAMENTO DA SESSÃO"** — ela reordena a prioridade por causa do uso da equipe em 2026-09-04
 - Branch: `main`
 - Base auditada: commit `86c66fb`
 - Trabalho desta sessão: PR [#1](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/1), commits `838fb81`..`b65cdb1`, mesclado em `main` pelo merge `8e90141` em 2026-09-03
@@ -227,3 +228,138 @@ minutos, contra 3,6 de média diurna, perto do limite de 35 adotado em
 Se algum intervalo noturno passar de 35 minutos, decidir entre ajustar a
 tolerância com justificativa medida ou tratar a lacuna como perda real de
 cobertura. Não ajustar a tolerância apenas para melhorar a métrica.
+
+---
+
+# ENCERRAMENTO DA SESSÃO DE 2026-09-03 — LEIA ISTO PRIMEIRO
+
+## Contexto que muda a prioridade
+
+A equipe começa a usar o sistema em 2026-09-04 (sexta) e trabalha **o dia todo,
+inclusive fim de semana**. Isso reordena o que importa: antes de qualquer gate,
+resolva os dois itens de OPERAÇÃO abaixo. Eles são regressões introduzidas pela
+própria P1.1 e ainda não corrigidas.
+
+## URGENTE 1 — a equipe perdeu o botão de atualizar
+
+Antes da P1.1, **toda abertura da página reconsolidava**, porque o GET do read
+model processava. Isso foi removido, corretamente. Mas a UI **não** foi ligada ao
+substituto.
+
+`process-latest-window` já existe, já está implantada em v7, já exige papel
+operator/owner e já tem limite de cinco minutos. Falta apenas o front chamá-la.
+
+- `apps/radar-web/public/supabase-provider.js` tem `readModel(networkId)`; falta
+  um `refreshLatestWindow(networkId)` que faça `POST /functions/v1/process-latest-window?network_id=…`
+  com o token do usuário;
+- `apps/radar-web/public/refresh-controller.js` tem `refresh(reason)`; o botão
+  manual deve, para operator/owner, chamar a consolidação antes de reler;
+- tratar `429 rate_limited` mostrando `retry_after_seconds`, e `403
+  manual_refresh_not_authorized` escondendo a ação para quem é viewer.
+
+Sem isso, no sábado a equipe vê dado de até cinco horas atrás sem poder forçar
+atualização.
+
+## URGENTE 2 — só três consolidações por dia, com 14 horas de vão
+
+Hoje: `0 11,16,21 * * *` UTC, ou seja 08:00, 13:00 e 18:00 de Recife. Entre
+18:00 e 08:00 não há consolidação nenhuma.
+
+Mudança recomendada em `.github/workflows/consolidate.yml`:
+
+```yaml
+- cron: "0 0,3,6,11,16,21 * * *"
+```
+
+Seis slots por dia, vão máximo de cinco horas, e **preserva os três horários
+atuais**. Isso importa: a política `same_slot_previous_day@1` compara cada slot
+com ele mesmo no dia anterior, então trocar os horários existentes órfãos as
+execuções já produzidas e adiaria ainda mais a primeira tendência.
+
+`packages/supabase-core/src/consolidation-schedule.js` tem
+`CONSOLIDATION_LOCAL_HOURS = [8, 13, 18]` e precisa mudar junto, senão a janela
+canônica calculada não bate com o horário do cron. Há teste cobrindo isso.
+
+## Estado real, com nível de evidência
+
+| Gate | Estado |
+|---|---|
+| 1. scheduler executa e falha visivelmente | **VALIDADO REMOTAMENTE**, nos dois caminhos |
+| 2. duas janelas comparáveis | **mecanismo fechado**; tendência só a partir de ~05/09 |
+| 3. zeros presos à execução atual | **VALIDADO REMOTAMENTE**: 152 de 152 grupos |
+| 4. confidence mede cobertura | **VALIDADO REMOTAMENTE**: `capture_coverage@1` |
+| 5. read model somente leitura | **VALIDADO REMOTAMENTE**, conferido byte a byte |
+| 6. paridade, E2E, campo | paridade feita; **E2E e campo pendentes** |
+| 7. vocabulário com a coordenação | pendente — o uso de sexta é o insumo |
+| 8. rollback | cadeia de RPC testada localmente; remoto pendente |
+
+Implantado: `process-window` v6, `process-latest-window` v7, `radar-read-model`
+v13. Migrations aplicadas: 12. `main` em `3fb0300`; o PR #5 traz a documentação
+desta sessão e ainda não foi mesclado.
+
+## Por que a tendência não pode aparecer antes de ~05/09
+
+A regra exige confiança `moderate` ou `high` nas **duas** janelas. A série
+append-only de amostras começou em 2026-09-03 19:52 UTC, então toda janela que
+termina antes disso é `unavailable` por `no_capture_samples`.
+
+**Alternativa investigada e descartada, com número.** Tentei usar
+`ingest_batches.sent_at` como prova adicional de vivacidade, já que é append-only
+e existe desde 27/08. Não funciona: os lotes só chegam quando há mensagem.
+
+| Janela | Lotes | Maior intervalo |
+|---|---:|---:|
+| atual `02T21→03T21` | 32 | 9h29 |
+| comparadora `01T21→02T21` | 10 | 16h22 |
+
+As madrugadas ficam sem evidência nenhuma. Não temos como provar que a captura
+esteve viva nesses períodos. **Não force esse caminho** — inflar cobertura para
+liberar a tendência seria mascarar exatamente a falha que a P1.1 existe para
+tornar visível.
+
+Caminho legítimo para o futuro: o aparelho já rastreia `listener_connected_at` e
+declara conexão contínua desde 2026-08-29. Se uma próxima build do sensor passar
+esse campo no heartbeat, a cobertura pode usá-lo como evidência forte de
+continuidade. Isso é trabalho no repositório do probe.
+
+## Primeira verificação da manhã, antes de tudo
+
+Medir a cadência noturna. Às 22:01 UTC o intervalo desde a última amostra era de
+**33,2 minutos**, contra 3,6 de média diurna, e o limite de `capture_coverage@1`
+é 35. A consulta por hora está na seção 12 de `docs/P1.1-EXECUTION-REPORT.md`.
+
+Se algum intervalo noturno passar de 35 minutos, decida entre ajustar a
+tolerância **com justificativa medida** ou tratar a lacuna como perda real de
+cobertura. Não mexa no limite só para a métrica melhorar.
+
+## Sobre ligar o Control Center na sexta
+
+Não foi ligado nesta sessão; `group_control_center_enabled` continua `false`.
+
+A recomendação é ligar em **modo reduzido** para a rede piloto, porque o valor
+não está só na tendência. Com dado real ancorado na execução atual, a tela já
+entrega: quais dos 152 grupos estão ativos ou silenciosos na janela, condição,
+situações no período, contexto, filtros, ordenação, busca, sparkline sobre as
+quatro execuções canônicas reais e confiança da captura com motivo textual. A
+coluna de tendência diz honestamente por que não há comparação, e em ~05/09 as
+tendências acendem sozinhas, sem novo deploy.
+
+Antes de ligar, feche os dois urgentes acima e rode o E2E. Ligar é
+`update public.networks set group_control_center_enabled = true where id = 'd1224e68-c51f-4b31-a7e6-7b91f1a65357';`
+e desligar é o mesmo com `false` — rollback imediato, sem deploy.
+
+## Ordem sugerida para a próxima sessão
+
+1. medir a cadência noturna;
+2. URGENTE 1, botão de atualizar;
+3. URGENTE 2, seis slots por dia;
+4. E2E de navegador (gate 6);
+5. decidir sobre ligar o Control Center em modo reduzido;
+6. SLO e alertas (D06, único débito "imediato" ainda aberto);
+7. em 05/09, conferir a primeira tendência real e fechar o gate 2.
+
+## Não reverta sem falar com o dono
+
+A credencial do dispositivo está embutida em claro no APK público. **Risco aceito
+por Gabriel Quental**, registrado como D-021 em `docs/DECISIONS.md`. Revogar a
+credencial ou fechar o repositório do probe **pararia a captura em operação**.
