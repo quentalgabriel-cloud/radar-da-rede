@@ -578,16 +578,34 @@ sem essa confirmação humana.
 
 ## Próxima ação exata (atual)
 
-1. **Instalar o APK novo no Moto G84** (ação humana, ver limitação acima);
-2. confirmar que o aparelho está postando com a build nova (heartbeat/eventos
-   chegando) e só então revogar a credencial antiga;
-3. depois de alguns dias de dado real, consultar
-   `normalized_events.metadata->>'shortcut_id'` e `->>'locus_id'` — se
-   vierem preenchidos, a etapa 4 "de verdade" (mudança de identidade
-   coordenada sensor+backend, ver achado do PR #16) pode ser desenhada com
-   confiança; se vierem nulos, precisa de outra estratégia;
-4. mandar a mensagem de vocabulário (6.2) e decidir o Control Center (etapa 5);
-5. revisar o PR #16.
+Estado em 2026-09-05, fim de sessão: **em espera humana, não bloqueado por
+decisão técnica.**
+
+1. Instalação do APK pedida ao Victor — **conferido no banco antes desta
+   nota: o aparelho ainda estava com a build antiga** (`parser_version` do
+   evento mais recente = `0.3.0`, zero eventos com `shortcut_id`/`locus_id`).
+   Não confiar em "já pedi" como "já instalado" — reconferir com a mesma
+   consulta antes de revogar a credencial antiga:
+   ```sql
+   select parser_version, metadata->>'shortcut_id', metadata->>'locus_id'
+   from public.normalized_events
+   where network_id='d1224e68-c51f-4b31-a7e6-7b91f1a65357'
+   order by occurred_at desc limit 5;
+   ```
+   Só revogar `device_credentials` id `23589a49-acdf-4f28-959e-67ab896b5bb1`
+   depois de ver `parser_version = '0.3.1'` num evento real;
+2. mensagem de vocabulário (6.2) enviada à equipe — aguardando retorno;
+3. os dois tokens pessoais do Supabase que passaram pelo chat desta sessão
+   foram revogados pelo Gabriel — confirmado por ele, não verificável por
+   consulta;
+4. depois do item 1 confirmado e de alguns dias de dado real, consultar
+   `shortcut_id`/`locus_id` em volume — se vierem preenchidos, a etapa 4 "de
+   verdade" (mudança de identidade coordenada sensor+backend, achado do
+   PR #16) pode ser desenhada com confiança; se vierem nulos, precisa de
+   outra estratégia;
+5. quando a equipe responder sobre vocabulário, decidir o Control Center
+   (etapa 5);
+6. revisar o PR #16 (plano de pesquisa, ainda não mesclado).
 
 ---
 
