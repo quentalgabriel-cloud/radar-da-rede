@@ -9,7 +9,7 @@
 
 import { CONSOLIDATION_LOCAL_HOURS } from "./consolidation-schedule.js";
 
-export const OPERATIONAL_HEALTH_VERSION = "operational_health@2";
+export const OPERATIONAL_HEALTH_VERSION = "operational_health@3";
 
 // Todos os limites vêm de comportamento medido em 2026-09-03/04, não de
 // arbitragem. A origem de cada número está no comentário ao lado.
@@ -35,7 +35,11 @@ export const DEFAULT_THRESHOLDS = Object.freeze({
   // Seis slots por dia. O cron do GitHub atrasa e às vezes pula, então tolerar
   // duas perdas evita alarme por atraso de fila; abaixo disso é sub-entrega
   // real, e foi o que se observou em 2026-09-04: dois slots de seis.
-  allowMissedSlotsPerDay: 2
+  allowMissedSlotsPerDay: 2,
+  // Mesmo limite de processingLateAfterMinutes, pela mesma razão: um slot a
+  // cada cinco horas, mais uma de folga para fila do GitHub Actions. A
+  // diferença é o que cada um mede — ver comentário acima da checagem.
+  canonicalProcessingLateAfterMinutes: 6 * 60
 });
 
 // Quantos slots deveriam ter ocorrido nas últimas 24 horas. Como cada horário
@@ -157,8 +161,40 @@ export function evaluateOperationalHealth(snapshot = {}, options = {}) {
     }
   }
 
+  // processingAge acima mede QUALQUER processamento, inclusive o refresh
+  // manual de um operador — e um refresh manual recente esconde o agendador
+  // parado atrás de um número saudável. canonicalWindowsLast24h tem o mesmo
+  // ponto cego pelo lado da contagem: reprocessar janelas antigas manualmente
+  // (como aconteceu na consolidação do registry) atualiza completed_at para
+  // agora sem entregar nenhum slot novo, inflando a contagem de "janelas
+  // canônicas em 24h". Medido em produção em 2026-09-05: o agendador estava
+  // parado havia ~19h e os dois sinais acima relatavam operação normal.
+  //
+  // Este terceiro sinal usa o ends_at da janela canônica mais recente, não
+  // quando ela foi processada. Reprocessar uma janela antiga reafirma o
+  // mesmo ends_at antigo — não cria um novo — então esta idade só encolhe
+  // quando o agendador de fato entrega um slot que nunca tinha sido
+  // processado antes. É o único sinal imune a refresh manual e a
+  // reprocessamento.
+  const canonicalWindowAge = minutesSince(now, snapshot.lastCanonicalWindowEndsAt);
+  if (canonicalWindowAge === null) {
+    problems.push(problem(
+      "no_canonical_processing",
+      "Nenhuma execução agendada (janela canônica) foi encontrada.",
+      "Rode o workflow Consolidate Radar e confirme que ele conclui como execução agendada, não só manual."
+    ));
+  } else if (canonicalWindowAge > thresholds.canonicalProcessingLateAfterMinutes) {
+    problems.push(problem(
+      "scheduler_stalled",
+      `A janela canônica mais recente termina há ${round(canonicalWindowAge)} min, acima do limite de ${thresholds.canonicalProcessingLateAfterMinutes} min — mesmo que outro número acima pareça normal.`,
+      "O agendador (GitHub Actions schedule ou pg_cron) parou de entregar slot novo. Refresh manual e reprocessamento não substituem isso: confirme execuções `schedule` recentes do workflow Consolidate Radar.",
+      { observed_minutes: round(canonicalWindowAge) }
+    ));
+  }
+
   return report(problems, thresholds, {
     processing_age_minutes: round(processingAge),
+    canonical_window_age_minutes: round(canonicalWindowAge),
     groups_created_24h: Number.isFinite(gruposNovos) ? gruposNovos : null,
     conversations_seen_24h: Number.isFinite(conversasVistas) ? conversasVistas : null,
     canonical_windows_24h: Number.isFinite(slotsEntregues) ? slotsEntregues : null,
@@ -179,6 +215,7 @@ export function renderOperationalHealthSummary(result) {
     "| Observação | Valor |",
     "| --- | --- |",
     `| Consolidação concluída há | ${display(result.observed.processing_age_minutes, "min")} |`,
+    `| Janela canônica mais recente termina há | ${display(result.observed.canonical_window_age_minutes, "min")} |`,
     `| Heartbeat recebido há | ${display(result.observed.heartbeat_age_minutes, "min")} |`,
     `| Grupos ativos | ${display(result.observed.active_groups)} |`,
     `| Linhas de métrica na execução | ${display(result.observed.metric_rows)} |`,
