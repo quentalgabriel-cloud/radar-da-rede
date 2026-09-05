@@ -1,9 +1,9 @@
 # Handoff para continuidade por qualquer LLM
 
-- Atualizado em: 2026-09-04, fim da sessão (P1.1, etapas 1–3 do registry de grupos)
-- **Comece pela seção final, "ENCERRAMENTO DA SESSÃO DE 2026-09-04"** — o corpo do documento acima ainda descreve estado pré-consolidação em vários pontos; a seção final tem a versão corrente
-- Branch: `main`, no commit `b93a879`
-- Trabalho desta sessão: PRs [#11](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/11), [#12](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/12) e [#13](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/13), mesclados em `main`
+- Atualizado em: 2026-09-05 (planejamento da próxima etapa + correção da vigilância)
+- **Comece por `docs/P1.3-PLANO-PROXIMA-ETAPA.md`** (PR [#16](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/16), aberto, não mesclado — tem 4 perguntas para o Gabriel na seção 6) **e pela seção "ENCERRAMENTO DA SESSÃO DE 2026-09-05" ao final deste arquivo**. As seções acima ainda descrevem estado de sessões anteriores em vários pontos.
+- Branch: `main`, no commit `59d7be5`
+- Trabalho desta sessão: PR [#17](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/17) mesclado; PR #16 aberto (planejamento, não mesclar sem revisão do Gabriel)
 - Projeto Supabase: `pluruijhqnueayrlkthx`
 - Rede piloto: `d1224e68-c51f-4b31-a7e6-7b91f1a65357`
 - Produção web: `https://radar-da-rede.vercel.app`
@@ -368,6 +368,88 @@ Desligar é o mesmo com `false` — rollback imediato, sem deploy.
 4. Em 2026-09-05, conferir a primeira tendência real (gate 2) — nada a fazer
    até lá além de não mexer na tolerância de cobertura.
 5. Revisar os PRs #5 e #10 abertos: mesclar, atualizar ou fechar.
+
+---
+
+# ENCERRAMENTO DA SESSÃO DE 2026-09-05 — LEIA ISTO PRIMEIRO
+
+## O que esta sessão fez
+
+Duas coisas, nesta ordem: pesquisou e escreveu o plano da próxima etapa
+(`docs/P1.3-PLANO-PROXIMA-ETAPA.md`, PR #16, **aberto, não mesclado**), e
+implementou a única parte desse plano que não dependia de decisão do dono do
+produto (PR #17, **mesclado**).
+
+### O achado que mudou a prioridade
+
+Verificando produção em vez de confiar no handoff anterior, esta sessão
+encontrou o **agendador automático parado havia ~19h** (nenhuma execução
+`schedule` do GitHub Actions em nenhum dos dois workflows desde
+2026-09-04 ~19h) — e a vigilância operacional relatando `"sem problemas"`
+apesar disso, por dois motivos que se mascaravam ao mesmo tempo: um refresh
+manual recente deixava a "última consolidação" parecer fresca, e o
+reprocessamento manual da etapa 3 (oito janelas antigas reprocessadas na
+mesma sessão) inflava a contagem de "janelas canônicas em 24h" sem que
+nenhum slot novo tivesse sido entregue.
+
+### O que o PR #17 corrigiu — VALIDADO REMOTAMENTE
+
+`operational-health` ganhou um terceiro sinal, independente dos outros dois:
+o `ends_at` da janela canônica mais recente, consultado sem filtro de tempo.
+Reprocessar uma janela antiga reafirma o mesmo `ends_at` — não cria um novo
+— então essa idade só encolhe quando o agendador entrega, de fato, um slot
+nunca processado antes. Reproduzido em teste com o snapshot real de
+2026-09-05 e **confirmado contra produção depois do deploy**: a função
+passou a reportar `scheduler_stalled` (1370 min desde a última janela
+canônica) exatamente enquanto os outros dois números continuavam parecendo
+saudáveis.
+
+**O agendador continua parado.** Este PR corrige a cegueira da vigilância;
+não conserta o agendador em si. A causa raiz de por que o `schedule:` do
+GitHub Actions parou de disparar não foi diagnosticada.
+
+### O achado do PR #16 que muda o desenho da etapa 4
+
+Verificando o código de resolução de grupo, esta sessão encontrou que a
+resolução hoje **ignora completamente** o `conversation_id` que o sensor
+envia — `canonicalizeConversationEvent` sempre sobrescreve com
+`label:<rótulo canônico>` antes de resolver
+(`supabase/functions/_shared/canonical-conversations.js:16-26`, chave de
+resolução em `supabase/functions/_shared/group-resolution.js:12`). Isso
+significa que a etapa 4 (`shortcutId` no sensor), do jeito que está descrita
+em `docs/GROUP-IDENTITY-PLAN.md`, **não teria efeito nenhum na resolução**
+sem uma mudança correspondente no backend — o plano existente descreve só a
+metade do sensor. Detalhe completo, com a cadeia de código citada linha a
+linha, na seção 2.2 do plano.
+
+## Estado real, com nível de evidência
+
+| Item | Estado |
+|---|---|
+| Vigilância acusa agendador parado | **VALIDADO REMOTAMENTE** — PR #17, confirmado contra produção |
+| Agendador em si (por que o `schedule:` não dispara) | **PENDENTE**, sem diagnóstico de causa raiz |
+| Plano da etapa seguinte (agendador → sensor → Control Center) | escrito, **aguardando revisão do Gabriel** (PR #16, seção 6 tem 4 perguntas) |
+| Etapa 4 (sensor) | **PENDENTE** — plano existente incompleto, ver achado acima |
+| Etapa 5 (Control Center) | **PENDENTE** — tecnicamente destravada desde a etapa 3, mas depende do agendador (frente B) e de vocabulário com a coordenação |
+| Registry (herdado de 2026-09-04) | 8 grupos ativos, estável — sem regressão nesta sessão |
+
+## Próxima ação exata
+
+1. **Ler `docs/P1.3-PLANO-PROXIMA-ETAPA.md` e responder as 4 perguntas da
+   seção 6** — em especial 6.1 (pg_cron vs. GitHub Actions), que bloqueia a
+   frente B continuar;
+2. depois de decidir 6.1, implementar a seção 4.2 do plano (a fonte do
+   agendamento em si — o PR #17 só corrigiu o guardrail que a mede);
+3. só depois disso, iniciar a etapa 4, já com o desenho de duas metades
+   (sensor + backend) que o achado do PR #16 expôs;
+4. revisar e decidir o PR #16 (mesclar como documentação histórica, ou
+   deixar como está).
+
+## Não fazer sem decisão do Gabriel
+
+Não migrar o agendamento para `pg_cron`, não iniciar mudanças no repositório
+`radar-sensor-probe`, e não ligar `group_control_center_enabled` — as três
+dependem de uma das quatro perguntas da seção 6 do PR #16.
 
 ---
 
