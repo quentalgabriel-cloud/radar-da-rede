@@ -31,7 +31,7 @@ Deno.serve(async (request) => {
   if (runError) return failure("run_query_failed", runError.code);
 
   const umDiaAtras = new Date(Date.now() - 24 * 60 * 60_000).toISOString();
-  const [heartbeat, groups, metrics, pending, gruposNovos, janelas, conversas] = await Promise.all([
+  const [heartbeat, groups, metrics, pending, gruposNovos, janelas, conversas, ultimaCanonica] = await Promise.all([
     admin.from("adapter_health").select("observed_at")
       .eq("network_id", networkId).order("observed_at", { ascending: false }).limit(1).maybeSingle(),
     admin.from("groups").select("id", { count: "exact", head: true })
@@ -55,9 +55,18 @@ Deno.serve(async (request) => {
     // O rótulo, não o conversation_id: o id bruto é o volátil, e contá-lo faria
     // o guardrail comparar inflado contra inflado.
     admin.from("normalized_events").select("conversation_label")
-      .eq("network_id", networkId).gte("occurred_at", umDiaAtras).limit(5_000)
+      .eq("network_id", networkId).gte("occurred_at", umDiaAtras).limit(5_000),
+    // Ordenado por ends_at, não por completed_at: reprocessar uma janela
+    // antiga (como aconteceu na consolidação do registry) atualiza
+    // completed_at para agora sem criar uma janela nova — ends_at é o
+    // conteúdo da janela, e só avança quando o agendador de fato processa um
+    // slot que nunca tinha sido processado antes. É o único sinal imune a
+    // refresh manual e a reprocessamento.
+    admin.from("processing_runs").select("ends_at")
+      .eq("network_id", networkId).eq("window_kind", "canonical_slot")
+      .order("ends_at", { ascending: false }).limit(1).maybeSingle()
   ]);
-  const failed = [heartbeat, groups, metrics, pending, gruposNovos, janelas, conversas]
+  const failed = [heartbeat, groups, metrics, pending, gruposNovos, janelas, conversas, ultimaCanonica]
     .find((result) => result.error);
   if (failed?.error) return failure("health_query_failed", failed.error.code);
 
@@ -74,6 +83,7 @@ Deno.serve(async (request) => {
     // Janelas distintas, não execuções: reprocessar a mesma janela não pode
     // parecer entrega de slot.
     canonicalWindowsLast24h: new Set((janelas.data ?? []).map((row) => row.ends_at)).size,
+    lastCanonicalWindowEndsAt: ultimaCanonica.data?.ends_at ?? null,
     distinctConversationsLast24h: new Set(
       (conversas.data ?? [])
         .map((row) => canonicalConversationLabel(row.conversation_label).toLocaleLowerCase("pt-BR"))
