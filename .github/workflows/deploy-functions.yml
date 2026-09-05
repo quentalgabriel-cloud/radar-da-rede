@@ -1,0 +1,43 @@
+name: Deploy Edge Functions
+
+# Fecha a lacuna encontrada em 2026-09-04: a etapa 1 (identidade de conversa)
+# ficou ~15h em `main`, corrigida, sem valer em produção, porque o deploy das
+# Edge Functions era manual e ninguém rodou o comando naquele intervalo.
+# Nesse tempo o registry continuou crescendo do jeito antigo. Deploy no merge
+# elimina esse intervalo por definição: o commit em `main` e o código em
+# produção nunca voltam a divergir por esquecimento.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "supabase/functions/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: radar-deploy-functions
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      # Nunca implanta código que não passou no CI. O push em main já rodou
+      # verify no PR, mas esta é a última barreira antes de produção.
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm verify
+      - name: Deploy every Edge Function
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: npx supabase@latest functions deploy --project-ref pluruijhqnueayrlkthx --use-api

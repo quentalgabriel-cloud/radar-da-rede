@@ -90,8 +90,16 @@ const consolidationWorkflow = await readFile(
   resolve(repositoryRoot, ".github/workflows/consolidate.yml"),
   "utf8",
 );
+const pgCronMigration = await readFile(
+  resolve(repositoryRoot, "supabase/migrations/20260905160000_pg_cron_consolidation.sql"),
+  "utf8",
+);
 const healthWorkflow = await readFile(
   resolve(repositoryRoot, ".github/workflows/operational-health.yml"),
+  "utf8",
+);
+const deployWorkflow = await readFile(
+  resolve(repositoryRoot, ".github/workflows/deploy-functions.yml"),
   "utf8",
 );
 const operationalHealth = await readFile(
@@ -251,19 +259,29 @@ assert.match(consolidationSchedule, /\[0, 3, 8, 13, 18, 21\]/);
 assert.match(consolidationSchedule, /CONSOLIDATION_WINDOW_HOURS = 24/);
 assert.match(consolidationRunner, /RADAR_PROCESSING_SECRET/);
 assert.match(consolidationRunner, /functions\/v1\/process-window/);
-assert.match(consolidationWorkflow, /cron: "0 0,3,6,11,16,21 \* \* \*"/);
+// D-024: o agendamento saiu do schedule: do GitHub Actions (medido ~19h sem
+// disparar) para pg_cron dentro do Supabase. O workflow perde o schedule: e
+// vira só disparo manual; a migration é a fonte de verdade do horário agora.
+assert.doesNotMatch(consolidationWorkflow, /^\s*schedule:/m);
+assert.match(consolidationWorkflow, /workflow_dispatch/);
+assert.match(pgCronMigration, /cron\.schedule\(\s*\n?\s*'radar-consolidate',\s*\n?\s*'0 0,3,6,11,16,21 \* \* \*'/);
 // Os três horários operacionais originais continuam sendo slots. Trocá-los
 // quebraria a comparação com as execuções já produzidas, porque a política casa
 // cada slot com ele mesmo no dia anterior.
 for (const hour of ["11", "16", "21"]) {
   assert.ok(
-    /cron: "0 ([0-9,]+) \* \* \*"/.exec(consolidationWorkflow)?.[1].split(",").includes(hour),
+    /'0 ([0-9,]+) \* \* \*'/.exec(pgCronMigration)?.[1].split(",").includes(hour),
     `o slot das ${hour}:00 UTC precisa continuar no cron`,
   );
 }
 // P1.1: a missing secret must turn the job red, never make it green and skip.
 assert.match(consolidationWorkflow, /check-consolidation-config\.mjs/);
 assert.doesNotMatch(consolidationWorkflow, /configured=true/);
+// A credencial nunca pode ser texto literal no arquivo: precisa nascer dentro
+// do banco (gen_random_bytes) e nunca sair em claro.
+assert.match(pgCronMigration, /gen_random_bytes/);
+assert.match(pgCronMigration, /vault\.create_secret/);
+assert.match(pgCronMigration, /vault\.decrypted_secrets/);
 assert.doesNotMatch(consolidationWorkflow, /if: steps\./);
 assert.doesNotMatch(consolidationWorkflow, /::warning::/);
 assert.doesNotMatch(consolidationWorkflow, /SUPABASE_SERVICE_ROLE_KEY/);
@@ -273,6 +291,13 @@ assert.match(consolidationRunner, /GITHUB_STEP_SUMMARY/);
 assert.match(healthWorkflow, /schedule/);
 assert.match(healthWorkflow, /check-operational-health.mjs/);
 assert.doesNotMatch(healthWorkflow, /SUPABASE_SERVICE_ROLE_KEY/);
+// A etapa 1 ficou ~15h em main, corrigida, sem valer em producao porque o
+// deploy era manual. Deploy no push a main fecha esse intervalo por
+// definicao; nunca implantar sem verify e a condicao que faz isso seguro.
+assert.match(deployWorkflow, /paths:\s*\n\s*- "supabase\/functions\/\*\*"/);
+assert.match(deployWorkflow, /pnpm verify/);
+assert.match(deployWorkflow, /functions deploy/);
+assert.doesNotMatch(deployWorkflow, /SUPABASE_SERVICE_ROLE_KEY/);
 assert.match(operationalHealth, /authenticateProcessor/);
 assert.match(operationalHealth, /processing_scope_mismatch/);
 // O guardrail precisa contar conversa canonica, nao o id bruto: contar o id
