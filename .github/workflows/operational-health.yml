@@ -1,5 +1,12 @@
 name: Radar Operational Health
 
+# Mantido em paralelo com private.radar_cron_health_check() (pg_cron, dentro
+# do Supabase) por um motivo específico: este workflow falha visivelmente
+# (X vermelho no GitHub) quando a rede não está saudável, e um cron dentro do
+# banco não tem esse tipo de sinal por natureza. Confirmado em 2026-09-05 que
+# o schedule: abaixo ficou sem disparar por ~19h — mas se a causa for
+# transitória do lado do GitHub, este caminho volta a valer sozinho, sem
+# nenhuma mudança. Perder essa redundância custaria mais do que mantê-la.
 on:
   schedule:
     # Entre os slots de consolidação, para que uma parada apareça em menos de

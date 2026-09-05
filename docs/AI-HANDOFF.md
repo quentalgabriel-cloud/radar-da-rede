@@ -1,9 +1,9 @@
 # Handoff para continuidade por qualquer LLM
 
-- Atualizado em: 2026-09-05 (planejamento da próxima etapa + correção da vigilância)
-- **Comece por `docs/P1.3-PLANO-PROXIMA-ETAPA.md`** (PR [#16](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/16), aberto, não mesclado — tem 4 perguntas para o Gabriel na seção 6) **e pela seção "ENCERRAMENTO DA SESSÃO DE 2026-09-05" ao final deste arquivo**. As seções acima ainda descrevem estado de sessões anteriores em vários pontos.
-- Branch: `main`, no commit `59d7be5`
-- Trabalho desta sessão: PR [#17](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/17) mesclado; PR #16 aberto (planejamento, não mesclar sem revisão do Gabriel)
+- Atualizado em: 2026-09-05, fim da sessão (planejamento + agendador migrado para pg_cron + deploy automático)
+- **Comece pela seção "ENCERRAMENTO DA SESSÃO DE 2026-09-05" ao final deste arquivo.** `docs/P1.3-PLANO-PROXIMA-ETAPA.md` (PR [#16](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/16), ainda aberto) continua valendo como registro da pesquisa, mas 2 das 4 perguntas da seção 6 já foram respondidas e implementadas — não repita esse trabalho.
+- Branch: `main`
+- Trabalho desta sessão: PRs [#17](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/17), [#18](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/18) e [#19](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/19) mesclados; PR #16 (planejamento) aberto
 - Projeto Supabase: `pluruijhqnueayrlkthx`
 - Rede piloto: `d1224e68-c51f-4b31-a7e6-7b91f1a65357`
 - Produção web: `https://radar-da-rede.vercel.app`
@@ -422,34 +422,84 @@ sem uma mudança correspondente no backend — o plano existente descreve só a
 metade do sensor. Detalhe completo, com a cadeia de código citada linha a
 linha, na seção 2.2 do plano.
 
+### Gabriel deu aval para 6.1 e 6.4 — implementados e VALIDADOS REMOTAMENTE, ainda na mesma sessão
+
+Com o plano em mãos, o Gabriel aprovou implementar as duas perguntas da
+seção 6 que não dependiam de mais ninguém: 6.1 (fonte do agendamento) e 6.4
+(deploy automático). 6.2 (vocabulário) ficou como mensagem pronta pra ele
+mandar à equipe quando puder — não é algo que se decide por código. 6.3
+(rotação de credencial do sensor) continua parado, por escolha: só importa
+quando a etapa 4 começar de verdade.
+
+**D-024 e D-025 em `docs/DECISIONS.md` têm a decisão completa.** Resumo:
+
+- `private.radar_cron_consolidate()` — dispara `process-window` de dentro do
+  Supabase via `pg_cron`+`pg_net`, nos mesmos seis horários que o workflow
+  usava. Credencial nova, gerada inteiramente dentro de uma transação SQL
+  (nunca em texto puro fora do banco). `consolidate.yml` perdeu o
+  `schedule:`, fica só `workflow_dispatch`;
+- `private.radar_cron_health_check()` — mesma ideia para a checagem de
+  saúde, mas **em paralelo** com `operational-health.yml`, não em
+  substituição: o workflow falha visivelmente (X vermelho) e um cron dentro
+  do banco não tem esse sinal por natureza. Uma primeira versão tentou
+  capturar a resposta de forma síncrona (`net.http_collect_response`) e
+  travou em teste manual, mesmo com o worker do `pg_net` confirmadamente
+  ativo; simplificada para dispara-e-esquece, o mesmo padrão já provado. A
+  trilha crua fica em `net._http_response` (retenção curta, mantida pelo
+  próprio `pg_net`), filtrando por `url like '%/operational-health%'`;
+- `deploy-functions.yml` — roda `pnpm verify` e implanta todas as Edge
+  Functions a cada push em `main` que toque `supabase/functions/**`. Fecha o
+  intervalo de ~15h que deixou a etapa 1 corrigida em `main` sem valer em
+  produção, em 2026-09-04. Precisa do secret `SUPABASE_ACCESS_TOKEN`, que o
+  Gabriel já adicionou.
+
+**Confirmado contra produção, não só localmente:** disparei
+`private.radar_cron_consolidate()` manualmente, esperei o `net.http_post`
+assíncrono completar, e uma linha `canonical_slot` nova apareceu em
+`processing_runs`. Chamando `operational-health` na sequência,
+`scheduler_stalled` tinha sumido. Minutos depois, o **pg_cron disparou
+sozinho no horário certo (16:00 UTC)** — confirmado por uma segunda linha em
+`net._http_response`, sem eu ter feito nada. O backlog acumulado durante as
+~19h de parada (`eventsAfterWindow` chegou a 134) já caiu para 1 na consulta
+seguinte — se resolveu sozinho, como esperado.
+
 ## Estado real, com nível de evidência
 
 | Item | Estado |
 |---|---|
-| Vigilância acusa agendador parado | **VALIDADO REMOTAMENTE** — PR #17, confirmado contra produção |
-| Agendador em si (por que o `schedule:` não dispara) | **PENDENTE**, sem diagnóstico de causa raiz |
-| Plano da etapa seguinte (agendador → sensor → Control Center) | escrito, **aguardando revisão do Gabriel** (PR #16, seção 6 tem 4 perguntas) |
+| Vigilância acusa agendador parado (PR #17) | **VALIDADO REMOTAMENTE** |
+| Agendador migrado para pg_cron (D-024) | **VALIDADO REMOTAMENTE** — disparo manual e disparo automático (16:00 UTC) confirmados |
+| Checagem de saúde redundante em pg_cron (D-024) | **VALIDADO REMOTAMENTE** — resposta 200 confirmada em `net._http_response` |
+| Deploy automático de Edge Functions (D-025) | **IMPLEMENTADO**, sem push a `supabase/functions/**` ainda para exercitar de verdade |
+| Causa raiz de por que o `schedule:` do GitHub Actions não dispara | **PENDENTE**, sem diagnóstico — contornado, não corrigido |
+| Alerta chegando a uma pessoa (e-mail/Slack) quando algo quebra | **PENDENTE** — nenhum dos dois caminhos de checagem faz isso hoje; ambos exigem alguém consultar |
+| 6.2, vocabulário com a equipe | mensagem pronta, **aguardando o Gabriel mandar** |
+| 6.3, rotação de credencial do sensor | **PENDENTE**, propositalmente parado até a etapa 4 começar |
 | Etapa 4 (sensor) | **PENDENTE** — plano existente incompleto, ver achado acima |
-| Etapa 5 (Control Center) | **PENDENTE** — tecnicamente destravada desde a etapa 3, mas depende do agendador (frente B) e de vocabulário com a coordenação |
+| Etapa 5 (Control Center) | **PENDENTE** — tecnicamente destravada desde a etapa 3, falta vocabulário (6.2) |
 | Registry (herdado de 2026-09-04) | 8 grupos ativos, estável — sem regressão nesta sessão |
 
 ## Próxima ação exata
 
-1. **Ler `docs/P1.3-PLANO-PROXIMA-ETAPA.md` e responder as 4 perguntas da
-   seção 6** — em especial 6.1 (pg_cron vs. GitHub Actions), que bloqueia a
-   frente B continuar;
-2. depois de decidir 6.1, implementar a seção 4.2 do plano (a fonte do
-   agendamento em si — o PR #17 só corrigiu o guardrail que a mede);
-3. só depois disso, iniciar a etapa 4, já com o desenho de duas metades
-   (sensor + backend) que o achado do PR #16 expôs;
-4. revisar e decidir o PR #16 (mesclar como documentação histórica, ou
+1. Mandar a mensagem de vocabulário para a equipe (6.2) — está pronta,
+   só falta enviar;
+2. quando a equipe responder, ajustar o texto da tela e decidir ligar o
+   Control Center (etapa 5) — tecnicamente já não depende de mais nada além
+   disso;
+3. iniciar a etapa 4 (sensor) só quando houver decisão real sobre 6.3
+   (procedência da rotação de credencial) — ela toca um aparelho físico em
+   operação e precisa do desenho de duas metades (sensor + backend) que o
+   achado do PR #16 expôs, não só a metade do sensor;
+4. considerar um canal de alerta ativo (e-mail/Slack) para a vigilância —
+   hoje tanto o GitHub Actions quanto o pg_cron exigem que alguém consulte;
+5. revisar e decidir o PR #16 (mesclar como documentação histórica, ou
    deixar como está).
 
 ## Não fazer sem decisão do Gabriel
 
-Não migrar o agendamento para `pg_cron`, não iniciar mudanças no repositório
-`radar-sensor-probe`, e não ligar `group_control_center_enabled` — as três
-dependem de uma das quatro perguntas da seção 6 do PR #16.
+Não iniciar mudanças no repositório `radar-sensor-probe` nem ligar
+`group_control_center_enabled` sem a resposta da equipe sobre vocabulário —
+essas duas continuam dependendo de 6.2 e 6.3.
 
 ---
 
