@@ -219,3 +219,25 @@ Os status usados são `ACEITA`, `PROVISÓRIA`, `HIPÓTESE` e `ESTACIONADA`.
 - **Efeito colateral encontrado e corrigido:** a consolidação arquiva grupo (`status='archived'`) em vez de excluir. O guardrail de `operational-health` contava `created_at` de qualquer grupo sem filtrar por `status`, o que reacenderia `registry_inflating` por 24h a cada consolidação futura contra um problema já corrigido. Corrigido no mesmo PR (#13) e confirmado contra produção: excedente caiu de 53 para 0.
 - **Limite que esta decisão não resolve:** duas conversas realmente homônimas seriam fundidas por engano — identidade por título tem esse teto (D14). Só o `shortcutId`/`getLocusId()` da etapa 4, no sensor, elimina esse limite.
 - **Reabrir se:** aparecer um alias cuja derivação não reproduza o hash e a consolidação precisar rodar de novo; ou a etapa 4 mudar a fonte de identidade, tornando esta função obsoleta para novos dados (ela continua válida como ferramenta de correção pontual).
+
+## D-024 — Consolidação agendada por `pg_cron`, não mais por `schedule:` do GitHub Actions
+
+- **Status:** ACEITA
+- **Data:** 2026-09-05
+- **Responsável:** Gabriel Quental, aval dado em resposta às 4 perguntas da seção 6 de `docs/P1.3-PLANO-PROXIMA-ETAPA.md` (PR #16).
+- **Decisão:** o disparo de `process-window` nos seis slots diários passa a vir de dentro do Supabase (`pg_cron` + `pg_net`), não mais do `schedule:` de `.github/workflows/consolidate.yml`.
+- **Evidência:** medido em 2026-09-05, o `schedule:` do GitHub Actions ficou **~19h sem disparar nenhuma execução, em dois workflows independentes**, com `workflow_dispatch` funcionando normalmente no mesmo período — não é falha de código, é entrega do agendador da plataforma para este repositório. `pg_cron`/`pg_net` já estavam disponíveis no projeto (`list_extensions`), só não instalados.
+- **Como foi feito:** uma credencial de processamento **nova**, exclusiva desse caminho, gerada inteiramente dentro de uma transação SQL (`gen_random_bytes` → hash em `processing_credentials`, valor em claro em `vault.create_secret`) — o valor em texto puro nunca passou por fora do banco, nunca foi digitado nem visto por mim ou pelo Gabriel. A função `private.radar_cron_consolidate()` lê o segredo do Vault e chama `process-window` via `net.http_post`, nos mesmos seis horários UTC que o workflow já usava (`0 0,3,6,11,16,21 * * *`), preservando a política de comparação `same_slot_previous_day@1`.
+- **O que isto não resolve:** a checagem de saúde (`operational-health.yml`) continua no `schedule:` do GitHub Actions, e herda o mesmo risco de não disparar — mover só a consolidação garante que o **dado** continue fluindo, mas não garante que um alerta chegue a alguém se a vigilância também for silenciada pela mesma causa. Isto é dívida reconhecida, não resolvida nesta decisão.
+- **Consequência:** `.github/workflows/consolidate.yml` perde o gatilho `schedule:` (mantém `workflow_dispatch` para disparo manual/depuração), para não ter duas fontes de agendamento confusas para o mesmo job — `process-window` já é idempotente por janela, então rodar as duas ao mesmo tempo não duplicaria dado, mas complicaria diagnóstico.
+- **Reabrir se:** a causa raiz do `schedule:` do GitHub Actions for identificada e corrigida pela plataforma, tornando a duplicidade de agendador desnecessária; ou se a vigilância também precisar migrar para dentro do banco por continuar sendo silenciada.
+
+## D-025 — Deploy de Edge Functions automático a cada push em `main`
+
+- **Status:** ACEITA
+- **Data:** 2026-09-05
+- **Responsável:** Gabriel Quental, mesmo aval de D-024.
+- **Decisão:** `.github/workflows/deploy-functions.yml` roda `pnpm verify` e implanta todas as Edge Functions a cada push em `main` que toque `supabase/functions/**`.
+- **Evidência:** a etapa 1 (identidade de conversa) foi mesclada em `main` às 2026-09-04T03:35Z, corrigida, mas só foi efetivamente implantada às 18:18Z do mesmo dia — quase 15h em que o código correto existia no repositório e o comportamento antigo continuava em produção. Oito aliases voláteis nasceram nesse intervalo, confirmados por consulta direta ao banco.
+- **Consequência:** o intervalo entre "mesclado" e "em produção" deixa de depender de alguém lembrar de rodar o comando manual. `pnpm verify` roda antes do deploy como última barreira.
+- **Reabrir se:** um deploy automático causar uma regressão que o `verify` não pegou e que exigiria controle manual do momento exato do deploy (por exemplo, coordenar com uma migration que precisa rodar antes da função que a usa).
