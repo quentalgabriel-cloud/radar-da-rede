@@ -111,3 +111,7 @@
 | Radar Web | E2E contra Supabase real com sessão de usuário | NÃO TESTADO | Exige conta de teste; o E2E atual cobre o laboratório e o gate de autenticação |
 | Group Registry | Identidade de conversa é estável entre notificações | **REPROVADO** | 199 grupos criados para uma única conversa real; `source_conversation_id` muda a cada notificação. Ver `docs/GROUP-IDENTITY-FINDING.md` |
 | Control Center | Contagem de grupos reflete a rede real | **REPROVADO** | 196 grupos ativos para 7 conversas canônicas, das quais 4 são de teste |
+| Group Registry | Notificações da mesma conversa resolvem para um único grupo | VALIDADO REMOTAMENTE | Execução `74656da8`: 2 conversas reais → 2 grupos, 2 aliases canônicos; segunda execução não criou nenhum |
+| Group Registry | Conversas distintas continuam separadas | TESTADO LOCALMENTE | `packages/supabase-core/test/conversation-identity.test.js` |
+| Group Registry | Sufixo de contagem no singular também é normalizado | TESTADO LOCALMENTE | Defeito latente encontrado ao escrever o teste; regex corrigida para `mensage(?:m\|ns)` |
+| Consolidação | Seis slots diários são efetivamente entregues | **REPROVADO** | 2 de 5 esperados em 2026-09-04, com atraso de horas; limitação do cron do GitHub, não do código |
