@@ -434,11 +434,30 @@ const renderHealth = () => {
   document.querySelector("#provenance-notice").textContent = state.data.provenance.warning;
 };
 
+const renderOperationalHealth = () => {
+  const banner = document.querySelector("#operational-health-banner");
+  const health = state.data.operational_health;
+  // Nem o GitHub Actions nem o pg_cron avisam alguém ativamente hoje (D-024);
+  // este banner é onde esse alerta aparece de fato, para quem já está com a
+  // tela aberta.
+  if (!health || health.healthy || health.problems.length === 0) {
+    banner.hidden = true;
+    banner.innerHTML = "";
+    return;
+  }
+  banner.hidden = false;
+  banner.innerHTML = `
+    <strong>${plural(health.problems.length, "aviso operacional", "avisos operacionais")}</strong>
+    <ul>${health.problems.map((problem) => `<li>${escapeHtml(problem.summary)}</li>`).join("")}</ul>
+  `;
+};
+
 const renderAll = () => {
   renderOverview();
   renderSituations();
   renderGroups();
   renderHealth();
+  renderOperationalHealth();
 };
 
 const showScreen = (requestedName) => {

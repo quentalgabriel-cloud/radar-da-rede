@@ -212,6 +212,9 @@ h3 { letter-spacing: 0; }
 .health-row span { color: var(--muted); font-size: 12px; }
 .health-row strong { max-width: 55%; text-align: right; font-size: 12px; overflow-wrap: anywhere; }
 .notice { margin-top: 12px; padding: 13px 14px; border-radius: 8px; background: var(--status-attention-soft); color: #725418; font-size: 11px; line-height: 1.5; }
+.operational-banner { padding: 10px 24px; background: var(--status-critical-soft); color: var(--status-critical); font-size: 12px; line-height: 1.5; border-bottom: 1px solid var(--status-critical); }
+.operational-banner ul { margin: 4px 0 0; padding-left: 18px; }
+.operational-banner strong { font-weight: 600; }
 .technical-details { padding: 0 14px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
 .technical-details summary { padding: 13px 0; color: var(--muted); }
 .signout-button { width: 100%; margin-top: 14px; }

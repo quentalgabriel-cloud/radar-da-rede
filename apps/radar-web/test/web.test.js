@@ -82,6 +82,12 @@ it("keeps scripts free of innerHTML values that bypass escapeHtml for external t
   assert.match(source, /renderControlCenter/);
   assert.match(source, /group_control_center/);
   assert.match(source, /showModal/);
+  // D-024: nem o GitHub Actions nem o pg_cron avisam alguém ativamente hoje;
+  // o banner precisa aparecer mesmo em cenários sintéticos que não têm
+  // operational_health, sem quebrar.
+  assert.match(source, /renderOperationalHealth/);
+  assert.match(source, /operational-health-banner/);
+  assert.match(source, /health\.healthy \|\| health\.problems\.length === 0/);
 });
 
 it("ships one shared refresh controller without privileged processing", async () => {
