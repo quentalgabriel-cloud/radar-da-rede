@@ -479,27 +479,115 @@ seguinte — se resolveu sozinho, como esperado.
 | Etapa 5 (Control Center) | **PENDENTE** — tecnicamente destravada desde a etapa 3, falta vocabulário (6.2) |
 | Registry (herdado de 2026-09-04) | 8 grupos ativos, estável — sem regressão nesta sessão |
 
-## Próxima ação exata
+## Próxima ação exata (histórico — ver continuação abaixo, mais recente)
 
-1. Mandar a mensagem de vocabulário para a equipe (6.2) — está pronta,
-   só falta enviar;
+1. ~~Mandar a mensagem de vocabulário para a equipe (6.2)~~ — mensagem
+   continua pronta em `mensagem-vocabulario-equipe.md` no scratchpad da
+   sessão que a escreveu; **ainda não foi enviada**, é ação humana;
 2. quando a equipe responder, ajustar o texto da tela e decidir ligar o
-   Control Center (etapa 5) — tecnicamente já não depende de mais nada além
-   disso;
-3. iniciar a etapa 4 (sensor) só quando houver decisão real sobre 6.3
-   (procedência da rotação de credencial) — ela toca um aparelho físico em
-   operação e precisa do desenho de duas metades (sensor + backend) que o
-   achado do PR #16 expôs, não só a metade do sensor;
-4. considerar um canal de alerta ativo (e-mail/Slack) para a vigilância —
-   hoje tanto o GitHub Actions quanto o pg_cron exigem que alguém consulte;
+   Control Center (etapa 5);
+3. ~~iniciar a etapa 4 (sensor) só quando houver decisão real sobre 6.3~~ —
+   o Gabriel deu aval explícito para agir e criar nova build se necessário;
+   ver "Continuação — 6.3/etapa 4 e alerta na UI" abaixo;
+4. ~~considerar um canal de alerta ativo~~ — feito, ver abaixo: apareceu na
+   UI em vez de e-mail/Slack, por decisão do Gabriel;
 5. revisar e decidir o PR #16 (mesclar como documentação histórica, ou
-   deixar como está).
+   deixar como está) — ainda pendente.
 
 ## Não fazer sem decisão do Gabriel
 
-Não iniciar mudanças no repositório `radar-sensor-probe` nem ligar
-`group_control_center_enabled` sem a resposta da equipe sobre vocabulário —
-essas duas continuam dependendo de 6.2 e 6.3.
+Não ligar `group_control_center_enabled` sem a resposta da equipe sobre
+vocabulário (6.2) — continua a única coisa nesta lista. A restrição sobre
+`radar-sensor-probe` foi levantada pelo próprio Gabriel (ver abaixo).
+
+---
+
+# CONTINUAÇÃO — 6.3/etapa 4 e alerta na UI (mesmo dia, 2026-09-05)
+
+## O que o Gabriel decidiu
+
+Depois do resumo acima, o Gabriel respondeu diretamente às duas coisas em
+aberto: **alerta pode aparecer na UI, não precisa ser e-mail**; e **pode
+fazer o melhor possível em 6.3/etapa 4, inclusive criar nova build do APK
+para o Moto G84 se necessário**. Isso removeu o bloqueio que a sessão
+anterior tinha imposto a si mesma.
+
+## Alerta na UI — IMPLEMENTADO e com dado conferido
+
+`radar-read-model` agora calcula a mesma vigilância que o `pg_cron` chama
+de dentro do banco (`private.radar_cron_health_check`), usando as mesmas
+consultas mas pela sessão do próprio usuário (RLS, sem service role), e
+devolve `operational_health: { healthy, problems }` no payload. O front-end
+(`apps/radar-web/public/app.js`, `renderOperationalHealth`) mostra um
+banner vermelho no topo da tela quando `healthy` é falso.
+
+`evaluateOperationalHealth` foi promovida a módulo compartilhado
+(`packages/supabase-core/src/edge-modules.js`, junto com
+`consolidation-schedule.js`, do qual depende) — mesma engine, três lugares
+que a chamam (script do GitHub Actions, `pg_cron`, e agora o read model),
+igual ao padrão já usado para `group-analytics.js`.
+
+**Nível de evidência:** os valores que alimentam o cálculo foram conferidos
+com consulta SQL direta (bateram com o que `operational-health` já reportava
+via `pg_cron`). A chamada HTTP completa com sessão de usuário real **não foi
+testada** — não existe conta de teste neste projeto (mesma lacuna já
+registrada em `docs/TEST_MATRIX.md` para outros fluxos). Rotule como
+**IMPLEMENTADO e TESTADO COM DADO REAL VIA SQL**, não **VALIDADO REMOTAMENTE**
+no sentido pleno.
+
+## Etapa 4 — diagnóstico de shortcutId/LocusId, sem mudar identidade
+
+Antes de reescrever a resolução de grupo sobre a suposição de que o
+WhatsApp preenche `shortcutId`/`LocusId` (a única API do Android com
+promessa de identidade estável por conversa), esta sessão fez o passo que
+faltava: **medir**, em vez de assumir.
+
+`radar-sensor-probe` v0.3.1-shortcut-diagnostic
+([release](https://github.com/quentalgabriel-cloud/radar-sensor-probe/releases/tag/v0.3.1-shortcut-diagnostic))
+captura os dois valores e propaga para `normalized_events.metadata` — campo
+livre, sem mudança de contrato. **`conversation_id` continua vindo só do
+hash do título.** Nada na resolução de grupo mudou.
+
+Dois erros de compilação no caminho (`getShortcutId()` não existe em
+`StatusBarNotification` nem em `Ranking` — o método real é
+`Ranking.getConversationShortcutInfo()`, API 31, devolvendo um
+`ShortcutInfo`) foram pegos pelo CI do próprio `radar-sensor-probe` antes de
+qualquer release, e corrigidos confirmando a API certa por busca em vez de
+tentar de novo às cegas.
+
+**D-021 exercida**: a credencial do dispositivo foi rotacionada como parte
+desta build (gatilho que a própria D-021 previa: "próxima build por
+qualquer motivo"). Valor novo gerado localmente com `openssl rand -hex 32`,
+nunca impresso; hash gravado em `device_credentials`; valor em claro só no
+secret `RADAR_DEVICE_SECRET` do `radar-sensor-probe`. **A credencial antiga
+(`token_hint 01e890c5`, id `23589a49-acdf-4f28-959e-67ab896b5bb1`) continua
+ativa** — revogá-la é o próximo passo manual, só depois de confirmar que o
+aparelho está rodando a build nova. D-021 em si (segredo embutido no APK,
+não em provisionamento de runtime) **não foi resolvida**, só a rotação —
+mudar a arquitetura é recorte maior, deliberadamente fora desta build.
+Decisão completa em D-026, `docs/DECISIONS.md`.
+
+## Limitação física que não deve ser esquecida
+
+**Não existe forma remota de instalar o APK no Moto G84.** A build está
+publicada, assinada e verificada — falta alguém com a mão no aparelho
+baixar `radar-sensor-probe-v0.3.1-shortcut-diagnostic.apk` do release e
+instalar manualmente, concedendo de novo o acesso a notificações se o
+Android pedir. Nenhuma sessão futura deve prometer "atualizei o aparelho"
+sem essa confirmação humana.
+
+## Próxima ação exata (atual)
+
+1. **Instalar o APK novo no Moto G84** (ação humana, ver limitação acima);
+2. confirmar que o aparelho está postando com a build nova (heartbeat/eventos
+   chegando) e só então revogar a credencial antiga;
+3. depois de alguns dias de dado real, consultar
+   `normalized_events.metadata->>'shortcut_id'` e `->>'locus_id'` — se
+   vierem preenchidos, a etapa 4 "de verdade" (mudança de identidade
+   coordenada sensor+backend, ver achado do PR #16) pode ser desenhada com
+   confiança; se vierem nulos, precisa de outra estratégia;
+4. mandar a mensagem de vocabulário (6.2) e decidir o Control Center (etapa 5);
+5. revisar o PR #16.
 
 ---
 
