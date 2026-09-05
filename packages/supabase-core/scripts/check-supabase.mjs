@@ -94,6 +94,10 @@ const pgCronMigration = await readFile(
   resolve(repositoryRoot, "supabase/migrations/20260905160000_pg_cron_consolidation.sql"),
   "utf8",
 );
+const pgCronHealthMigration = await readFile(
+  resolve(repositoryRoot, "supabase/migrations/20260905163000_pg_cron_health_check.sql"),
+  "utf8",
+);
 const healthWorkflow = await readFile(
   resolve(repositoryRoot, ".github/workflows/operational-health.yml"),
   "utf8",
@@ -282,6 +286,17 @@ assert.doesNotMatch(consolidationWorkflow, /configured=true/);
 assert.match(pgCronMigration, /gen_random_bytes/);
 assert.match(pgCronMigration, /vault\.create_secret/);
 assert.match(pgCronMigration, /vault\.decrypted_secrets/);
+// A checagem de saude tambem passou a ter um caminho redundante dentro do
+// Supabase, pelo mesmo motivo da consolidacao: o schedule: do GitHub Actions
+// ja se provou nao confiavel para este repositorio.
+assert.match(pgCronHealthMigration, /radar_cron_health_check/);
+assert.match(pgCronHealthMigration, /'radar-health-check'/);
+assert.match(pgCronHealthMigration, /vault\.decrypted_secrets/);
+assert.match(pgCronHealthMigration, /functions\/v1\/operational-health/);
+// O workflow do GitHub Actions continua existindo em paralelo (assert de
+// /schedule/ mais abaixo) -- nao foi substituido, so ganhou redundancia --
+// porque ele falha visivelmente (X vermelho) e um cron dentro do banco nao
+// tem esse sinal por natureza.
 assert.doesNotMatch(consolidationWorkflow, /if: steps\./);
 assert.doesNotMatch(consolidationWorkflow, /::warning::/);
 assert.doesNotMatch(consolidationWorkflow, /SUPABASE_SERVICE_ROLE_KEY/);
