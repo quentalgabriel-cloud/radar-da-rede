@@ -1,7 +1,7 @@
 # Radar da Rede — Roadmap de conclusão do produto
 
-- Data da revisão: 2026-09-03 (atualizado ao fim da primeira sessão da P1.1)
-- Estado de referência: `main` em `86c66fb`
+- Data da revisão: 2026-09-07 (evidência de campo da release Android 0.3.1)
+- Estado de referência auditado: `main` em `e9f6138`
 - Princípio: preservar a operação ativa enquanto aumentamos confiabilidade, utilidade e capacidade analítica.
 
 ## 1. Direção do produto
@@ -92,14 +92,14 @@ Pontuação: `(impacto + risco) × (6 - esforço)`, em escala de 1 a 5. Ela orde
 | D04 | Confidence pode usar um snapshot recente como evidência para toda a janela | Dados/Operação | 5 | 4 | 2 | 36 | CORRIGIDO: `capture_coverage@1` sobre amostras append-only; PENDENTE em produção |
 | D05 | GET do read model pode processar e escrever no banco | Arquitetura | 5 | 4 | 2 | 36 | CORRIGIDO no código; deploy só depois do scheduler funcionar |
 | D06 | Não há SLO/alerta para heartbeat, atraso, janela ausente ou workflow pulado | Observabilidade | 4 | 4 | 2 | 32 | imediato |
-| D07 | Matriz de campo do Moto G84 está incompleta | Android/Operação | 4 | 4 | 2 | 32 | antes da ativação ampla |
+| D07 | Matriz de campo do Moto G84 está incompleta | Android/Operação | 4 | 4 | 2 | 32 | PARCIAL: instalação, listener, recuperação e ingestão da 0.3.1 validados; soak de reboot/Doze/bateria/offline/silenciado ainda é gate da expansão |
 | D08 | Cálculo live e sintético do Control Center está duplicado | Arquitetura/Testes | 4 | 3 | 2 | 28 | CORRIGIDO: `packages/group-analytics` com verificação de sincronização no CI |
 | D09 | Não há E2E real de filtros, dialog, teclado, mobile e sessão | Qualidade/UX | 4 | 3 | 2 | 28 | antes da ativação |
 | D10 | Deploy de migrations/functions é manual e sujeito a drift | Release | 4 | 3 | 2 | 28 | hardening |
 | D11 | Documentação central contradiz o estado pós-P1 | Estratégia | 4 | 3 | 2 | 28 | CORRIGIDO nesta sessão |
 | D12 | “Situações abertas” são contagens da janela, não casos com ciclo de resolução | Produto | 4 | 3 | 2 | 28 | CORRIGIDO na linguagem; decisão sobre ciclo continua com a coordenação |
 | D13 | Controles de retenção, exclusão, menor privilégio e incidente não estão fechados | Segurança/Dados | 5 | 4 | 3 | 27 | antes da P2 |
-| D14 | Identidade de conversa não é estável: o sensor emite um id volátil por notificação | Android/Dados | 5 | 5 | 3 | **30** | **CRÍTICO e confirmado em 2026-09-04**: 199 grupos criados para uma única conversa real. Bloqueia a ativação do Control Center. Ver `docs/GROUP-IDENTITY-FINDING.md` |
+| D14 | Identidade enviada pelo sensor ainda deriva do título | Android/Dados | 5 | 5 | 3 | **30** | MITIGADO no piloto pela canonicalização do backend; `shortcut_id` foi validado em campo (556/556 eventos 0.3.1) e exige migração coordenada sensor+backend antes da expansão. Ver D-028 |
 | D15 | Read model possui limites fixos sem paginação ou metadado de truncamento | Escala | 3 | 3 | 3 | 18 | PARCIAL: metadado de truncamento existe; paginação continua pendente |
 | D16 | APK em operação não reporta configuração da captura | Android/Dados | 4 | 3 | 3 | 21 | novo em 2026-09-03: limita a confiança a `moderate` |
 | D18 | O APK em operação não foi gerado pelo código Android deste repositório | Android/Release | 5 | 5 | 4 | 20 | **RESOLVIDO** no mesmo dia: a fonte está em `quentalgabriel-cloud/radar-sensor-probe`, release `v0.3.0-connected`, com o APK conferindo por SHA-256. O módulo `apps/android-sensor` deste monorepo nunca produziu a build em operação |

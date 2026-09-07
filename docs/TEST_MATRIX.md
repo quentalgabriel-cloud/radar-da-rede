@@ -97,8 +97,13 @@
 | Android | Teste de captura dirigido | VALIDADO EM CAMPO | Iniciado 2026-09-02 18:45:25 UTC, aprovado 19:11:49 UTC |
 | Captura | Tolerância de 35 min entre amostras é adequada | VALIDADO REMOTAMENTE | 28 amostras reais: intervalo médio 3,6 min, máximo 16,7 min, nenhum acima da tolerância |
 | Android | APK em operação corresponde ao código do repositório | **REPROVADO, esperado** | O sensor de campo vem de `quentalgabriel-cloud/radar-sensor-probe`, não deste monorepo; `apps/android-sensor` nunca produziu a build de operação |
-| Android | Reboot, Doze, bateria, rede offline e grupos silenciados | NÃO TESTADO | Executar contra o repositório do probe, release `v0.3.0-connected` |
-| Android | Procedência do APK em operação é rastreável | VALIDADO REMOTAMENTE | Release `v0.3.0-connected` de `radar-sensor-probe`; SHA-256 `6ab97610...f128` confere com o hash publicado e com a cópia local |
+| Android | Reboot, Doze, bateria, rede offline e grupos silenciados | PARCIAL | A 0.3.1 recuperou snapshots e drenou a fila, mas o teste dirigido não foi iniciado; 22 gaps >35 min em 48 h e máximo de 3h06 exigem soak controlado |
+| Android | Procedência do APK em operação é rastreável | VALIDADO EM CAMPO | Release `v0.3.1-shortcut-diagnostic`; versão do relatório e SHA-256 `890a0869...bf1c91` conferem com o asset oficial e a release assinada |
+| Android | `shortcut_id` identifica a conversa além do título volátil | VALIDADO EM CAMPO | 556/556 eventos 0.3.1 com shortcut; um valor em 553 eventos e 82 títulos/ids brutos; dois snapshots de rótulos distintos compartilham o mesmo shortcut |
+| Android | `locus_id` está disponível nas notificações do WhatsApp | REPROVADO NESTA AMOSTRA | 0/4 snapshots e 0/556 eventos 0.3.1; não usar como base da próxima identidade |
+| Diagnóstico Android | Exportação pseudonimiza todos os identificadores | REPROVADO | `shortcut_id`/`locus_id` escapam de `sanitizedString`; não compartilhar novos relatórios sem redação |
+| Captura | Heartbeat da 0.3.1 reporta configuração necessária para `high` | REPROVADO | `notification_access`, `listener_connected`, `whatsapp_installed` e `network_type` continuam nulos |
+| Captura | `offline_recovery` volta a `healthy` depois da recuperação | REPROVADO | O estado permanece após a fila drenar; 134 amostras em 48 h com status de recuperação e backlog zero |
 | Segurança | Segredo de ingestão não é extraível do artefato distribuído | **REPROVADO** | O APK público carrega a credencial ativa em claro; SHA-256 do valor confere com `device_credentials` |
 | Radar Web | Carrega sem erro de página e com marcos de acessibilidade | TESTADO LOCALMENTE | `apps/radar-web/test/e2e.test.js` em Chromium real |
 | Radar Web | Busca filtra e o estado vazio explica em vez de sumir | TESTADO LOCALMENTE | idem; verificado por mutação — quebrar a mensagem reprova |

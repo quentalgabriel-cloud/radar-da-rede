@@ -333,3 +333,81 @@ Tratar como possível injeção, até prova em contrário: mais de um `device_id
 ativo, volume diário muito fora dessa faixa, conversas que o aparelho não
 reporta no diagnóstico, ou eventos chegando enquanto o heartbeat indica o
 aparelho parado.
+
+---
+
+## Evidência da release 0.3.1 no Moto G84 — 2026-09-07
+
+Arquivo analisado:
+`radar-sensor-diagnostico-1788638647117.json`, gerado em
+2026-09-05 20:04:07 UTC depois de Victor instalar a última release.
+
+### Procedência
+
+| Item | Resultado |
+|---|---|
+| pacote | `br.com.radardarede.sensor` |
+| versão | `0.3.1-shortcut-diagnostic` (`versionCode` 5) |
+| parser | `0.3.1` |
+| aparelho | Motorola Moto G84 5G, Android 15 / SDK 35 |
+| SHA-256 do APK | `890a0869bed0a3713bbf3fdab4727b8bbc92e9b16c8393a804082fd5d9bf1c91` |
+| asset oficial | mesmo tamanho (50.500 bytes) e mesmo digest |
+| release CI | build e release verdes; o workflow executa `apksigner verify` antes de publicar |
+
+### O que o relatório prova
+
+- listener conectado e estado registrado;
+- dispositivo provisionado;
+- quatro snapshots recuperados das notificações ativas;
+- oito eventos enviados, zero falhas de upload e outbox vazio no instante da
+  exportação;
+- `shortcut_id` presente nos quatro snapshots; três valores distintos;
+- duas representações com rótulos diferentes compartilham o mesmo shortcut;
+- nenhum `locus_id` presente.
+
+`parser_status = RAW` continua significando que o snapshot bruto foi preservado;
+não é falha do parser. Os oito eventos enviados e a outbox vazia provam que
+houve parsing e drenagem. O teste dirigido embutido no app não foi iniciado
+(`test_started_at = 0`), portanto o arquivo não substitui a matriz física.
+
+### Cruzamento com produção em 2026-09-07
+
+| Item | Resultado |
+|---|---:|
+| eventos Android totais | 2.658 |
+| eventos com parser 0.3.1 | 556 |
+| 0.3.1 com `shortcut_id` | 556 (100%) |
+| 0.3.1 com `locus_id` | 0 |
+| shortcuts distintos | 4 |
+| maior sequência de um shortcut | 553 eventos / 82 títulos ou ids brutos |
+| heartbeat mais recente | 2026-09-07 16:44:38 UTC |
+| outbox no heartbeat mais recente | 0 |
+
+O resultado confirma que o shortcut é estável frente às variações de título e
+deve orientar a próxima revisão de identidade. A canonicalização por rótulo no
+backend continua protegendo o live atual até essa migração coordenada.
+
+### Atenções e ajustes necessários
+
+1. **Privacidade do diagnóstico:** `DiagnosticExporter.sanitizedString` não
+   pseudonimiza `shortcut_id` nem `locus_id`. O relatório contém identificadores
+   brutos apesar da nota de privacidade. Não publicar nem anexar novos arquivos
+   sem redação; corrigir o exportador na próxima build.
+2. **Configuração ausente:** os heartbeats continuam enviando como nulos
+   `notification_access`, `listener_connected`, `whatsapp_installed` e
+   `network_type`. A confiança não pode atingir `high`.
+3. **Recuperação persistente:** depois de uma falha seguida de sucesso,
+   `HealthStore.remoteStatus` devolve `offline_recovery` indefinidamente. Em 48 h
+   houve 134 amostras nesse estado, mesmo com fila vazia. Corrigir para que a
+   recuperação seja uma transição temporal, não um estado permanente.
+4. **Continuidade ainda insuficiente:** em 48 h, 22 gaps ultrapassaram 35 min;
+   p95 de 2.904 s e máximo de 11.184 s (3h06). Antes de ampliar o piloto,
+   executar o soak de reboot, Doze, bateria sem restrição, perda/retorno de rede,
+   grupos silenciados e burst.
+5. **Credencial embutida:** a release pública continua contendo a credencial
+   ativa no APK, conforme o risco aceito D-021. A próxima build é o gatilho para
+   provisionamento em runtime e rotação coordenada; não revogar antes da troca.
+
+Conclusão: captura e ingestão estão funcionais para o piloto; não há razão para
+rollback do Painel de Controle. A etapa Android/identidade ainda não pode ser
+declarada concluída nem ampliada sem os ajustes acima.

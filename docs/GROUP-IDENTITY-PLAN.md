@@ -197,3 +197,48 @@ Duas coisas a decidir, ambas fora do escopo da etapa 1:
 2. avaliar `pg_cron` dentro do Supabase como agendador, que não depende da fila
    do GitHub. É mudança de infraestrutura e precisa de decisão explícita, com
    atenção a onde a credencial de processamento passaria a viver.
+
+---
+
+## Etapa 4 — evidência de campo obtida em 2026-09-07
+
+O diagnóstico pedido ao Victor foi exportado no Moto G84 depois da instalação
+da release `v0.3.1-shortcut-diagnostic`. O SHA-256 do APK analisado,
+`890a0869bed0a3713bbf3fdab4727b8bbc92e9b16c8393a804082fd5d9bf1c91`, é
+idêntico ao digest do asset oficial; o workflow da release concluiu com sucesso
+depois de executar `apksigner verify`.
+
+### Resposta às perguntas do diagnóstico
+
+- `shortcutId`: **presente e útil**. Os quatro snapshots exportados contêm três
+  valores; duas representações de notificação com rótulos distintos compartilham
+  o mesmo shortcut.
+- `LocusId`: **ausente** nos quatro snapshots e em todos os 556 eventos 0.3.1
+  observados no Supabase. Não é candidato para a identidade nesta amostra.
+- estabilidade em volume: um único shortcut aparece em 553 eventos ligados a
+  82 títulos/ids brutos. A variação textual muda; o shortcut permanece.
+
+Isso encerra a descoberta, mas não autoriza uma substituição direta no live. O
+backend ainda canonicaliza todo evento para `label:<rótulo canônico>` antes de
+resolver o registry. A mudança correta precisa ser coordenada: hash do shortcut
+na origem ou no limite confiável, fallback explícito, reconciliação dos aliases,
+reprocessamento das janelas e rollback.
+
+### Achados adicionais que precisam entrar na próxima build
+
+1. O exportador afirma que identificadores foram pseudonimizados, mas deixa
+   `shortcut_id` e `locus_id` intactos. Não compartilhar novos relatórios sem
+   redigir esses campos.
+2. O heartbeat continua sem `notification_access`, `listener_connected`,
+   `whatsapp_installed` e `network_type`, mantendo o teto de confiança.
+3. `HealthStore.remoteStatus` permanece em `offline_recovery` depois da primeira
+   falha recuperada. O Supabase recebeu 134 amostras nesse estado em 48 h; a UI
+   pode dizer “captura restabelecida” por tempo indefinido.
+4. Nas 48 h auditadas houve 22 intervalos acima de 35 min entre heartbeats e um
+   intervalo de 11.184 s (3h06). Instalação e recuperação funcionam, mas reboot,
+   Doze, bateria, offline controlado e grupos silenciados ainda exigem soak
+   dirigido.
+
+**Estado:** diagnóstico do shortcut `VALIDADO EM CAMPO`; migração de identidade,
+correções de saúde/privacidade e matriz física completa `PENDENTES`. O piloto
+pode continuar ligado com cobertura baixa explícita; expansão continua vedada.

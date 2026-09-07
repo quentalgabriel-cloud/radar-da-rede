@@ -1,6 +1,6 @@
 # Handoff para continuidade por qualquer LLM
 
-> **LEIA PRIMEIRO: "GO-LIVE DE 2026-09-07", no fim deste arquivo.**
+> **LEIA PRIMEIRO: "VALIDAÇÃO DE CAMPO DA 0.3.1", no fim deste arquivo.**
 > É a seção corrente. As seções anteriores continuam válidas como histórico,
 > mas seus próximos passos e estados de flag foram substituídos pelo go-live.
 
@@ -965,3 +965,82 @@ where id = 'd1224e68-c51f-4b31-a7e6-7b91f1a65357';
 Se houver defeito de código, abrir um PR que reverta o merge `5dbeb073`; não
 usar `reset --hard` na `main`. A baixa cobertura, isoladamente, não exige
 rollback porque é apresentada de forma explícita e invalida as tendências.
+
+---
+
+# VALIDAÇÃO DE CAMPO DA 0.3.1 — MOTO G84, 2026-09-07
+
+## Decisão executiva
+
+O live permanece ligado na rede piloto. Não há regressão que justifique
+rollback: `main` e `origin/main` estavam em `e9f6138`, `pnpm verify` passou com
+166 testes, o E2E passou 20/20, a produção web carregou o shell publicado, o
+heartbeat estava recente e a janela canônica tinha 11 métricas para 11 grupos.
+
+O relatório de Victor fecha a descoberta do `shortcutId`, mas abre uma próxima
+mudança obrigatória antes de ampliar o piloto. Não trocar a identidade direto
+no live: seguir D-028 e fazer uma alteração coordenada sensor+backend.
+
+## APK e relatório conferidos
+
+- relatório: `radar-sensor-diagnostico-1788638647117.json`, gerado em
+  2026-09-05 20:04:07 UTC no Motorola Moto G84 5G, Android 15 / SDK 35;
+- app: `br.com.radardarede.sensor`, versão `0.3.1-shortcut-diagnostic`, parser
+  `0.3.1`;
+- APK: 50.500 bytes, SHA-256
+  `890a0869bed0a3713bbf3fdab4727b8bbc92e9b16c8393a804082fd5d9bf1c91`,
+  idêntico ao asset oficial da release; build e release CI verdes;
+- relatório: listener conectado, provisionado, quatro snapshots recuperados,
+  oito eventos enviados, zero falhas e outbox zero;
+- o teste dirigido do app não foi iniciado (`test_started_at = 0`).
+
+## Evidência remota
+
+| Item | Resultado |
+|---|---:|
+| eventos Android | 2.658 |
+| eventos do parser 0.3.1 | 556 |
+| 0.3.1 com `shortcut_id` | 556 |
+| 0.3.1 com `locus_id` | 0 |
+| shortcuts distintos | 4 |
+| shortcut dominante | 553 eventos / 82 títulos ou ids brutos |
+| heartbeat mais recente | 2026-09-07 16:44:38 UTC |
+| grupos ativos / métricas atuais | 11 / 11 |
+| crons ativos | 2 |
+| flag do Control Center | `true` |
+
+O relatório também contém duas representações de rótulos distintos com o mesmo
+shortcut. Isso prova que o campo é estável frente à variação textual que gerava
+ids diferentes. `LocusId` não apareceu e deve ser descartado como base nesta
+amostra.
+
+## Ajustes necessários antes de expandir
+
+1. Corrigir `DiagnosticExporter`: hoje `shortcut_id` e `locus_id` não são
+   pseudonimizados, apesar da nota de privacidade. O arquivo recebido deve
+   permanecer restrito.
+2. Reportar no heartbeat `notification_access`, `listener_connected`,
+   `whatsapp_installed` e `network_type`.
+3. Corrigir `HealthStore.remoteStatus`: `offline_recovery` fica permanente após
+   uma falha recuperada. Foram 134 amostras nesse estado em 48 h com backlog
+   zero em boa parte do período.
+4. Melhorar/validar continuidade: 22 gaps acima de 35 min em 48 h, p95 de
+   2.904 s e máximo de 11.184 s (3h06). Executar bateria sem restrição, reboot,
+   Doze, offline/retorno, silenciado e burst.
+5. Implementar a identidade por hash do shortcut em recorte coordenado com o
+   backend, fallback e reconciliação auditável. Não fazer backfill por
+   semelhança e não expor o valor bruto como chave de produto.
+6. A credencial ativa continua embutida no APK público, risco aceito D-021. A
+   próxima build é o gatilho para provisionamento em runtime e rotação; não
+   revogar antes de instalar e verificar a substituta.
+
+## Próxima ação exata
+
+Preparar uma release do `radar-sensor-probe` que feche privacidade, heartbeat,
+estado de recuperação e continuidade, com testes. Em paralelo no monorepo,
+desenhar a migração de identidade por shortcut com flag e dry-run. Só implantar
+depois de uma janela combinada com Victor e rollback para o APK 0.3.1.
+
+O rollback do live atual continua sendo apenas
+`group_control_center_enabled = false`; nenhum achado deste relatório exige
+executá-lo agora.

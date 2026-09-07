@@ -294,3 +294,33 @@ Os status usados são `ACEITA`, `PROVISÓRIA`, `HIPÓTESE` e `ESTACIONADA`.
 - **Reabrir se:** a cobertura passar a sustentar tendência de forma estável — aí a
   hierarquia da tela pode mudar; ou se a coordenação recusar o vocabulário na
   validação do laboratório.
+
+## D-028 — `shortcutId` confirmado em campo; migração de identidade será coordenada
+
+- **Status:** PROVISÓRIA
+- **Data:** 2026-09-07
+- **Evidência de campo:** o relatório exportado no Moto G84 pela build
+  `0.3.1-shortcut-diagnostic` contém quatro snapshots com três `shortcut_id`;
+  duas representações com rótulos diferentes compartilham o mesmo identificador.
+  No Supabase, 556 eventos `parser_version = 0.3.1` carregam `shortcut_id` e
+  nenhum carrega `locus_id`. Um único shortcut aparece em 553 eventos associados
+  a 82 títulos/ids brutos, demonstrando estabilidade frente à variação textual.
+- **Decisão:** manter no live, por enquanto, a canonicalização por rótulo já
+  implantada e validada. Ela conserva o piloto funcional e o registry em 11
+  grupos ativos. Não trocar `conversation_id` diretamente em produção nem
+  executar backfill por semelhança.
+- **Próxima mudança obrigatória:** em alteração isolada da P1.1, desenhar a
+  identidade coordenada sensor+backend sobre um hash do `shortcutId`, com
+  fallback explícito para o rótulo canônico, migração/reconciliação auditável,
+  replay das janelas e rollback por flag. O valor bruto não deve virar chave
+  visível de produto.
+- **Correções do sensor que entram na mesma janela de release:** pseudonimizar
+  `shortcut_id` e `locus_id` no diagnóstico; reportar `notification_access`,
+  `listener_connected`, `whatsapp_installed` e `network_type`; e impedir que
+  `offline_recovery` permaneça indefinidamente depois de a fila drenar.
+- **Rollout:** o Painel de Controle pode permanecer ligado somente na rede
+  piloto porque a UI explicita cobertura baixa e invalida tendências. Não
+  ampliar o rollout nem declarar a etapa 4 concluída antes do soak de campo e
+  da migração coordenada.
+- **Reabrir se:** o mesmo shortcut passar a representar duas conversas reais,
+  a presença do campo cair materialmente, ou a API do WhatsApp/Android mudar.
