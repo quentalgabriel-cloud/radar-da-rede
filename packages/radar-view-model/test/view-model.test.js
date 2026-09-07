@@ -14,8 +14,15 @@ it("builds an actionable material-shortage view with provenance", async () => {
   assert.ok(model.territories.every((territory) => typeof territory.open_situation_count === "number"));
   assert.ok(model.conversations.every((conversation) => Array.isArray(conversation.topics)));
   assert.match(model.provenance.warning, /dados sintéticos/i);
-  assert.equal(model.group_control_center.schema_version, "0.2.0");
-  assert.equal(model.group_control_center.enabled, false);
+  assert.equal(model.group_control_center.schema_version, "0.3.0");
+  // O laboratório entrega o painel ligado para a coordenação validar vocabulário.
+  assert.equal(model.group_control_center.enabled, true);
+  // Ligar a demonstração não pode ligar a tendência: o cenário tem uma janela só.
+  assert.equal(model.group_control_center.anchor.comparison_run_id, null);
+  for (const grupo of model.group_control_center.groups) {
+    assert.equal(grupo.trend.direction, "unavailable");
+    assert.equal(grupo.capture_confidence, "unavailable");
+  }
 });
 
 it("builds the same portable view-model shape for every scenario", async () => {

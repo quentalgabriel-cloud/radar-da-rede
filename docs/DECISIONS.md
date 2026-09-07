@@ -257,3 +257,40 @@ Os status usados são `ACEITA`, `PROVISÓRIA`, `HIPÓTESE` e `ESTACIONADA`.
   e, com alguns dias de dado real, consultar `normalized_events.metadata->>'shortcut_id'` e
   `->>'locus_id'` para responder A2/A3 do plano e decidir a próxima etapa com evidência, não suposição.
 - **Reabrir se:** os campos vierem consistentemente nulos (resposta negativa a A2/A3 — nesse caso a etapa 4 precisa de outra estratégia, não mais `shortcutId`); ou vierem preenchidos, caso em que a etapa 4 "de verdade" (mudança de identidade coordenada sensor+backend) pode ser desenhada com confiança.
+
+## D-027 — Painel de Controle como tela própria, com a qualidade da leitura em primeiro plano
+
+- **Status:** ACEITA
+- **Data:** 2026-09-07
+- **Decisão:** o Control Center sai de dentro da tela "Grupos" e vira a tela
+  "Painel de controle", servida por uma sidebar de estado no desktop e pela
+  tabbar no celular. A âncora da tela passa a mostrar a cobertura da captura
+  (`capture_coverage@2`) com nível, motivo e consequência, antes da lista de
+  grupos. Nenhuma migration, RPC ou contrato de ingestão muda.
+- **Evidência que motivou a ordem:** em 2026-09-05, com dados reais, as execuções
+  recentes tinham `capture_confidence = low`, `coverage_ratio` entre 0,59 e 0,60
+  e `trend_valid = false`. Logo, 100% dos grupos apareceriam com tendência
+  indisponível. Uma tela organizada em torno de setas de crescimento estaria
+  vazia; o que limita a leitura hoje é a cobertura, e ela era invisível na UI.
+- **Consequência:** a tela responde primeiro "o quanto dá para confiar nesta
+  janela", depois "quais grupos exigem decisão". Crescimento continua não sendo
+  lido como resultado positivo, e cor nunca é o único significado: a trilha de
+  condição em gradiente vem sempre acompanhada do rótulo textual.
+- **Classificação fora da flag:** o formulário de classificação vive no painel de
+  detalhe, que abre tanto pelo Painel de controle quanto pela tela Grupos. A tela
+  Grupos não depende de `group_control_center_enabled`, então o único trabalho que
+  a reunião pediu explicitamente — classificar grupos — não fica preso atrás da
+  flag.
+- **Laboratório com o painel ligado:** `buildSyntheticControlCenter` passa a
+  entregar `enabled: true`. Validar vocabulário com a coordenação é gate declarado
+  como pendente e não pode depender de ligar a flag em produção. O laboratório não
+  fabrica comparação: tem uma janela só, então tendência e cobertura aparecem
+  indisponíveis — a mesma forma que a rede real tem hoje.
+- **Tendência multiparâmetro:** `trends: { event_count, situation_count,
+  demand_count }` é aditivo ao lado de `trend`, com o mesmo `computeMetricTrend`,
+  a mesma política de comparação e a mesma exigência de cobertura. A UI funciona
+  com ou sem o campo, porque produção só passa a emiti-lo depois do redeploy de
+  `radar-read-model`.
+- **Reabrir se:** a cobertura passar a sustentar tendência de forma estável — aí a
+  hierarquia da tela pode mudar; ou se a coordenação recusar o vocabulário na
+  validação do laboratório.

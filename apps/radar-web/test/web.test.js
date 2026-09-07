@@ -31,6 +31,13 @@ it("serves the Radar shell and generated view model", async () => {
   assert.match(html, /Radar hoje/);
   assert.match(html, /data-screen="situations"/);
   assert.match(html, /data-screen="groups"/);
+  // O Control Center deixou de ser uma seção escondida dentro de "Grupos".
+  assert.match(html, /data-screen="control"/);
+  assert.match(html, /id="sidebar"/);
+  assert.match(html, /id="sidebar-nav"/);
+  assert.match(html, /id="sidebar-anchor"/);
+  assert.match(html, /data-badge="control"/);
+  assert.match(html, /id="control-presets"/);
   assert.match(html, /id="group-registry"/);
   assert.match(html, /id="control-center"/);
   assert.match(html, /id="condition-filter"/);
@@ -47,8 +54,10 @@ it("serves the Radar shell and generated view model", async () => {
   assert.equal(data.attention.length, 1);
   assert.equal(data.overview.territory_count, 3);
   assert.equal(data.territories.length, 3);
-  assert.equal(data.group_control_center.schema_version, "0.2.0");
-  assert.equal(data.group_control_center.enabled, false);
+  assert.equal(data.group_control_center.schema_version, "0.3.0");
+  // Ligado apenas na demonstração; a rede real continua atrás de
+  // networks.group_control_center_enabled.
+  assert.equal(data.group_control_center.enabled, true);
   const config = await (await fetch(`${endpoint}/data/runtime-config.json`)).json();
   assert.equal(config.live.enabled, false);
 });
@@ -88,6 +97,31 @@ it("keeps scripts free of innerHTML values that bypass escapeHtml for external t
   assert.match(source, /renderOperationalHealth/);
   assert.match(source, /operational-health-banner/);
   assert.match(source, /health\.healthy \|\| health\.problems\.length === 0/);
+});
+
+// A cobertura da captura é hoje o fator que mais limita a leitura. Ela existe no
+// read model desde a P1.1 e ficava invisível na tela; o teste impede que volte a
+// ficar, e impede que a consequência seja omitida quando ela não sustenta a
+// comparação.
+it("renders capture coverage with its reason and its consequence", async () => {
+  const source = await readFile(resolve(appRoot, "public/app.js"), "utf8");
+  assert.match(source, /coverage_ratio/);
+  assert.match(source, /largest_gap_seconds/);
+  assert.match(source, /ceiling_reason/);
+  assert.match(source, /tendência fica indisponível/);
+  assert.match(source, /coverageReasonLabel/);
+  // O veredito de captura vem do read model; a tela não pode recalcular o seu.
+  assert.match(source, /health\?\.evaluation/);
+});
+
+it("keeps one primary navigation landmark and one current page", async () => {
+  const html = await readFile(resolve(appRoot, "public/index.html"), "utf8");
+  const source = await readFile(resolve(appRoot, "public/app.js"), "utf8");
+  assert.equal((html.match(/aria-label="Navegação principal"/g) ?? []).length, 1);
+  assert.equal((html.match(/aria-current="page"/g) ?? []).length, 1);
+  // A sidebar é controle auxiliar: marca `active`, nunca `aria-current`.
+  assert.doesNotMatch(html, /nav-item[^>]*aria-current/);
+  assert.match(source, /nav-item\[data-target\]/);
 });
 
 it("ships one shared refresh controller without privileged processing", async () => {

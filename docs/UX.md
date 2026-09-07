@@ -37,10 +37,25 @@ O fluxo de produto é Resumo -> Detalhe -> Evidência. Mensagens brutas não apa
 
 ## Navegação atual
 
+Cinco destinos, servidos por dois controles que chamam a mesma função:
+
 - **Radar:** situação geral, atenção, movimentos, territórios e atividade recente.
+- **Painel de controle:** leitura comparável dos grupos — janela, cobertura, resumo, recortes e lista por condição.
 - **Situações:** detalhe, intensidade, período, explicação e evidências controladas.
-- **Grupos:** atividade, assuntos, situações no período e timeline contextualizada.
-- **Status:** impacto operacional da captura; versões técnicas ficam recolhidas.
+- **Grupos:** repositório de identidade e classificação; em laboratório, a lista de atividade por conversa.
+- **Captura:** impacto operacional da captura em camadas; versões técnicas ficam recolhidas.
+
+**Sidebar (≥1024px):** persistente, recolhível para trilha de ícones, com estado
+vivo (nível da captura e idade da consolidação), badges por seção derivados do
+read model, e o resumo da janela analisada. Abaixo de 1024px ela vira gaveta
+(botão no topo, ESC e clique fora fecham, `inert` quando fechada) e a tabbar
+inferior continua sendo a navegação primária. Só a tabbar declara
+`aria-current="page"`: a sidebar marca a seção ativa visualmente, para não
+anunciar duas páginas atuais.
+
+O painel de detalhe do grupo é um `<dialog>` único, aberto tanto pelo Painel de
+controle quanto por Grupos, com leitura atual, tendências por parâmetro, ritmo,
+assuntos, confiança, classificação e evidência.
 
 ## Auditoria da interface anterior
 
@@ -122,3 +137,28 @@ Regras de leitura mantidas:
 - confiança de captura aparece em português (alta, moderada, baixa,
   indisponível) e explica que mede cobertura observada do período;
 - quando a tendência é indisponível, o motivo aparece junto, em vez de um traço.
+
+## Cobertura da captura na tela (2026-09-07)
+
+O objeto `capture_coverage@2` existia no read model desde a P1.1 e não aparecia
+em lugar nenhum. Ele agora é o segundo bloco da âncora, com estas regras:
+
+- **nível e motivo são o texto principal; a percentagem é apoio.** Com 60% de
+  cobertura e interrupções na janela o motor devolve `low`; uma barra pela metade
+  lida como "quase suficiente" contradiria o veredito;
+- **cobertura ausente é dita como ausente, nunca como zero.** Quando a execução
+  não registrou cobertura (rollback de RPC, falha ao ler saúde, cenário
+  sintético), a barra não recebe valor e o texto diz que isso é diferente de
+  cobertura zero;
+- **a consequência é declarada:** "com esta cobertura, a tendência fica
+  indisponível" ou "a cobertura sustenta a comparação";
+- o teto (`ceiling`/`ceiling_reason`) só aparece quando o motor o emite.
+
+Os avisos de zero da execução e de confiança saíram de cada cartão para a
+âncora, onde aparecem uma vez. No cartão fica o rótulo curto "Sem atividade nesta
+execução" — a afirmação continua presa à janela atual.
+
+O histórico por janela obedece à mesma política da comparação: a série só liga
+execuções do mesmo tipo e duração equivalente. Uma linha entre um refresh manual
+e um slot agendado seria lida como tendência entre janelas que o próprio motor
+recusa comparar.
