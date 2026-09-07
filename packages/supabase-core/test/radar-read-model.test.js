@@ -42,7 +42,7 @@ test("persisted read model keeps the synthetic UI contract", async () => {
   assert.ok(model.conversations.every((conversation) => Array.isArray(conversation.topics)));
   assert.equal(model.provenance.processing_run_id, run.id);
   const controlCenter = buildGroupControlCenter({ groups: [], metrics: [], enabled: false });
-  assert.equal(controlCenter.schema_version, "0.2.0");
+  assert.equal(controlCenter.schema_version, "0.3.0");
   assert.equal(controlCenter.enabled, false);
   assert.ok(Array.isArray(controlCenter.groups));
 });

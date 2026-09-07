@@ -289,3 +289,77 @@ test("a comparadora reprocessada vence a sua própria versão antiga", () => {
     assert.equal(selectComparisonRun(RUN_TODAY, runs).run.id, "yesterday-new");
   }
 });
+
+// A coordenação pediu crescimento, estabilidade e queda para vários parâmetros,
+// não só para volume. O que não pode acontecer é a tendência de um parâmetro
+// escapar da política de comparação ou da exigência de cobertura só porque é
+// outro contador.
+test("a tendência cobre mais de um parâmetro sob a mesma política", () => {
+  const model = buildGroupControlCenter({
+    groups: [group("g1")],
+    runs: [RUN_TODAY, RUN_YESTERDAY],
+    metrics: [
+      metric(RUN_TODAY.id, "g1", 40, { open_situation_count: 6, demand_count: 1 }),
+      metric(RUN_YESTERDAY.id, "g1", 10, { open_situation_count: 6, demand_count: 9 })
+    ]
+  });
+  const item = model.groups[0];
+  assert.equal(item.trend, item.trends.event_count, "o campo antigo continua sendo o de atividade");
+  assert.equal(item.trends.event_count.direction, "growing");
+  assert.equal(item.trends.situation_count.direction, "stable");
+  assert.equal(item.trends.demand_count.direction, "declining");
+  for (const [name, trend] of Object.entries(item.trends)) {
+    assert.equal(trend.metric, name);
+    assert.equal(trend.comparison_policy, COMPARISON_POLICY);
+  }
+});
+
+test("sem cobertura, nenhum parâmetro ganha tendência", () => {
+  const model = buildGroupControlCenter({
+    groups: [group("g1")],
+    runs: [RUN_TODAY, RUN_YESTERDAY],
+    capture: { level: "low" },
+    metrics: [
+      metric(RUN_TODAY.id, "g1", 40, { capture_confidence: "low", open_situation_count: 6, demand_count: 1 }),
+      metric(RUN_YESTERDAY.id, "g1", 10, { capture_confidence: "low", open_situation_count: 0, demand_count: 9 })
+    ]
+  });
+  for (const trend of Object.values(model.groups[0].trends)) {
+    assert.equal(trend.direction, "unavailable");
+    assert.equal(trend.unavailable_reason, "capture_confidence_insufficient");
+  }
+});
+
+test("o resumo separa parado, crescendo, estável e caindo", () => {
+  const model = buildGroupControlCenter({
+    groups: [group("g-cresce"), group("g-cai"), group("g-parado")],
+    runs: [RUN_TODAY, RUN_YESTERDAY],
+    metrics: [
+      metric(RUN_TODAY.id, "g-cresce", 40), metric(RUN_YESTERDAY.id, "g-cresce", 10),
+      metric(RUN_TODAY.id, "g-cai", 10), metric(RUN_YESTERDAY.id, "g-cai", 40),
+      metric(RUN_TODAY.id, "g-parado", 0), metric(RUN_YESTERDAY.id, "g-parado", 0)
+    ]
+  });
+  assert.equal(model.summary.monitored, 3);
+  assert.equal(model.summary.active, 2);
+  assert.equal(model.summary.inactive, 1);
+  assert.equal(model.summary.growing, 1);
+  assert.equal(model.summary.declining, 1);
+  assert.equal(model.summary.stable, 1, "zero contra zero é estabilidade observada, não ausência de leitura");
+});
+
+test("o histórico só liga janelas que a política aceitaria comparar", () => {
+  const manual = { ...RUN_TODAY_MIDDAY, id: "run-manual", window_kind: "manual_refresh" };
+  const herdada = { ...RUN_YESTERDAY, id: "run-legacy", window_kind: "legacy_on_read" };
+  const model = buildGroupControlCenter({
+    groups: [group("g1")],
+    runs: [RUN_TODAY, RUN_YESTERDAY, manual, herdada],
+    metrics: [
+      metric(RUN_TODAY.id, "g1", 4), metric(RUN_YESTERDAY.id, "g1", 9),
+      metric(manual.id, "g1", 300), metric(herdada.id, "g1", 400)
+    ]
+  });
+  assert.deepEqual(model.groups[0].sparkline.map((point) => point.value), [9, 4],
+    "refresh manual e janela herdada não entram na série de um slot agendado");
+  assert.equal(model.anchor.window_kind, "canonical_slot");
+});

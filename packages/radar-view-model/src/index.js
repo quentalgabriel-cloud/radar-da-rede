@@ -243,6 +243,12 @@ const buildSyntheticControlCenter = (scenario, analysis, conversations) => {
     runs: [run],
     currentRunId: run.id,
     capture,
-    enabled: false
+    // O laboratório entrega o Painel de Controle ligado porque validar o
+    // vocabulário com a coordenação é um gate declarado como pendente, e ele não
+    // pode depender de ligar a flag em produção. A flag de produção continua
+    // sendo `networks.group_control_center_enabled`, intocada por este caminho.
+    // Nada aqui fabrica comparação: o cenário tem uma janela só, então a
+    // tendência aparece indisponível, exatamente como aparece hoje na rede real.
+    enabled: true
   });
 };

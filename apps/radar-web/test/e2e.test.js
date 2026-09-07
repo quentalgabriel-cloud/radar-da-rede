@@ -58,20 +58,30 @@ describe("Radar Web no navegador", { skip: temNavegador ? false : "Chromium não
     if (server) await new Promise((done, reject) => server.close((error) => (error ? reject(error) : done())));
   });
 
+  // A tabbar deixou de ser sinal de prontidão: em >=1024px ela some por decisão
+  // de layout e quem navega e a sidebar. O que diz "carregou" e o conteudo.
   const abrir = async (options = {}) => {
     const context = await browser.newContext(options);
     const page = await context.newPage();
     const erros = [];
     page.on("pageerror", (error) => erros.push(error.message));
     await page.goto(endpoint, { waitUntil: "networkidle" });
-    await page.waitForSelector(".tabbar:not([hidden])");
+    await page.waitForSelector("#radar-content:not([hidden])");
+    // `state: "hidden"` porque um elemento com [hidden] nunca fica visível, e o
+    // waitForSelector espera visibilidade por padrão.
+    await page.waitForSelector("#loading-state", { state: "hidden" });
     return { page, context, erros };
   };
 
   // Cada vista so existe depois da aba correspondente. Navegar faz parte do
-  // teste: e o caminho que a operacao percorre.
+  // teste: e o caminho que a operacao percorre. Os dois controles chamam o mesmo
+  // showScreen, entao o teste usa o que estiver visivel naquele viewport.
   const irPara = async (page, alvo, seletor) => {
-    await page.click(`.tab[data-target="${alvo}"]`);
+    // A tabbar existe só onde a sidebar não é persistente. Ela é o discriminador
+    // confiável: a sidebar fechada continua "visível" para o Playwright porque
+    // está apenas transladada para fora da tela.
+    const temTabbar = await page.locator(".tabbar").isVisible();
+    await page.click(temTabbar ? `.tab[data-target="${alvo}"]` : `.nav-item[data-target="${alvo}"]`);
     await page.waitForSelector(`.screen[data-screen="${alvo}"]:not([hidden])`);
     if (seletor) await page.waitForSelector(seletor);
   };
@@ -129,20 +139,10 @@ describe("Radar Web no navegador", { skip: temNavegador ? false : "Chromium não
     await context.close();
   });
 
-  it("o dialog de grupo abre, prende o foco e fecha no ESC devolvendo o foco", async () => {
+  it("o painel de detalhe abre, prende o foco e fecha no ESC devolvendo o foco", async () => {
     const { page, context } = await abrir();
-    await irPara(page, "groups", "#conversation-list .group-card");
-    const gatilho = page.locator("[data-open-group]").first();
-    const temControlCenter = await gatilho.count() > 0;
-    if (!temControlCenter) {
-      // Com a flag desligada o laboratório mostra a v0.1; o dialog é do
-      // Control Center. Nesse caso o que precisa valer é o details nativo.
-      const card = page.locator("#conversation-list details").first();
-      await card.locator("summary").click();
-      assert.equal(await card.getAttribute("open"), "");
-      await context.close();
-      return;
-    }
+    await irPara(page, "control", "#control-group-list .control-card");
+    const gatilho = page.locator("#control-group-list [data-open-group]").first();
     await gatilho.focus();
     await gatilho.click();
     await page.waitForSelector("#group-drawer[open]");
@@ -150,7 +150,26 @@ describe("Radar Web no navegador", { skip: temNavegador ? false : "Chromium não
       document.querySelector("#group-drawer")?.contains(document.activeElement));
     assert.equal(focoDentro, true, "o foco precisa entrar no dialog");
     await page.keyboard.press("Escape");
-    await page.waitForSelector("#group-drawer:not([open])");
+    // Um dialog fechado tem display:none, então esperar por visibilidade nunca
+    // resolve; o estado do elemento é a verdade aqui.
+    await page.waitForFunction(() => document.querySelector("#group-drawer")?.open === false);
+    // Fechar sem devolver o foco deixa o teclado no início da página.
+    const focoVoltou = await page.evaluate(() =>
+      document.activeElement?.matches("[data-open-group]"));
+    assert.equal(focoVoltou, true, "o foco precisa voltar ao cartão que abriu o painel");
+    await context.close();
+  });
+
+  it("o cartão de grupo leva a classificação e a evidência para dentro do painel", async () => {
+    const { page, context } = await abrir();
+    await irPara(page, "control", "#control-group-list .control-card");
+    await page.locator("#control-group-list [data-open-group]").first().click();
+    await page.waitForSelector("#group-drawer[open]");
+    const texto = await page.locator("#group-drawer-content").innerText();
+    assert.match(texto, /Leitura atual/);
+    assert.match(texto, /Crescimento, estabilidade e queda/);
+    assert.match(texto, /Classificação/);
+    assert.match(texto, /Evidência/);
     await context.close();
   });
 
@@ -237,8 +256,8 @@ describe("Radar Web no navegador", { skip: temNavegador ? false : "Chromium não
       await route.fulfill({ response, json: corpo });
     });
     await page.goto(endpoint, { waitUntil: "networkidle" });
-    await page.waitForSelector(".tabbar:not([hidden])");
-    await irPara(page, "groups", "#control-center:not([hidden])");
+    await page.waitForSelector("#radar-content:not([hidden])");
+    await irPara(page, "control", "#control-center:not([hidden])");
     // Esperar a seção não basta: a lista é renderizada depois dela.
     await page.waitForSelector("#control-group-list .control-card");
     return { page, context };
@@ -246,7 +265,9 @@ describe("Radar Web no navegador", { skip: temNavegador ? false : "Chromium não
 
   it("o Control Center mostra a janela analisada e a política de comparação", async () => {
     const { page, context } = await comControlCenter();
-    const ancora = await page.locator("#control-center-anchor").innerText();
+    // textContent, não innerText: os rótulos são maiúsculos por CSS e o
+    // identificador da política precisa aparecer na caixa original.
+    const ancora = await page.locator("#control-center-anchor").textContent();
     assert.match(ancora, /Janela atual/);
     assert.match(ancora, /same_slot_previous_day@1/);
     await context.close();
@@ -262,11 +283,15 @@ describe("Radar Web no navegador", { skip: temNavegador ? false : "Chromium não
     await context.close();
   });
 
+  // A regra de produto continua sendo a mesma: o zero pertence à execução atual.
+  // O que mudou é onde cada metade da frase vive — rótulo curto no cartão,
+  // explicação completa uma vez na âncora, em vez de repetida em cada linha.
   it("grupo sem atividade avisa que o zero é da execução atual", async () => {
     const { page, context } = await comControlCenter();
     const lista = await page.locator("#control-group-list").textContent();
     assert.match(lista, /Sem atividade nesta execução/);
-    assert.match(lista, /não reaproveita uma medição anterior/);
+    const ancora = await page.locator("#control-center-anchor").innerText();
+    assert.match(ancora, /não reaproveita uma medição anterior/);
     await context.close();
   });
 
@@ -282,13 +307,58 @@ describe("Radar Web no navegador", { skip: temNavegador ? false : "Chromium não
     const { page, context } = await comControlCenter();
     const total = await page.locator("#control-group-list .control-card").count();
     assert.ok(total > 0);
+    // Os seis seletores saíram da superfície principal e vivem em "Filtros
+    // avançados"; a operação precisa abri-los, e o teste percorre o mesmo caminho.
+    await page.click(".advanced-filters summary");
     await page.selectOption("#trend-filter", "unavailable");
     await page.waitForFunction((n) =>
       document.querySelectorAll("#control-group-list .control-card").length === n, total);
     await page.selectOption("#trend-filter", "growing");
     await page.waitForFunction(() =>
       document.querySelector("#control-group-list .empty-state") !== null);
-    assert.match(await page.locator("#control-group-list .empty-state").innerText(), /Ajuste busca/);
+    // Vazio por cobertura não é vazio por filtro: o estado precisa dizer qual dos
+    // dois é, senão a operação procura um grupo que o dado não pode mostrar.
+    assert.match(await page.locator("#control-group-list .empty-state").innerText(),
+      /Nenhum grupo tem tendência nesta execução/);
+    assert.match(await page.locator("#control-group-list .empty-state").innerText(),
+      /cobertura da captura não sustenta/);
+    await context.close();
+  });
+
+  it("os recortes rápidos filtram sem abrir os filtros avançados", async () => {
+    const { page, context } = await comControlCenter();
+    const total = await page.locator("#control-group-list .control-card").count();
+    await page.click('#control-presets [data-preset="inactive"]');
+    await page.waitForFunction(() =>
+      document.querySelectorAll("#control-group-list .control-card").length >= 0);
+    const parados = await page.locator("#control-group-list .control-card").count();
+    assert.ok(parados < total, "o recorte precisa reduzir a lista, não repeti-la");
+    assert.match(await page.locator("#control-group-list").textContent(), /Sem atividade nesta execução/);
+    await page.click('#control-presets [data-preset="all"]');
+    await page.waitForFunction((n) =>
+      document.querySelectorAll("#control-group-list .control-card").length === n, total);
+    await context.close();
+  });
+
+  it("a cobertura da captura aparece com nível, motivo e consequência", async () => {
+    const { page, context } = await comControlCenter();
+    const ancora = await page.locator("#control-center-anchor").innerText();
+    assert.match(ancora, /Cobertura da captura/);
+    assert.match(ancora, /Motivo:/);
+    // O ponto operacional: dizer o que a cobertura impede, não só o nível dela.
+    assert.match(ancora, /tendência fica indisponível|sustenta a comparação/);
+    await context.close();
+  });
+
+  it("cobertura sem medição é dita como não medida, nunca como zero", async () => {
+    // É o que produção entrega quando a RPC cai para v2/v1 e capture_coverage
+    // fica nulo: `{ level }` sozinho. "0% coberto" seria afirmar uma medição
+    // que ninguém fez.
+    const { page, context } = await comControlCenter((cc) => ({ ...cc, capture: { level: "low" } }));
+    const ancora = await page.locator("#control-center-anchor").innerText();
+    assert.match(ancora, /não medida/);
+    assert.match(ancora, /diferente de cobertura zero/);
+    assert.ok(!/0% do período/.test(ancora), "cobertura ausente não pode virar zero medido");
     await context.close();
   });
 
@@ -297,6 +367,31 @@ describe("Radar Web no navegador", { skip: temNavegador ? false : "Chromium não
       ...cc, consistency: { ...cc.consistency, consistent: false, unexpected_metric_group_count: 3 }
     }));
     assert.match(await page.locator("#control-center-anchor").innerText(), /inconsistente/);
+    await context.close();
+  });
+
+  it("a sidebar carrega estado e navega para as mesmas telas da tabbar", async () => {
+    const { page, context } = await abrir({ viewport: { width: 1280, height: 900 } });
+    await page.waitForSelector("#sidebar-state .state-line");
+    assert.ok((await page.locator("#sidebar-state").innerText()).includes("Consolidado"));
+    await page.click('.nav-item[data-target="control"]');
+    await page.waitForSelector('.screen[data-screen="control"]:not([hidden])');
+    assert.equal(await page.locator("#topbar-title").innerText(), "Painel de controle");
+    // Só a tabbar declara a página atual: dois aria-current anunciariam duas.
+    assert.equal(await page.locator("[aria-current='page']").count(), 1);
+    await context.close();
+  });
+
+  it("no celular a sidebar é gaveta, fecha no ESC e não empurra a página", async () => {
+    const { page, context } = await abrir({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+    await page.click("#menu-button");
+    await page.waitForSelector("body.sidebar-open");
+    const transborda = await page.evaluate(() =>
+      document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
+    assert.equal(transborda, false, "a gaveta não pode criar rolagem lateral");
+    await page.keyboard.press("Escape");
+    await page.waitForFunction(() => !document.body.classList.contains("sidebar-open"));
+    assert.equal(await page.locator("#menu-button").getAttribute("aria-expanded"), "false");
     await context.close();
   });
 });

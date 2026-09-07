@@ -1,7 +1,11 @@
 # Handoff para continuidade por qualquer LLM
 
+> **LEIA PRIMEIRO: "ENCERRAMENTO DA SESSÃO DE 2026-09-07", no fim deste arquivo.**
+> É a seção corrente. A de 2026-09-04 continua válida para backend e registry;
+> o corpo mais antigo tem premissas superadas.
+
 - Atualizado em: 2026-09-04, fim da sessão (P1.1, etapas 1–3 do registry de grupos)
-- **Comece pela seção final, "ENCERRAMENTO DA SESSÃO DE 2026-09-04"** — o corpo do documento acima ainda descreve estado pré-consolidação em vários pontos; a seção final tem a versão corrente
+- **Comece pela seção final** — o corpo do documento acima ainda descreve estado pré-consolidação em vários pontos; a seção final tem a versão corrente
 - Branch: `main`, no commit `b93a879`
 - Trabalho desta sessão: PRs [#11](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/11), [#12](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/12) e [#13](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/13), mesclados em `main`
 - Projeto Supabase: `pluruijhqnueayrlkthx`
@@ -376,3 +380,217 @@ Desligar é o mesmo com `false` — rollback imediato, sem deploy.
 A credencial do dispositivo está embutida em claro no APK público. **Risco aceito
 por Gabriel Quental**, registrado como D-021 em `docs/DECISIONS.md`. Revogar a
 credencial ou fechar o repositório do probe **pararia a captura em operação**.
+
+---
+
+# ENCERRAMENTO DA SESSÃƒO DE 2026-09-07 â€” LEIA ISTO PRIMEIRO
+
+SessÃ£o de **frontend apenas**. Nada de backend mudou: nenhuma migration, nenhuma
+RPC, nenhum contrato de ingestÃ£o, nenhuma Edge Function implantada. A flag
+`group_control_center_enabled` da rede piloto continua `false`.
+
+## 1. O que esta sessÃ£o entregou
+
+O **Painel de Controle** (Control Center) saiu de dentro da tela "Grupos" e virou
+tela prÃ³pria, com um app shell novo: sidebar de estado no desktop, gaveta no
+celular, tabbar preservada como navegaÃ§Ã£o primÃ¡ria em telas estreitas.
+
+DecisÃ£o completa e justificativa: **D-024 em `docs/DECISIONS.md`**.
+VocabulÃ¡rio e regras de tela: **`docs/UX.md`**, seÃ§Ãµes "NavegaÃ§Ã£o atual" e
+"Cobertura da captura na tela".
+
+### Por que a tela foi calibrada assim
+
+MediÃ§Ã£o feita contra produÃ§Ã£o em 2026-09-05 (projeto `pluruijhqnueayrlkthx`):
+
+| Item | Valor medido |
+|---|---:|
+| eventos | 2.072 |
+| grupos ativos | 8 (198 arquivados) |
+| grupos **classificados** | **0** |
+| grupos com atividade na janela | **1** (556 eventos) |
+| situaÃ§Ãµes/alertas na janela | **0** |
+| `capture_confidence` de todas as execuÃ§Ãµes recentes | **`low`** |
+| `coverage_ratio` | 0,59â€“0,60 |
+| `largest_gap_seconds` | 8.413 (2h20) |
+| `configuration` | `unknown` |
+| `trend_valid` | **false** |
+
+ConsequÃªncia: hoje **100% dos grupos teriam `trend.direction = "unavailable"`**.
+Uma tela organizada em torno de setas de crescimento estaria vazia. O que limita
+a leitura Ã© a **cobertura da captura**, e ela existia no read model desde a P1.1
+sem aparecer em nenhum lugar da UI. Por isso a tela responde, nesta ordem:
+(1) o quanto dÃ¡ para confiar nesta janela, (2) quais grupos exigem decisÃ£o,
+(3) quem Ã© cada grupo (classificaÃ§Ã£o â€” o trabalho real pendente: 0 de 8).
+
+### MudanÃ§as, arquivo a arquivo
+
+**Motor canÃ´nico â€” `packages/group-analytics/src/index.js`** (aditivo)
+- `CONTROL_CENTER_SCHEMA_VERSION`: `0.2.0` â†’ **`0.3.0`**.
+- `trends: { event_count, situation_count, demand_count }` por grupo, ao lado do
+  `trend` existente (que continua sendo o de atividade, intocado). Mesmo
+  `computeMetricTrend`, mesma polÃ­tica, mesma exigÃªncia de cobertura.
+- `anchor.window_kind` passa a existir (vinha sÃ³ de `freshness`, que nÃ£o existe
+  no laboratÃ³rio).
+- `summary` ganha `inactive`, `growing`, `stable`.
+- **CorreÃ§Ã£o de significado:** a sÃ©rie do `sparkline` agora sÃ³ inclui execuÃ§Ãµes
+  do **mesmo `window_kind` e duraÃ§Ã£o equivalente**. Antes misturava
+  `manual_refresh` e `legacy_on_read` com slots agendados e desenhava uma linha
+  entre janelas que o prÃ³prio motor recusa comparar.
+- CÃ³pia Edge regenerada por `pnpm --filter @radar-rede/supabase-core sync:edge`.
+
+**LaboratÃ³rio â€” `packages/radar-view-model/src/index.js`**
+- `buildSyntheticControlCenter` passa `enabled: true`. Motivo: validar
+  vocabulÃ¡rio com a coordenaÃ§Ã£o Ã© gate pendente e nÃ£o pode depender de ligar a
+  flag em produÃ§Ã£o. **NÃ£o fabrica comparaÃ§Ã£o:** o cenÃ¡rio tem uma janela sÃ³, entÃ£o
+  tendÃªncia e cobertura aparecem indisponÃ­veis â€” a mesma forma da rede real hoje.
+
+**Web â€” `apps/radar-web/public/{index.html,styles.css,app.js}`**
+- App shell: `.app-shell` + sidebar (`#sidebar`) + `.app-main`.
+- Sidebar com estado vivo, badges por seÃ§Ã£o, resumo da janela, e os seletores de
+  ambiente/cenÃ¡rio (que saÃ­ram do topo do conteÃºdo). RecolhÃ­vel em â‰¥1024px, com
+  preferÃªncia em `localStorage`; gaveta em <1024px com ESC, clique fora e
+  `inert` quando fechada.
+- Tela nova `data-screen="control"`; a tabbar foi para cinco colunas.
+- Ã‚ncora: janela + tipo + comparadora/motivo + **medidor de cobertura**
+  (nÃ­vel e motivo como texto principal, percentagem como apoio, estado explÃ­cito
+  de "nÃ£o medida" distinto de zero, teto sÃ³ quando o motor o emite).
+- Cinco nÃºmeros do resumo viraram **chips clicÃ¡veis**; seis presets substituem a
+  parede de `<select>`, que foi para "Filtros avanÃ§ados" recolhÃ­veis (mesmos ids).
+- CartÃ£o: trilha de condiÃ§Ã£o em gradiente **com rÃ³tulo textual**, sparkline SVG
+  com `<title>`, chip de tendÃªncia ou motivo, chip de classificaÃ§Ã£o.
+- Painel de detalhe (`<dialog>` Ãºnico, com rolagem prÃ³pria) aberto pelo Painel de
+  controle **e** pela tela Grupos: leitura atual, tendÃªncias por parÃ¢metro, ritmo,
+  assuntos, confianÃ§a, **classificaÃ§Ã£o** (formulÃ¡rio + aliases + histÃ³rico) e
+  evidÃªncia.
+- Tela Captura passa a usar `health.evaluation` (camadas aparelho/captura/
+  sincronizaÃ§Ã£o + prÃ³xima aÃ§Ã£o), que o read model jÃ¡ produzia e a UI ignorava.
+
+**CorreÃ§Ãµes de defeito encontradas no caminho**
+- `[hidden] { display: none !important; }`: a regra de autor vencia a do agente,
+  entÃ£o `.tabbar`, `.group-list` e `.demo-selector` **nÃ£o eram escondidos** por
+  `element.hidden = true`. Bug prÃ©-existente.
+- `aria-live` removido da Ã¢ncora: ela era reanunciada a cada tecla da busca.
+- `prefers-reduced-motion` passa a zerar `transition`, nÃ£o sÃ³ `animation`.
+- Alvos de toque de chips e botÃµes de alias para 44px.
+- Badge de situaÃ§Ãµes nÃ£o renderiza mais um "0" vermelho permanente.
+- OrdenaÃ§Ã£o padrÃ£o desempata por atividade (sem alertas, tudo empatava em
+  "normal" e o grupo com 556 eventos podia nÃ£o aparecer no topo).
+- Foco volta ao cartÃ£o que abriu o painel, ao fechar.
+
+## 2. VerificaÃ§Ã£o realmente executada
+
+- `pnpm -r check` â€” OK (12 pacotes).
+- `pnpm -r test` â€” **162 testes, 0 falhas** (eram 156).
+- `pnpm -r build` â€” OK.
+- `pnpm --filter @radar-rede/radar-web test:e2e` â€” **20/20 verdes**, Chromium
+  real, incluindo casos novos: sidebar/tabbar, gaveta no celular com ESC e sem
+  rolagem lateral, presets, cobertura com nÃ­vel/motivo/consequÃªncia, cobertura
+  "nÃ£o medida" â‰  zero, e um Ãºnico `aria-current` na pÃ¡gina.
+
+Isso prova implementaÃ§Ã£o e teste local. **NÃ£o prova nada remoto:** nada foi
+implantado nesta sessÃ£o.
+
+## 3. Estado dos gates
+
+| Gate | Estado |
+|---|---|
+| Etapas 1â€“3 do registry (estancar, guardrail, consolidar) | VALIDADO REMOTAMENTE (2026-09-04, sem regressÃ£o) |
+| Etapa 4 (sensor: canonicalizar na origem, `shortcutId`, config no heartbeat) | **PENDENTE** â€” repositÃ³rio `quentalgabriel-cloud/radar-sensor-probe` |
+| Gate 2 (duas janelas comparÃ¡veis com tendÃªncia real) | **NÃƒO ATINGIDO** â€” bloqueado por cobertura, nÃ£o por comparadora |
+| Etapa 5 (ligar Control Center) | **PENDENTE** â€” a tela estÃ¡ pronta; falta validar vocabulÃ¡rio e decidir |
+| VocabulÃ¡rio validado com a coordenaÃ§Ã£o | **PENDENTE** â€” agora possÃ­vel pelo laboratÃ³rio |
+| E2E de navegador (entrega 6 da P1.1) | **FEITO** nesta sessÃ£o |
+
+## 4. PrÃ³xima aÃ§Ã£o exata, em ordem
+
+1. **Mostrar o laboratÃ³rio para a coordenaÃ§Ã£o** (`?mode=lab`, aba "Painel de
+   controle") e colher objeÃ§Ãµes de vocabulÃ¡rio. Ã‰ o gate declarado como pendente
+   e o mais barato de fechar.
+2. **Decidir o scheduler** â€” `pg_cron` vs. GitHub Actions. PR
+   [#10](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/10) traz o
+   diagnÃ³stico: o cron entregou 2 de 6 slots em pelo menos um dia observado.
+3. **Atacar a cobertura**, que Ã© o que hoje desliga toda a tendÃªncia. Duas
+   frentes, ambas no `radar-sensor-probe` (etapa 4):
+   - reportar `notification_access`, `whatsapp_installed` e `network_type` â€”
+     sem isso o teto Ã© `moderate` por construÃ§Ã£o (ver D-022);
+   - reduzir os vÃ£os de heartbeat (`largest_gap_seconds` de 2h20 derruba a
+     cobertura para ~60%).
+   Antes de mexer em tolerÃ¢ncia, reler D-022: ela foi calibrada com mediÃ§Ã£o e
+   **nÃ£o** deve ser afrouxada para melhorar a mÃ©trica.
+4. **Implantar `radar-read-model`** para que `trends` e `anchor.window_kind`
+   cheguem Ã  produÃ§Ã£o:
+   `supabase functions deploy radar-read-model --project-ref pluruijhqnueayrlkthx`.
+   NÃ£o Ã© urgente: a UI funciona sem os campos novos.
+5. **Ligar o Control Center** para a rede piloto, quando 1 estiver fechado:
+   ```sql
+   update public.networks set group_control_center_enabled = true
+   where id = 'd1224e68-c51f-4b31-a7e6-7b91f1a65357';
+   ```
+   Desligar Ã© o mesmo com `false` â€” rollback imediato, sem deploy.
+6. Revisar os PRs [#5](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/5)
+   e [#10](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/10),
+   abertos de sessÃµes anteriores.
+
+## 5. Rollback desta entrega
+
+Por camada, do mais barato ao mais caro:
+
+- **UI inteira:** reverter o commit desta sessÃ£o. NÃ£o hÃ¡ estado persistido novo;
+  a Ãºnica preferÃªncia gravada Ã© `radar.sidebar.collapsed` em `localStorage`.
+- **Painel na produÃ§Ã£o:** `group_control_center_enabled = false` (jÃ¡ Ã© o estado).
+- **LaboratÃ³rio:** voltar `enabled: false` em `buildSyntheticControlCenter`
+  (`packages/radar-view-model/src/index.js`) e as asserÃ§Ãµes correspondentes em
+  `apps/radar-web/test/web.test.js` e `packages/radar-view-model/test/view-model.test.js`.
+- **`trends` / `window_kind`:** sÃ£o aditivos. NÃ£o implantar `radar-read-model` jÃ¡
+  Ã© o rollback; a UI degrada sozinha quando os campos faltam.
+- **`sparkline` filtrado:** reverter o filtro em `buildGroupControlCenter` volta
+  ao comportamento antigo â€” mas ele desenhava tendÃªncia entre janelas nÃ£o
+  comparÃ¡veis; reverter exige justificativa.
+
+## 6. DÃ­vidas conhecidas que esta sessÃ£o NÃƒO fechou
+
+1. **Cobertura da captura em ~60%** â€” a causa Ã© o sensor, nÃ£o a UI. Ã‰ o bloqueio
+   real da tendÃªncia.
+2. **`recent_events` nÃ£o carrega `group_id`.** A evidÃªncia do painel de detalhe
+   casa por **rÃ³tulo** do grupo. A tela declara isso em texto, mas o vÃ­nculo
+   correto exigiria o read model emitir o `group_id` jÃ¡ resolvido (o vÃ­nculo
+   existe em `buildEventGroupLinks`, `supabase/functions/_shared/group-metrics.js`).
+3. **`groups[].last_seen_at` nÃ£o Ã© da janela** â€” vem da tabela `groups`. A tela
+   rotula como "visto pela Ãºltima vez" em vez de "Ãºltima atividade no perÃ­odo".
+4. **198 grupos arquivados** nÃ£o tÃªm caminho de navegaÃ§Ã£o; sÃ³ aparecem como
+   contagem no resumo da tela Grupos.
+5. **`group_registry_summary` conta todos os status**, enquanto o Control Center
+   conta sÃ³ ativos. A tela usa a contagem de ativos para o badge; a divergÃªncia
+   das duas fontes continua nÃ£o resolvida no backend.
+6. **CondiÃ§Ã£o Ã© quase sempre "normal"** porque depende de alertas na janela, e
+   houve zero. O gradiente crÃ­ticoâ†’ideal estÃ¡ implementado mas nÃ£o discrimina
+   nada hoje.
+7. **Sem paginaÃ§Ã£o no read model** (D15): `GROUP_LIMIT = 500`. Com 206 grupos jÃ¡
+   funciona; em 300+ grupos ativos precisarÃ¡ de cursor.
+
+## 7. Contrato de trabalho para quem continuar
+
+`AGENTS.md` vale integralmente. Em especial, para esta Ã¡rea:
+
+- crescimento nÃ£o Ã© resultado positivo;
+- cor nunca Ã© o Ãºnico significado;
+- nÃ£o apresentar tendÃªncia sem janelas comparÃ¡veis, nem confianÃ§a sem cobertura
+  observada;
+- nÃ£o converter cobertura ausente em zero;
+- P2 (menÃ§Ãµes polÃ­ticas, "dobradinhas", sentimento, linguagem natural) **nÃ£o
+  comeÃ§ou e nÃ£o deve comeÃ§ar** enquanto a P1.1 nÃ£o fechar;
+- ao mudar texto de tela coberto por E2E, **reescrever a asserÃ§Ã£o para o texto
+  novo** â€” nunca apagÃ¡-la nem trocÃ¡-la por `assert.ok(length > 0)`.
+
+Armadilhas de teste que custaram tempo nesta sessÃ£o, para nÃ£o se repetirem:
+
+- `waitForSelector` espera **visibilidade** por padrÃ£o. `#loading-state[hidden]`
+  e `#group-drawer:not([open])` nunca ficam visÃ­veis â€” use `{ state: "hidden" }`
+  ou `waitForFunction`.
+- a tabbar **some** em â‰¥1024px; ela nÃ£o serve mais como sinal de "carregou".
+  Use `#radar-content:not([hidden])`.
+- a sidebar fechada continua "visÃ­vel" para o Playwright (estÃ¡ apenas
+  transladada). Escolha o controle pela visibilidade da **tabbar**.
+- `innerText` aplica `text-transform`; para conferir rÃ³tulo ou identificador use
+  `textContent`.

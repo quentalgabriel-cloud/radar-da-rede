@@ -5,7 +5,18 @@
 
 export const GROUP_METRICS_VERSION = "1.1.0";
 export const GROUP_TREND_VERSION = "1.1.0";
-export const CONTROL_CENTER_SCHEMA_VERSION = "0.2.0";
+export const CONTROL_CENTER_SCHEMA_VERSION = "0.3.0";
+
+// A coordenação pediu a leitura de crescimento, estabilidade e queda para vários
+// parâmetros, não só para volume. O algoritmo de tendência não muda: é o mesmo
+// `computeMetricTrend` aplicado a mais de um contador da mesma janela, com a
+// mesma política de comparação e a mesma exigência de cobertura. O campo `trend`
+// continua sendo o de atividade, para não quebrar quem já o consome.
+export const TREND_METRICS = Object.freeze([
+  { name: "event_count", counter: "event_count" },
+  { name: "situation_count", counter: "open_situation_count" },
+  { name: "demand_count", counter: "demand_count" }
+]);
 
 // Adjacent 24 hour windows overlap, so their difference is not a trend.
 // The comparison is the same daily slot of the previous day, which produces two
@@ -74,10 +85,10 @@ export function buildGroupMetrics({ events, analysis, groupLinks, captureConfide
   return [...byGroup.values()].sort((a, b) => a.group_id.localeCompare(b.group_id));
 }
 
-export function computeMetricTrend(current, previous, captureConfidence, comparison = {}) {
+export function computeMetricTrend(current, previous, captureConfidence, comparison = {}, metric = "event_count") {
   const confidence = captureConfidence ?? "unavailable";
   const base = {
-    metric: "event_count",
+    metric,
     current,
     previous,
     comparison_policy: COMPARISON_POLICY,
@@ -196,8 +207,15 @@ export function buildGroupControlCenter({
   const currentConfidence = runConfidence(currentRun, currentRows, capture);
   const comparisonConfidenceLevel = runConfidence(comparison.run, comparisonRows, null);
 
+  // O histórico obedece à mesma regra da comparação. Uma série que misturasse
+  // refresh manual, janela herdada e slot agendado desenharia uma linha entre
+  // pontos que o próprio motor recusa comparar — e a linha é lida como tendência.
+  const currentDuration = runDuration(currentRun);
   const orderedRuns = [...knownRuns]
-    .filter((run) => currentRun && Date.parse(run.ends_at) <= Date.parse(currentRun.ends_at))
+    .filter((run) => currentRun
+      && Date.parse(run.ends_at) <= Date.parse(currentRun.ends_at)
+      && runKind(run) === runKind(currentRun)
+      && Math.abs(runDuration(run) - currentDuration) <= COMPARISON_DURATION_TOLERANCE_MS)
     .sort((a, b) => Date.parse(a.ends_at) - Date.parse(b.ends_at))
     .slice(-8);
 
@@ -214,6 +232,14 @@ export function buildGroupControlCenter({
       ? comparableConfidence(confidence, previousRow?.capture_confidence)
       : "unavailable";
     const situationCount = current.open_situation_count ?? 0;
+    const trendFor = (counter, name) => computeMetricTrend(
+      current[counter] ?? 0,
+      previousRow ? previousRow[counter] ?? 0 : null,
+      comparisonConfidence,
+      comparison,
+      name
+    );
+    const trends = Object.fromEntries(TREND_METRICS.map(({ name, counter }) => [name, trendFor(counter, name)]));
     return {
       id: group.id,
       label: group.current_label,
@@ -227,12 +253,8 @@ export function buildGroupControlCenter({
       },
       classification_status: group.classification_status,
       condition: deriveGroupCondition(current),
-      trend: computeMetricTrend(
-        current.event_count ?? 0,
-        previousRow ? previousRow.event_count ?? 0 : null,
-        comparisonConfidence,
-        comparison
-      ),
+      trend: trends.event_count,
+      trends,
       event_count: current.event_count ?? 0,
       situation_count: situationCount,
       situation_semantics: SITUATION_SEMANTICS,
@@ -276,6 +298,10 @@ export function buildGroupControlCenter({
       current_run_id: currentRun?.id ?? null,
       current_window_start: currentRun?.starts_at ?? null,
       current_window_end: currentRun?.ends_at ?? null,
+      // O tipo da janela decide o que a tela pode afirmar, e vinha só de
+      // `freshness`, que não existe no laboratório. A âncora é produzida pela
+      // engine canônica, então os dois caminhos passam a saber a mesma coisa.
+      window_kind: currentRun ? runKind(currentRun) : null,
       comparison_policy: COMPARISON_POLICY,
       comparison_run_id: comparison.run?.id ?? null,
       comparison_window_start: comparison.run?.starts_at ?? null,
@@ -295,7 +321,12 @@ export function buildGroupControlCenter({
     summary: {
       monitored: items.length,
       active: items.filter((item) => item.event_count > 0).length,
+      // Inatividade é o sinal que a coordenação pediu primeiro ("o grupo está
+      // parado?") e precisa ser um número próprio, não uma subtração mental.
+      inactive: items.filter((item) => item.event_count === 0).length,
       attention: items.filter((item) => ["attention", "critical"].includes(item.condition)).length,
+      growing: items.filter((item) => item.trend.direction === "growing").length,
+      stable: items.filter((item) => item.trend.direction === "stable").length,
       declining: items.filter((item) => item.trend.direction === "declining").length,
       unclassified: items.filter((item) => item.classification_status !== "confirmed").length,
       trend_unavailable: items.filter((item) => item.trend.direction === "unavailable").length
