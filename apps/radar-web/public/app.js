@@ -876,6 +876,24 @@ const renderSidebar = () => {
     : "<strong>Janela analisada</strong>Ainda não há consolidação para exibir.";
 };
 
+const renderOperationalHealth = () => {
+  const banner = document.querySelector("#operational-health-banner");
+  const health = state.data.operational_health;
+  // Nem o GitHub Actions nem o pg_cron avisam alguém ativamente hoje (D-024);
+  // este banner é onde esse alerta aparece de fato, para quem já está com a
+  // tela aberta.
+  if (!health || health.healthy || health.problems.length === 0) {
+    banner.hidden = true;
+    banner.innerHTML = "";
+    return;
+  }
+  banner.hidden = false;
+  banner.innerHTML = `
+    <strong>${plural(health.problems.length, "aviso operacional", "avisos operacionais")}</strong>
+    <ul>${health.problems.map((problem) => `<li>${escapeHtml(problem.summary)}</li>`).join("")}</ul>
+  `;
+};
+
 const renderAll = () => {
   // O cadastro alimenta o painel de detalhe aberto a partir de qualquer lista,
   // então ele é indexado antes de qualquer render, não dentro da tela Grupos.
@@ -885,6 +903,7 @@ const renderAll = () => {
   renderSituations();
   renderGroups();
   renderHealth();
+  renderOperationalHealth();
   renderSidebar();
 };
 

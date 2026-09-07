@@ -10,7 +10,8 @@ const saudavel = {
   lastHeartbeatAt: "2026-09-04T11:52:00.000Z",
   activeGroupCount: 152,
   metricRowsInLatestRun: 152,
-  eventsAfterWindow: 7
+  eventsAfterWindow: 7,
+  lastCanonicalWindowEndsAt: "2026-09-04T08:00:00.000Z"
 };
 const avaliar = (mudancas = {}) =>
   evaluateOperationalHealth({ ...saudavel, ...mudancas }, { now: AGORA });
@@ -90,7 +91,9 @@ const saudavelV2 = {
   ...saudavel,
   groupsCreatedLast24h: 2,
   distinctConversationsLast24h: 2,
-  canonicalWindowsLast24h: 6
+  canonicalWindowsLast24h: 6,
+  // Slot das 08:00 concluído às 09:05 — dentro da tolerância de scheduler_stalled.
+  lastCanonicalWindowEndsAt: "2026-09-04T08:00:00.000Z"
 };
 const avaliarV2 = (mudancas = {}) =>
   evaluateOperationalHealth({ ...saudavelV2, ...mudancas }, { now: AGORA });
@@ -137,4 +140,42 @@ test("o sumário mostra a entrega de slots e o crescimento do registry", () => {
   assert.match(summary, /Janelas canônicas em 24 h \| 2 de 6/);
   assert.match(summary, /Grupos criados em 24 h/);
   assert.match(summary, /scheduler_under_delivering/);
+});
+
+// --- Agendador parado sem que os outros sinais acusem (operational_health@3) -
+
+test("reproduz o caso real de 2026-09-05: refresh manual e reprocessamento escondem o agendador parado", () => {
+  // lastProcessingCompletedAt fresco (refresh manual de um operador) e
+  // canonicalWindowsLast24h alto (oito janelas antigas reprocessadas na
+  // consolidação do registry) são exatamente os dois números observados em
+  // produção enquanto o agendador estava parado havia ~19h. Sem o terceiro
+  // sinal, isto passaria "saudável" — foi o que aconteceu de verdade.
+  const resultado = avaliarV2({
+    lastProcessingCompletedAt: "2026-09-04T11:52:00.000Z", // refresh manual, 8 min atrás
+    canonicalWindowsLast24h: 8, // reprocessamento, não entrega nova
+    lastCanonicalWindowEndsAt: "2026-09-03T12:00:00.000Z" // a janela real mais recente: quase 24h
+  });
+  assert.equal(resultado.healthy, false);
+  const problema = resultado.problems.find((item) => item.code === "scheduler_stalled");
+  assert.ok(problema, "precisa acusar o agendador parado mesmo com os outros números saudáveis");
+  assert.equal(resultado.problems.find((item) => item.code === "processing_late"), undefined);
+  assert.equal(resultado.problems.find((item) => item.code === "scheduler_under_delivering"), undefined);
+  assert.match(problema.action, /pg_cron/);
+});
+
+test("reprocessar uma janela antiga não reinicia a idade — só uma janela nova reinicia", () => {
+  // completed_at recente (reprocessado agora), mas ends_at continua o mesmo
+  // valor antigo: a idade não pode zerar.
+  const resultado = avaliarV2({ lastCanonicalWindowEndsAt: "2026-09-03T00:00:00.000Z" });
+  assert.ok(resultado.problems.some((item) => item.code === "scheduler_stalled"));
+});
+
+test("ausência de qualquer janela canônica é problema declarado", () => {
+  const resultado = evaluateOperationalHealth({}, { now: AGORA });
+  assert.ok(resultado.problems.some((item) => item.code === "no_canonical_processing"));
+});
+
+test("o sumário mostra a idade da janela canônica mais recente", () => {
+  const summary = renderOperationalHealthSummary(avaliarV2());
+  assert.match(summary, /Janela canônica mais recente termina há/);
 });

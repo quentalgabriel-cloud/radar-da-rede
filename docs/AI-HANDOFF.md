@@ -1,13 +1,13 @@
 # Handoff para continuidade por qualquer LLM
 
 > **LEIA PRIMEIRO: "ENCERRAMENTO DA SESSÃO DE 2026-09-07", no fim deste arquivo.**
-> É a seção corrente. A de 2026-09-04 continua válida para backend e registry;
-> o corpo mais antigo tem premissas superadas.
+> É a seção corrente. A de 2026-09-05 continua válida para scheduler, sensor e
+> vigilância; o corpo mais antigo tem premissas superadas.
 
-- Atualizado em: 2026-09-04, fim da sessão (P1.1, etapas 1–3 do registry de grupos)
+- Atualizado em: 2026-09-07, Painel de Controle e reconciliação com `main`
 - **Comece pela seção final** — o corpo do documento acima ainda descreve estado pré-consolidação em vários pontos; a seção final tem a versão corrente
-- Branch: `main`, no commit `b93a879`
-- Trabalho desta sessão: PRs [#11](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/11), [#12](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/12) e [#13](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/13), mesclados em `main`
+- Branch: `painel-de-controle-e-cobertura`, PR [#24](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/24)
+- `main` até `61f180f` foi incorporada; preserve scheduler em `pg_cron`, deploy automático, vigilância na UI e diagnóstico do sensor
 - Projeto Supabase: `pluruijhqnueayrlkthx`
 - Rede piloto: `d1224e68-c51f-4b31-a7e6-7b91f1a65357`
 - Produção web: `https://radar-da-rede.vercel.app`
@@ -375,6 +375,244 @@ Desligar é o mesmo com `false` — rollback imediato, sem deploy.
 
 ---
 
+# ENCERRAMENTO DA SESSÃO DE 2026-09-05 — LEIA ISTO PRIMEIRO
+
+## O que esta sessão fez
+
+Duas coisas, nesta ordem: pesquisou e escreveu o plano da próxima etapa
+(`docs/P1.3-PLANO-PROXIMA-ETAPA.md`, PR #16, **aberto, não mesclado**), e
+implementou a única parte desse plano que não dependia de decisão do dono do
+produto (PR #17, **mesclado**).
+
+### O achado que mudou a prioridade
+
+Verificando produção em vez de confiar no handoff anterior, esta sessão
+encontrou o **agendador automático parado havia ~19h** (nenhuma execução
+`schedule` do GitHub Actions em nenhum dos dois workflows desde
+2026-09-04 ~19h) — e a vigilância operacional relatando `"sem problemas"`
+apesar disso, por dois motivos que se mascaravam ao mesmo tempo: um refresh
+manual recente deixava a "última consolidação" parecer fresca, e o
+reprocessamento manual da etapa 3 (oito janelas antigas reprocessadas na
+mesma sessão) inflava a contagem de "janelas canônicas em 24h" sem que
+nenhum slot novo tivesse sido entregue.
+
+### O que o PR #17 corrigiu — VALIDADO REMOTAMENTE
+
+`operational-health` ganhou um terceiro sinal, independente dos outros dois:
+o `ends_at` da janela canônica mais recente, consultado sem filtro de tempo.
+Reprocessar uma janela antiga reafirma o mesmo `ends_at` — não cria um novo
+— então essa idade só encolhe quando o agendador entrega, de fato, um slot
+nunca processado antes. Reproduzido em teste com o snapshot real de
+2026-09-05 e **confirmado contra produção depois do deploy**: a função
+passou a reportar `scheduler_stalled` (1370 min desde a última janela
+canônica) exatamente enquanto os outros dois números continuavam parecendo
+saudáveis.
+
+**O agendador continua parado.** Este PR corrige a cegueira da vigilância;
+não conserta o agendador em si. A causa raiz de por que o `schedule:` do
+GitHub Actions parou de disparar não foi diagnosticada.
+
+### O achado do PR #16 que muda o desenho da etapa 4
+
+Verificando o código de resolução de grupo, esta sessão encontrou que a
+resolução hoje **ignora completamente** o `conversation_id` que o sensor
+envia — `canonicalizeConversationEvent` sempre sobrescreve com
+`label:<rótulo canônico>` antes de resolver
+(`supabase/functions/_shared/canonical-conversations.js:16-26`, chave de
+resolução em `supabase/functions/_shared/group-resolution.js:12`). Isso
+significa que a etapa 4 (`shortcutId` no sensor), do jeito que está descrita
+em `docs/GROUP-IDENTITY-PLAN.md`, **não teria efeito nenhum na resolução**
+sem uma mudança correspondente no backend — o plano existente descreve só a
+metade do sensor. Detalhe completo, com a cadeia de código citada linha a
+linha, na seção 2.2 do plano.
+
+### Gabriel deu aval para 6.1 e 6.4 — implementados e VALIDADOS REMOTAMENTE, ainda na mesma sessão
+
+Com o plano em mãos, o Gabriel aprovou implementar as duas perguntas da
+seção 6 que não dependiam de mais ninguém: 6.1 (fonte do agendamento) e 6.4
+(deploy automático). 6.2 (vocabulário) ficou como mensagem pronta pra ele
+mandar à equipe quando puder — não é algo que se decide por código. 6.3
+(rotação de credencial do sensor) continua parado, por escolha: só importa
+quando a etapa 4 começar de verdade.
+
+**D-024 e D-025 em `docs/DECISIONS.md` têm a decisão completa.** Resumo:
+
+- `private.radar_cron_consolidate()` — dispara `process-window` de dentro do
+  Supabase via `pg_cron`+`pg_net`, nos mesmos seis horários que o workflow
+  usava. Credencial nova, gerada inteiramente dentro de uma transação SQL
+  (nunca em texto puro fora do banco). `consolidate.yml` perdeu o
+  `schedule:`, fica só `workflow_dispatch`;
+- `private.radar_cron_health_check()` — mesma ideia para a checagem de
+  saúde, mas **em paralelo** com `operational-health.yml`, não em
+  substituição: o workflow falha visivelmente (X vermelho) e um cron dentro
+  do banco não tem esse sinal por natureza. Uma primeira versão tentou
+  capturar a resposta de forma síncrona (`net.http_collect_response`) e
+  travou em teste manual, mesmo com o worker do `pg_net` confirmadamente
+  ativo; simplificada para dispara-e-esquece, o mesmo padrão já provado. A
+  trilha crua fica em `net._http_response` (retenção curta, mantida pelo
+  próprio `pg_net`), filtrando por `url like '%/operational-health%'`;
+- `deploy-functions.yml` — roda `pnpm verify` e implanta todas as Edge
+  Functions a cada push em `main` que toque `supabase/functions/**`. Fecha o
+  intervalo de ~15h que deixou a etapa 1 corrigida em `main` sem valer em
+  produção, em 2026-09-04. Precisa do secret `SUPABASE_ACCESS_TOKEN`, que o
+  Gabriel já adicionou.
+
+**Confirmado contra produção, não só localmente:** disparei
+`private.radar_cron_consolidate()` manualmente, esperei o `net.http_post`
+assíncrono completar, e uma linha `canonical_slot` nova apareceu em
+`processing_runs`. Chamando `operational-health` na sequência,
+`scheduler_stalled` tinha sumido. Minutos depois, o **pg_cron disparou
+sozinho no horário certo (16:00 UTC)** — confirmado por uma segunda linha em
+`net._http_response`, sem eu ter feito nada. O backlog acumulado durante as
+~19h de parada (`eventsAfterWindow` chegou a 134) já caiu para 1 na consulta
+seguinte — se resolveu sozinho, como esperado.
+
+## Estado real, com nível de evidência
+
+| Item | Estado |
+|---|---|
+| Vigilância acusa agendador parado (PR #17) | **VALIDADO REMOTAMENTE** |
+| Agendador migrado para pg_cron (D-024) | **VALIDADO REMOTAMENTE** — disparo manual e disparo automático (16:00 UTC) confirmados |
+| Checagem de saúde redundante em pg_cron (D-024) | **VALIDADO REMOTAMENTE** — resposta 200 confirmada em `net._http_response` |
+| Deploy automático de Edge Functions (D-025) | **IMPLEMENTADO**, sem push a `supabase/functions/**` ainda para exercitar de verdade |
+| Causa raiz de por que o `schedule:` do GitHub Actions não dispara | **PENDENTE**, sem diagnóstico — contornado, não corrigido |
+| Alerta chegando a uma pessoa (e-mail/Slack) quando algo quebra | **PENDENTE** — nenhum dos dois caminhos de checagem faz isso hoje; ambos exigem alguém consultar |
+| 6.2, vocabulário com a equipe | mensagem pronta, **aguardando o Gabriel mandar** |
+| 6.3, rotação de credencial do sensor | **PENDENTE**, propositalmente parado até a etapa 4 começar |
+| Etapa 4 (sensor) | **PENDENTE** — plano existente incompleto, ver achado acima |
+| Etapa 5 (Control Center) | **PENDENTE** — tecnicamente destravada desde a etapa 3, falta vocabulário (6.2) |
+| Registry (herdado de 2026-09-04) | 8 grupos ativos, estável — sem regressão nesta sessão |
+
+## Próxima ação exata (histórico — ver continuação abaixo, mais recente)
+
+1. ~~Mandar a mensagem de vocabulário para a equipe (6.2)~~ — mensagem
+   continua pronta em `mensagem-vocabulario-equipe.md` no scratchpad da
+   sessão que a escreveu; **ainda não foi enviada**, é ação humana;
+2. quando a equipe responder, ajustar o texto da tela e decidir ligar o
+   Control Center (etapa 5);
+3. ~~iniciar a etapa 4 (sensor) só quando houver decisão real sobre 6.3~~ —
+   o Gabriel deu aval explícito para agir e criar nova build se necessário;
+   ver "Continuação — 6.3/etapa 4 e alerta na UI" abaixo;
+4. ~~considerar um canal de alerta ativo~~ — feito, ver abaixo: apareceu na
+   UI em vez de e-mail/Slack, por decisão do Gabriel;
+5. revisar e decidir o PR #16 (mesclar como documentação histórica, ou
+   deixar como está) — ainda pendente.
+
+## Não fazer sem decisão do Gabriel
+
+Não ligar `group_control_center_enabled` sem a resposta da equipe sobre
+vocabulário (6.2) — continua a única coisa nesta lista. A restrição sobre
+`radar-sensor-probe` foi levantada pelo próprio Gabriel (ver abaixo).
+
+---
+
+# CONTINUAÇÃO — 6.3/etapa 4 e alerta na UI (mesmo dia, 2026-09-05)
+
+## O que o Gabriel decidiu
+
+Depois do resumo acima, o Gabriel respondeu diretamente às duas coisas em
+aberto: **alerta pode aparecer na UI, não precisa ser e-mail**; e **pode
+fazer o melhor possível em 6.3/etapa 4, inclusive criar nova build do APK
+para o Moto G84 se necessário**. Isso removeu o bloqueio que a sessão
+anterior tinha imposto a si mesma.
+
+## Alerta na UI — IMPLEMENTADO e com dado conferido
+
+`radar-read-model` agora calcula a mesma vigilância que o `pg_cron` chama
+de dentro do banco (`private.radar_cron_health_check`), usando as mesmas
+consultas mas pela sessão do próprio usuário (RLS, sem service role), e
+devolve `operational_health: { healthy, problems }` no payload. O front-end
+(`apps/radar-web/public/app.js`, `renderOperationalHealth`) mostra um
+banner vermelho no topo da tela quando `healthy` é falso.
+
+`evaluateOperationalHealth` foi promovida a módulo compartilhado
+(`packages/supabase-core/src/edge-modules.js`, junto com
+`consolidation-schedule.js`, do qual depende) — mesma engine, três lugares
+que a chamam (script do GitHub Actions, `pg_cron`, e agora o read model),
+igual ao padrão já usado para `group-analytics.js`.
+
+**Nível de evidência:** os valores que alimentam o cálculo foram conferidos
+com consulta SQL direta (bateram com o que `operational-health` já reportava
+via `pg_cron`). A chamada HTTP completa com sessão de usuário real **não foi
+testada** — não existe conta de teste neste projeto (mesma lacuna já
+registrada em `docs/TEST_MATRIX.md` para outros fluxos). Rotule como
+**IMPLEMENTADO e TESTADO COM DADO REAL VIA SQL**, não **VALIDADO REMOTAMENTE**
+no sentido pleno.
+
+## Etapa 4 — diagnóstico de shortcutId/LocusId, sem mudar identidade
+
+Antes de reescrever a resolução de grupo sobre a suposição de que o
+WhatsApp preenche `shortcutId`/`LocusId` (a única API do Android com
+promessa de identidade estável por conversa), esta sessão fez o passo que
+faltava: **medir**, em vez de assumir.
+
+`radar-sensor-probe` v0.3.1-shortcut-diagnostic
+([release](https://github.com/quentalgabriel-cloud/radar-sensor-probe/releases/tag/v0.3.1-shortcut-diagnostic))
+captura os dois valores e propaga para `normalized_events.metadata` — campo
+livre, sem mudança de contrato. **`conversation_id` continua vindo só do
+hash do título.** Nada na resolução de grupo mudou.
+
+Dois erros de compilação no caminho (`getShortcutId()` não existe em
+`StatusBarNotification` nem em `Ranking` — o método real é
+`Ranking.getConversationShortcutInfo()`, API 31, devolvendo um
+`ShortcutInfo`) foram pegos pelo CI do próprio `radar-sensor-probe` antes de
+qualquer release, e corrigidos confirmando a API certa por busca em vez de
+tentar de novo às cegas.
+
+**D-021 exercida**: a credencial do dispositivo foi rotacionada como parte
+desta build (gatilho que a própria D-021 previa: "próxima build por
+qualquer motivo"). Valor novo gerado localmente com `openssl rand -hex 32`,
+nunca impresso; hash gravado em `device_credentials`; valor em claro só no
+secret `RADAR_DEVICE_SECRET` do `radar-sensor-probe`. **A credencial antiga
+(`token_hint 01e890c5`, id `23589a49-acdf-4f28-959e-67ab896b5bb1`) continua
+ativa** — revogá-la é o próximo passo manual, só depois de confirmar que o
+aparelho está rodando a build nova. D-021 em si (segredo embutido no APK,
+não em provisionamento de runtime) **não foi resolvida**, só a rotação —
+mudar a arquitetura é recorte maior, deliberadamente fora desta build.
+Decisão completa em D-026, `docs/DECISIONS.md`.
+
+## Limitação física que não deve ser esquecida
+
+**Não existe forma remota de instalar o APK no Moto G84.** A build está
+publicada, assinada e verificada — falta alguém com a mão no aparelho
+baixar `radar-sensor-probe-v0.3.1-shortcut-diagnostic.apk` do release e
+instalar manualmente, concedendo de novo o acesso a notificações se o
+Android pedir. Nenhuma sessão futura deve prometer "atualizei o aparelho"
+sem essa confirmação humana.
+
+## Próxima ação exata (atual)
+
+Estado em 2026-09-05, fim de sessão: **em espera humana, não bloqueado por
+decisão técnica.**
+
+1. Instalação do APK pedida ao Victor — **conferido no banco antes desta
+   nota: o aparelho ainda estava com a build antiga** (`parser_version` do
+   evento mais recente = `0.3.0`, zero eventos com `shortcut_id`/`locus_id`).
+   Não confiar em "já pedi" como "já instalado" — reconferir com a mesma
+   consulta antes de revogar a credencial antiga:
+   ```sql
+   select parser_version, metadata->>'shortcut_id', metadata->>'locus_id'
+   from public.normalized_events
+   where network_id='d1224e68-c51f-4b31-a7e6-7b91f1a65357'
+   order by occurred_at desc limit 5;
+   ```
+   Só revogar `device_credentials` id `23589a49-acdf-4f28-959e-67ab896b5bb1`
+   depois de ver `parser_version = '0.3.1'` num evento real;
+2. mensagem de vocabulário (6.2) enviada à equipe — aguardando retorno;
+3. os dois tokens pessoais do Supabase que passaram pelo chat desta sessão
+   foram revogados pelo Gabriel — confirmado por ele, não verificável por
+   consulta;
+4. depois do item 1 confirmado e de alguns dias de dado real, consultar
+   `shortcut_id`/`locus_id` em volume — se vierem preenchidos, a etapa 4 "de
+   verdade" (mudança de identidade coordenada sensor+backend, achado do
+   PR #16) pode ser desenhada com confiança; se vierem nulos, precisa de
+   outra estratégia;
+5. quando a equipe responder sobre vocabulário, decidir o Control Center
+   (etapa 5);
+6. revisar o PR #16 (plano de pesquisa, ainda não mesclado).
+
+---
+
 ## Não reverta sem falar com o dono
 
 A credencial do dispositivo está embutida em claro no APK público. **Risco aceito
@@ -395,7 +633,7 @@ O **Painel de Controle** (Control Center) saiu de dentro da tela "Grupos" e viro
 tela prÃ³pria, com um app shell novo: sidebar de estado no desktop, gaveta no
 celular, tabbar preservada como navegaÃ§Ã£o primÃ¡ria em telas estreitas.
 
-DecisÃ£o completa e justificativa: **D-024 em `docs/DECISIONS.md`**.
+DecisÃ£o completa e justificativa: **D-027 em `docs/DECISIONS.md`**.
 VocabulÃ¡rio e regras de tela: **`docs/UX.md`**, seÃ§Ãµes "NavegaÃ§Ã£o atual" e
 "Cobertura da captura na tela".
 
@@ -594,3 +832,70 @@ Armadilhas de teste que custaram tempo nesta sessÃ£o, para nÃ£o se repetirem
   transladada). Escolha o controle pela visibilidade da **tabbar**.
 - `innerText` aplica `text-transform`; para conferir rÃ³tulo ou identificador use
   `textContent`.
+
+---
+
+# RETOMADA DE 2026-09-07 — RECONCILIAÇÃO DO PR #24 E ESTADO REMOTO
+
+## Diagnóstico confirmado
+
+- O PR #24 estava em conflito com `main` porque as sessões de 2026-09-05
+  entregaram o scheduler em `pg_cron`, a vigilância no read model/UI, o deploy
+  automático de Edge Functions e o diagnóstico do sensor depois de a branch do
+  Painel de Controle ter sido aberta.
+- A decisão do Painel foi renumerada de D-024 para **D-027**; D-024 já pertence
+  ao scheduler e não pode ter dois significados.
+- Produção web ainda serve a interface anterior. O preview do PR existe, mas é
+  protegido pela Vercel e exige aprovação do owner para acesso.
+- O modo live da produção foi aberto no Chrome, mas não havia sessão autenticada;
+  portanto a tela nova continua **NÃO VALIDADA COM SESSÃO REAL**.
+
+## Menor entrega completa desta retomada
+
+A condição de saída da rotação descrita em D-026 foi atingida: os eventos mais
+recentes chegaram com `parser_version = 0.3.1` e `shortcut_id` preenchido. A
+credencial antiga `23589a49-acdf-4f28-959e-67ab896b5bb1` (`token_hint
+01e890c5`) foi revogada em 2026-09-07 16:14:46 UTC. Consulta separada confirmou
+**1 credencial ativa e 1 revogada** para a rede, com evento 0.3.1 recente. O
+rollback é restaurar `revoked_at = null` apenas nesse ID.
+
+## Evidência remota desta retomada
+
+| Item | Valor em 2026-09-07 |
+|---|---:|
+| eventos | 2.657 |
+| batches | 418 |
+| grupos ativos | 11 |
+| grupos arquivados | 198 |
+| grupos com classificação confirmada | 0 |
+| amostras de saúde | 546 |
+| `group_control_center_enabled` | `false` |
+| cobertura das 12 execuções recentes | 0,33–0,63, sempre `low` |
+| maior vão observado nessas execuções | 16.619 s (4h37) |
+
+Os três grupos acima dos 8 registrados no handoff anterior nasceram em
+2026-09-07 com rótulos distintos; isso é crescimento legítimo do escopo
+observado, não a inflação anterior por várias notificações da mesma conversa.
+Os jobs `radar-consolidate` e `radar-health-check` estão ativos no `pg_cron`.
+
+## Verificação local
+
+- `pnpm -r --if-present check`: OK.
+- `pnpm -r --if-present test`: 166 testes, 0 falhas.
+- `pnpm -r --if-present build`: OK.
+- `pnpm --filter @radar-rede/radar-web test:e2e`: 20/20 com Chromium real.
+
+Depois de reconciliar `main`, repetir essa verificação antes de concluir o
+merge commit e conferir no preview que o banner de vigilância e o novo shell
+coexistem.
+
+## Próxima ação exata
+
+1. Publicar o merge de reconciliação na branch do PR #24 e aguardar o novo
+   preview da Vercel.
+2. O owner libera o preview para a coordenação; colher resposta explícita sobre
+   “condição”, “tendência”, “cobertura”, “janela”, “comparação” e “sem atividade”.
+3. Abrir `?mode=live` com sessão real no preview e conferir os 11 grupos, a
+   cobertura baixa e o banner de vigilância antes de mesclar o PR.
+4. Só depois da validação humana decidir a flag do Control Center. Não ligar por
+   inferência.

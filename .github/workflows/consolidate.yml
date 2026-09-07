@@ -1,10 +1,11 @@
 name: Consolidate Radar
 
+# O agendamento saiu daqui em 2026-09-05 (D-024, docs/DECISIONS.md): medido,
+# o schedule: do GitHub Actions ficou ~19h sem disparar neste repositório, em
+# dois workflows independentes. private.radar_cron_consolidate() no próprio
+# Supabase assumiu o disparo, nos mesmos seis horários. Este workflow continua
+# existindo para disparo manual/depuração.
 on:
-  schedule:
-    # America/Recife is UTC-03:00. Six daily slots, at most five hours apart:
-    # 00:00, 03:00, 08:00, 13:00, 18:00 and 21:00 local time.
-    - cron: "0 0,3,6,11,16,21 * * *"
   workflow_dispatch:
 
 permissions:

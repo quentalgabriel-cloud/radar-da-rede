@@ -1,3 +1,4 @@
+// GENERATED from packages/supabase-core/src/operational-health.js — do not edit manually.
 // Vigilância operacional do Radar.
 //
 // A consolidação roda seis vezes ao dia e o aparelho reporta sozinho. Sem este

@@ -1,8 +1,9 @@
 import { withSupabase } from "npm:@supabase/server@1.4.1";
 import { corsHeaders } from "npm:@supabase/supabase-js@2.112.4/cors";
-import { canonicalizeConversationEvent } from "../_shared/canonical-conversations.js";
+import { canonicalConversationLabel, canonicalizeConversationEvent } from "../_shared/canonical-conversations.js";
 import { buildGroupControlCenter, selectComparisonRun, selectCurrentRun } from "../_shared/group-analytics.js";
 import { buildPersistedRadarViewModel } from "../_shared/radar-read-model.js";
+import { evaluateOperationalHealth } from "../_shared/operational-health.js";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -41,9 +42,10 @@ const authenticatedHandler = withSupabase({ auth: "user" }, async (request, cont
   const comparison = selectComparisonRun(run, runs);
   const anchoredRunIds = runs.map((item) => item.id);
 
+  const umDiaAtras = new Date(Date.now() - 24 * 60 * 60_000).toISOString();
   const [eventResult, factResult, signalResult, alertResult, healthResult, transitionResult, diagnosticResult,
     groupResult, aliasResult, changeResult, registrySummaryResult, registryManageResult, groupMetricResult,
-    pendingEventResult] = await Promise.all([
+    pendingEventResult, groupsCreatedResult, recentConversationResult] = await Promise.all([
     context.supabase.from("normalized_events")
       .select("event_id,conversation_id,conversation_label,occurred_at,text,metadata")
       .eq("network_id", networkId)
@@ -83,15 +85,47 @@ const authenticatedHandler = withSupabase({ auth: "user" }, async (request, cont
       .order("ends_at", { ascending: false }).limit(METRIC_LIMIT),
     context.supabase.from("normalized_events")
       .select("event_id", { count: "exact", head: true })
-      .eq("network_id", networkId).gt("occurred_at", run.ends_at)
+      .eq("network_id", networkId).gt("occurred_at", run.ends_at),
+    // As duas consultas abaixo existem só para alimentar evaluateOperationalHealth
+    // com o mesmo cálculo de packages/supabase-core/src/operational-health.js,
+    // pela mesma sessão do usuário (RLS), sem repetir a regra em outro lugar.
+    context.supabase.from("groups").select("id", { count: "exact", head: true })
+      .eq("network_id", networkId).eq("status", "active").gte("created_at", umDiaAtras),
+    context.supabase.from("normalized_events").select("conversation_label")
+      .eq("network_id", networkId).gte("occurred_at", umDiaAtras).limit(5_000)
   ]);
   const failed = [eventResult, factResult, signalResult, alertResult, healthResult, transitionResult, diagnosticResult,
     groupResult, aliasResult, changeResult, registrySummaryResult, registryManageResult, groupMetricResult,
-    pendingEventResult].find((result) => result.error);
+    pendingEventResult, groupsCreatedResult, recentConversationResult].find((result) => result.error);
   if (failed?.error) return databaseFailure("read_model_query_failed", failed.error.code);
 
   const diagnostic = expireDiagnosticForDisplay(diagnosticResult.data ?? null, healthResult.data ?? null);
   const monitoredGroups = (groupResult.data ?? []).filter((group) => group.status === "active");
+
+  // A mesma vigilância que o pg_cron chama de dentro do banco (D-024), agora
+  // também para quem está com a tela aberta: nenhum dos dois caminhos de
+  // checagem avisa uma pessoa ativamente, então o alerta precisa aparecer
+  // onde alguém já está olhando.
+  const canonicalRuns = runs.filter((item) => (item.window_kind ?? "canonical_slot") === "canonical_slot");
+  const operationalHealth = evaluateOperationalHealth({
+    lastProcessingCompletedAt: run.completed_at,
+    lastCanonicalWindowEndsAt: canonicalRuns[0]?.ends_at ?? null,
+    lastHeartbeatAt: healthResult.data?.observed_at ?? null,
+    activeGroupCount: monitoredGroups.length,
+    metricRowsInLatestRun: (groupMetricResult.data ?? []).filter((row) => row.processing_run_id === run.id).length,
+    eventsAfterWindow: pendingEventResult.count ?? 0,
+    groupsCreatedLast24h: groupsCreatedResult.count ?? 0,
+    canonicalWindowsLast24h: new Set(
+      canonicalRuns
+        .filter((item) => item.completed_at && Date.parse(item.completed_at) >= Date.parse(umDiaAtras))
+        .map((item) => item.ends_at)
+    ).size,
+    distinctConversationsLast24h: new Set(
+      (recentConversationResult.data ?? [])
+        .map((row: { conversation_label: string | null }) => canonicalConversationLabel(row.conversation_label).toLocaleLowerCase("pt-BR"))
+        .filter(Boolean)
+    ).size
+  });
 
   const model = buildPersistedRadarViewModel({
     network,
@@ -144,6 +178,14 @@ const authenticatedHandler = withSupabase({ auth: "user" }, async (request, cont
       groups: groupResult.data ?? [],
       aliases: aliasResult.data ?? [],
       changes: changeResult.data ?? []
+    },
+    operational_health: {
+      healthy: operationalHealth.healthy,
+      problems: operationalHealth.problems.map((item) => ({
+        code: item.code,
+        summary: item.summary,
+        action: item.action
+      }))
     }
   });
 });

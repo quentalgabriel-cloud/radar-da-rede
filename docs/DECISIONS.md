@@ -220,7 +220,45 @@ Os status usados são `ACEITA`, `PROVISÓRIA`, `HIPÓTESE` e `ESTACIONADA`.
 - **Limite que esta decisão não resolve:** duas conversas realmente homônimas seriam fundidas por engano — identidade por título tem esse teto (D14). Só o `shortcutId`/`getLocusId()` da etapa 4, no sensor, elimina esse limite.
 - **Reabrir se:** aparecer um alias cuja derivação não reproduza o hash e a consolidação precisar rodar de novo; ou a etapa 4 mudar a fonte de identidade, tornando esta função obsoleta para novos dados (ela continua válida como ferramenta de correção pontual).
 
-## D-024 — Painel de Controle como tela própria, com a qualidade da leitura em primeiro plano
+## D-024 — Consolidação agendada por `pg_cron`, não mais por `schedule:` do GitHub Actions
+
+- **Status:** ACEITA
+- **Data:** 2026-09-05
+- **Responsável:** Gabriel Quental, aval dado em resposta às 4 perguntas da seção 6 de `docs/P1.3-PLANO-PROXIMA-ETAPA.md` (PR #16).
+- **Decisão:** o disparo de `process-window` nos seis slots diários passa a vir de dentro do Supabase (`pg_cron` + `pg_net`), não mais do `schedule:` de `.github/workflows/consolidate.yml`.
+- **Evidência:** medido em 2026-09-05, o `schedule:` do GitHub Actions ficou **~19h sem disparar nenhuma execução, em dois workflows independentes**, com `workflow_dispatch` funcionando normalmente no mesmo período — não é falha de código, é entrega do agendador da plataforma para este repositório. `pg_cron`/`pg_net` já estavam disponíveis no projeto (`list_extensions`), só não instalados.
+- **Como foi feito:** uma credencial de processamento **nova**, exclusiva desse caminho, gerada inteiramente dentro de uma transação SQL (`gen_random_bytes` → hash em `processing_credentials`, valor em claro em `vault.create_secret`) — o valor em texto puro nunca passou por fora do banco, nunca foi digitado nem visto por mim ou pelo Gabriel. A função `private.radar_cron_consolidate()` lê o segredo do Vault e chama `process-window` via `net.http_post`, nos mesmos seis horários UTC que o workflow já usava (`0 0,3,6,11,16,21 * * *`), preservando a política de comparação `same_slot_previous_day@1`.
+- **O que isto não resolve (atualizado no mesmo dia):** a checagem de saúde também dependia só do `schedule:` do GitHub Actions e herdava o mesmo risco — confirmado: `operational-health.yml` ficou sem disparar desde 2026-09-04 ~19h44, mesmo depois da consolidação já ter migrado. `private.radar_cron_health_check()` (mesma migration de acompanhamento, `20260905163000_pg_cron_health_check.sql`) chama `operational-health` de dentro do próprio banco nos mesmos sete horários, em paralelo ao workflow — não em substituição, porque o workflow falha visivelmente (X vermelho) e um cron dentro do banco não tem esse sinal por natureza. **O que continua sem resolver:** nenhum dos dois caminhos avisa uma pessoa ativamente (e-mail, Slack); a leitura ainda depende de alguém consultar. `net._http_response`, mantido pelo próprio `pg_net`, é a trilha crua das checagens do lado do banco, com retenção curta.
+- **Consequência:** `.github/workflows/consolidate.yml` perde o gatilho `schedule:` (mantém `workflow_dispatch` para disparo manual/depuração), para não ter duas fontes de agendamento confusas para o mesmo job — `process-window` já é idempotente por janela, então rodar as duas ao mesmo tempo não duplicaria dado, mas complicaria diagnóstico.
+- **Reabrir se:** a causa raiz do `schedule:` do GitHub Actions for identificada e corrigida pela plataforma, tornando a duplicidade de agendador desnecessária; ou se a vigilância também precisar migrar para dentro do banco por continuar sendo silenciada.
+
+## D-025 — Deploy de Edge Functions automático a cada push em `main`
+
+- **Status:** ACEITA
+- **Data:** 2026-09-05
+- **Responsável:** Gabriel Quental, mesmo aval de D-024.
+- **Decisão:** `.github/workflows/deploy-functions.yml` roda `pnpm verify` e implanta todas as Edge Functions a cada push em `main` que toque `supabase/functions/**`.
+- **Evidência:** a etapa 1 (identidade de conversa) foi mesclada em `main` às 2026-09-04T03:35Z, corrigida, mas só foi efetivamente implantada às 18:18Z do mesmo dia — quase 15h em que o código correto existia no repositório e o comportamento antigo continuava em produção. Oito aliases voláteis nasceram nesse intervalo, confirmados por consulta direta ao banco.
+- **Consequência:** o intervalo entre "mesclado" e "em produção" deixa de depender de alguém lembrar de rodar o comando manual. `pnpm verify` roda antes do deploy como última barreira.
+- **Reabrir se:** um deploy automático causar uma regressão que o `verify` não pegou e que exigiria controle manual do momento exato do deploy (por exemplo, coordenar com uma migration que precisa rodar antes da função que a usa).
+
+## D-026 — Diagnóstico de shortcutId/LocusId no sensor, sem mudar identidade ainda
+
+- **Status:** ACEITA
+- **Data:** 2026-09-05
+- **Responsável:** Gabriel Quental, aval dado para "fazer o melhor possível" na etapa 4/6.3, incluindo criar nova build do sensor se necessário.
+- **Decisão:** `radar-sensor-probe` v0.3.1-shortcut-diagnostic captura `shortcutId` (via `Ranking.getConversationShortcutInfo()`, API 31) e `LocusId` (via `Notification.getLocusId()`, API 29) de cada notificação do WhatsApp, e propaga os dois para `normalized_events.metadata` — campo livre, sem mudança de contrato. **`conversation_id` continua vindo só do hash do título; nenhuma identidade de grupo muda nesta build.**
+- **Por que não a mudança completa:** a etapa 4 do plano (`docs/GROUP-IDENTITY-PLAN.md`) propunha usar `shortcutId` como identidade estável, mas isso dependia de uma pergunta não verificada — se o WhatsApp de fato preenche esses campos nas notificações que o sensor recebe. Reescrever a resolução de grupo sobre essa suposição, sem confirmar primeiro, arriscava trocar um problema conhecido (título instável) por um silencioso (campo sempre nulo, identidade nunca muda de verdade, ou pior, muda de um jeito não prancejado). Esta build só responde a pergunta, com dado real.
+- **Achado técnico que também mudou o desenho:** verificado em código que `canonicalizeConversationEvent` (backend) já sobrescreve `conversation_id` com `label:<rótulo canônico>` antes de resolver, para todo evento com rótulo não vazio — então mesmo depois de confirmado que o WhatsApp preenche `shortcutId`, usar isso como identidade vai exigir mudança **também** no backend (`supabase/functions/_shared/canonical-conversations.js` e `group-resolution.js`), não só no sensor.
+- **Rotação de credencial (gatilho de D-021 exercido):** a credencial de dispositivo foi rotacionada como parte desta build — nova credencial gerada localmente (`openssl rand -hex 32`), nunca vista em texto puro por este processo além do momento de geração, hash gravado em `device_credentials`, valor em claro só no secret `RADAR_DEVICE_SECRET` do repositório `radar-sensor-probe`. A credencial antiga (`token_hint 01e890c5`) **permanece ativa** até confirmação de que o aparelho está rodando a build nova — revogá-la cedo demais interromperia a captura em operação.
+- **O que esta decisão não faz:** não move o provisionamento da credencial para runtime (a arquitetura continua embutindo o segredo no APK, D-021 permanece um risco aceito, não eliminado). Mover para provisionamento em runtime é um recorte maior, deliberadamente não incluído nesta build para manter a mudança pequena e testável.
+- **Consequência:** depois de confirmado que o aparelho está com a build nova, revogar a credencial antiga
+  (`update public.device_credentials set revoked_at = now() where id = '23589a49-acdf-4f28-959e-67ab896b5bb1'`)
+  e, com alguns dias de dado real, consultar `normalized_events.metadata->>'shortcut_id'` e
+  `->>'locus_id'` para responder A2/A3 do plano e decidir a próxima etapa com evidência, não suposição.
+- **Reabrir se:** os campos vierem consistentemente nulos (resposta negativa a A2/A3 — nesse caso a etapa 4 precisa de outra estratégia, não mais `shortcutId`); ou vierem preenchidos, caso em que a etapa 4 "de verdade" (mudança de identidade coordenada sensor+backend) pode ser desenhada com confiança.
+
+## D-027 — Painel de Controle como tela própria, com a qualidade da leitura em primeiro plano
 
 - **Status:** ACEITA
 - **Data:** 2026-09-07
