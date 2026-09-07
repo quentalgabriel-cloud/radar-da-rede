@@ -1,13 +1,13 @@
 # Handoff para continuidade por qualquer LLM
 
-> **LEIA PRIMEIRO: "ENCERRAMENTO DA SESSÃO DE 2026-09-07", no fim deste arquivo.**
-> É a seção corrente. A de 2026-09-05 continua válida para scheduler, sensor e
-> vigilância; o corpo mais antigo tem premissas superadas.
+> **LEIA PRIMEIRO: "GO-LIVE DE 2026-09-07", no fim deste arquivo.**
+> É a seção corrente. As seções anteriores continuam válidas como histórico,
+> mas seus próximos passos e estados de flag foram substituídos pelo go-live.
 
-- Atualizado em: 2026-09-07, Painel de Controle e reconciliação com `main`
+- Atualizado em: 2026-09-07, go-live do Painel de Controle na `main`
 - **Comece pela seção final** — o corpo do documento acima ainda descreve estado pré-consolidação em vários pontos; a seção final tem a versão corrente
-- Branch: `painel-de-controle-e-cobertura`, PR [#24](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/24)
-- `main` até `61f180f` foi incorporada; preserve scheduler em `pg_cron`, deploy automático, vigilância na UI e diagnóstico do sensor
+- Branch corrente: `main`; PR [#24](https://github.com/quentalgabriel-cloud/radar-da-rede/pull/24) mesclado
+- Merge de go-live: `5dbeb073d01e325039460d375589fb37264af66a`
 - Projeto Supabase: `pluruijhqnueayrlkthx`
 - Rede piloto: `d1224e68-c51f-4b31-a7e6-7b91f1a65357`
 - Produção web: `https://radar-da-rede.vercel.app`
@@ -899,3 +899,69 @@ coexistem.
    cobertura baixa e o banner de vigilância antes de mesclar o PR.
 4. Só depois da validação humana decidir a flag do Control Center. Não ligar por
    inferência.
+
+---
+
+# GO-LIVE DE 2026-09-07 — `MAIN` E REDE PILOTO ATIVAS
+
+## Resultado
+
+- O PR #24 foi mesclado na `main` pelo commit
+  `5dbeb073d01e325039460d375589fb37264af66a` e publicado em produção.
+- O workflow CI da `main` terminou com sucesso: run
+  [#79](https://github.com/quentalgabriel-cloud/radar-da-rede/actions/runs/34143006058).
+- O deploy das Edge Functions terminou com sucesso: run
+  [#6](https://github.com/quentalgabriel-cloud/radar-da-rede/actions/runs/34143006190).
+- A produção web em `https://radar-da-rede.vercel.app` serve o novo shell e o
+  Painel de Controle. O smoke no modo demonstração confirmou as cinco seções,
+  filtros, cobertura e detalhe de grupo.
+- `group_control_center_enabled` está `true` exclusivamente para a rede piloto
+  `d1224e68-c51f-4b31-a7e6-7b91f1a65357`; uma segunda consulta confirmou o
+  valor depois do `update`.
+
+## Gate remoto imediatamente antes da ativação
+
+| Item | Resultado |
+|---|---:|
+| janela canônica mais recente | `2026-09-06 16:00Z` a `2026-09-07 16:00Z` |
+| eventos de entrada | 330 |
+| grupos ativos | 11 |
+| linhas de métricas por grupo | 11 |
+| cobertura | 0,6304 — `low` |
+| tendência | inválida, como esperado com cobertura baixa |
+| jobs `radar-consolidate` / `radar-health-check` | ativos |
+| três respostas mais recentes do `pg_net` | HTTP 200, sem timeout |
+
+A ativação não transforma baixa cobertura em confiança: a UI continua
+mostrando a limitação e não apresenta tendência enganosa.
+
+## Segurança e validação que permanecem explícitas
+
+- A rota live publicada exige autenticação, e uma chamada direta ao
+  `radar-read-model` apenas com a chave publicável recebeu HTTP 401
+  `INVALID_CREDENTIALS`.
+- Não havia sessão real no navegador usado no go-live. Assim, o fluxo visual
+  autenticado com dados reais ainda precisa de um smoke manual por um usuário
+  autorizado; backend, contrato, build, E2E e proteção sem token estão
+  validados.
+- Os advisors do Supabase não apontaram erro crítico. Os avisos sobre
+  `device_credentials` e `processing_credentials` sem policy são o deny-by-
+  default intencional; os RPCs `SECURITY DEFINER` sinalizados validam
+  `auth.uid()`, associação à rede e, nas mutações, papel operator/owner.
+- Hardening posterior: habilitar proteção contra senhas vazadas no Supabase
+  Auth e avaliar a migração da extensão `pg_net` para outro schema sem quebrar
+  os jobs. Não misturar essas mudanças com o rollback do painel.
+
+## Rollback imediato
+
+O primeiro rollback é somente a flag, sem deploy:
+
+```sql
+update public.networks
+set group_control_center_enabled = false
+where id = 'd1224e68-c51f-4b31-a7e6-7b91f1a65357';
+```
+
+Se houver defeito de código, abrir um PR que reverta o merge `5dbeb073`; não
+usar `reset --hard` na `main`. A baixa cobertura, isoladamente, não exige
+rollback porque é apresentada de forma explícita e invalida as tendências.
